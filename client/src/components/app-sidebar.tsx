@@ -31,7 +31,7 @@ const mainItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Tickets",
+    title: "Incidents",
     url: "/tickets",
     icon: Ticket,
   },

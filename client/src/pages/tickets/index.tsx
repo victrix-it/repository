@@ -54,11 +54,11 @@ export default function TicketsPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <h1 className="text-3xl font-semibold" data-testid="page-title">Tickets</h1>
+        <h1 className="text-3xl font-semibold" data-testid="page-title">Incidents</h1>
         <Link href="/tickets/new">
           <Button data-testid="button-create-ticket">
             <Plus className="h-4 w-4 mr-2" />
-            New Ticket
+            New Incident
           </Button>
         </Link>
       </div>
@@ -67,7 +67,7 @@ export default function TicketsPage() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search tickets..."
+            placeholder="Search incidents..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -169,7 +169,7 @@ export default function TicketsPage() {
         ) : (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">
-              {search ? 'No tickets match your search' : 'No tickets yet. Create your first ticket!'}
+              {search ? 'No incidents match your search' : 'No incidents yet. Create your first incident!'}
             </p>
           </Card>
         )}

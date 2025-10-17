@@ -43,7 +43,7 @@ export default function TicketDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/tickets", id] });
       queryClient.invalidateQueries({ queryKey: ["/api/tickets"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      toast({ title: "Success", description: "Ticket status updated" });
+      toast({ title: "Success", description: "Incident status updated" });
     },
   });
 
@@ -80,7 +80,7 @@ export default function TicketDetailPage() {
       <Link href="/tickets">
         <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Tickets
+          Back to Incidents
         </Button>
       </Link>
 

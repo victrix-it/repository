@@ -70,7 +70,7 @@ export default function NewTicketPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       toast({
         title: "Success",
-        description: "Ticket created successfully",
+        description: "Incident created successfully",
       });
       setLocation("/tickets");
     },
@@ -88,13 +88,13 @@ export default function NewTicketPage() {
       <Link href="/tickets">
         <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Tickets
+          Back to Incidents
         </Button>
       </Link>
 
       <Card className="max-w-3xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Create New Ticket</CardTitle>
+          <CardTitle className="text-2xl">Create New Incident</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>

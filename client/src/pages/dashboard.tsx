@@ -77,7 +77,7 @@ export default function Dashboard() {
         <Card className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Open Tickets
+              Open Incidents
             </CardTitle>
             <Ticket className="h-4 w-4 text-chart-5" />
           </CardHeader>
@@ -152,7 +152,7 @@ export default function Dashboard() {
             <Link href="/tickets/new">
               <Button className="w-full justify-start" variant="outline" data-testid="button-new-ticket">
                 <Plus className="h-4 w-4 mr-2" />
-                Create New Ticket
+                Create New Incident
               </Button>
             </Link>
             <Link href="/changes/new">
