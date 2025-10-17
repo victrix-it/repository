@@ -113,9 +113,9 @@ export async function setupLdapAuth() {
         } else {
           // Update LDAP user info
           await storage.updateUser(user.id, {
-            firstName: firstName,
-            lastName: lastName,
-            ldapDn: ldapUser.dn,
+            firstName: firstName as string,
+            lastName: lastName as string,
+            ldapDn: ldapUser.dn as string,
           });
         }
 
@@ -184,9 +184,9 @@ export async function setupSamlAuth() {
         } else {
           // Update SAML user info
           await storage.updateUser(user.id, {
-            firstName: firstName,
-            lastName: lastName,
-            samlNameId: profile.nameID,
+            firstName: firstName as string,
+            lastName: lastName as string,
+            samlNameId: profile.nameID as string,
           });
         }
 
