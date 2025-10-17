@@ -1,0 +1,216 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
+import type { User } from "@shared/schema";
+
+const ciFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["server", "application", "database", "network", "storage", "other"]),
+  description: z.string().optional(),
+  status: z.enum(["active", "inactive", "maintenance", "decommissioned"]),
+  ownerId: z.string().optional(),
+});
+
+type CIFormData = z.infer<typeof ciFormSchema>;
+
+export default function NewCIPage() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const { data: users } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const form = useForm<CIFormData>({
+    resolver: zodResolver(ciFormSchema),
+    defaultValues: {
+      name: "",
+      type: "server",
+      description: "",
+      status: "active",
+      ownerId: "",
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: CIFormData) => {
+      const payload = {
+        ...data,
+        ownerId: data.ownerId || null,
+      };
+      return await apiRequest("POST", "/api/configuration-items", payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/configuration-items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({
+        title: "Success",
+        description: "Configuration item created successfully",
+      });
+      setLocation("/cmdb");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="p-8">
+      <Link href="/cmdb">
+        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to CMDB
+        </Button>
+      </Link>
+
+      <Card className="max-w-3xl">
+        <CardHeader>
+          <CardTitle className="text-2xl">Add Configuration Item</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Production Web Server 1" {...field} data-testid="input-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-type">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="server">Server</SelectItem>
+                          <SelectItem value="application">Application</SelectItem>
+                          <SelectItem value="database">Database</SelectItem>
+                          <SelectItem value="network">Network Device</SelectItem>
+                          <SelectItem value="storage">Storage</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-status">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="maintenance">Maintenance</SelectItem>
+                          <SelectItem value="decommissioned">Decommissioned</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe this configuration item"
+                        className="min-h-24"
+                        {...field}
+                        data-testid="input-description"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="ownerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Owner (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-owner">
+                          <SelectValue placeholder="Select owner" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">No owner</SelectItem>
+                        {users?.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.firstName} {user.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex gap-3">
+                <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit">
+                  {createMutation.isPending ? "Creating..." : "Create Configuration Item"}
+                </Button>
+                <Link href="/cmdb">
+                  <Button type="button" variant="outline" data-testid="button-cancel">
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
