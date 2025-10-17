@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema } from "@shared/schema";
+import { registerAttachmentRoutes } from "./attachmentRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -258,6 +259,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: error.message || "Failed to convert email" });
     }
   });
+
+  // Register attachment routes
+  registerAttachmentRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

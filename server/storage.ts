@@ -6,6 +6,7 @@ import {
   knowledgeBase,
   comments,
   emailMessages,
+  attachments,
   type User,
   type UpsertUser,
   type Ticket,
@@ -20,6 +21,8 @@ import {
   type InsertComment,
   type EmailMessage,
   type InsertEmailMessage,
+  type Attachment,
+  type InsertAttachment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -60,6 +63,14 @@ export interface IStorage {
   createEmailMessage(email: InsertEmailMessage): Promise<EmailMessage>;
   getAllEmailMessages(): Promise<EmailMessage[]>;
   convertEmailToTicket(emailId: string, createdById: string): Promise<Ticket>;
+  
+  // Attachment operations
+  createAttachment(attachment: InsertAttachment, uploadedById: string): Promise<Attachment>;
+  getAttachmentsByTicket(ticketId: string): Promise<Attachment[]>;
+  getAttachmentsByChange(changeId: string): Promise<Attachment[]>;
+  getAttachmentsByKB(kbId: string): Promise<Attachment[]>;
+  getAttachment(id: string): Promise<Attachment | undefined>;
+  deleteAttachment(id: string): Promise<void>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -332,6 +343,54 @@ export class DatabaseStorage implements IStorage {
       .where(eq(emailMessages.id, emailId));
 
     return ticket;
+  }
+
+  // Attachment operations
+  async createAttachment(attachment: InsertAttachment, uploadedById: string): Promise<Attachment> {
+    const [newAttachment] = await db
+      .insert(attachments)
+      .values({
+        ...attachment,
+        uploadedById,
+      })
+      .returning();
+    return newAttachment;
+  }
+
+  async getAttachmentsByTicket(ticketId: string): Promise<Attachment[]> {
+    return await db
+      .select()
+      .from(attachments)
+      .where(eq(attachments.ticketId, ticketId))
+      .orderBy(desc(attachments.createdAt));
+  }
+
+  async getAttachmentsByChange(changeId: string): Promise<Attachment[]> {
+    return await db
+      .select()
+      .from(attachments)
+      .where(eq(attachments.changeRequestId, changeId))
+      .orderBy(desc(attachments.createdAt));
+  }
+
+  async getAttachmentsByKB(kbId: string): Promise<Attachment[]> {
+    return await db
+      .select()
+      .from(attachments)
+      .where(eq(attachments.knowledgeBaseId, kbId))
+      .orderBy(desc(attachments.createdAt));
+  }
+
+  async getAttachment(id: string): Promise<Attachment | undefined> {
+    const [attachment] = await db
+      .select()
+      .from(attachments)
+      .where(eq(attachments.id, id));
+    return attachment;
+  }
+
+  async deleteAttachment(id: string): Promise<void> {
+    await db.delete(attachments).where(eq(attachments.id, id));
   }
 
   // Dashboard stats

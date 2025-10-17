@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Server } from "lucide-react";
+import { FileUpload } from "@/components/file-upload";
+import { AttachmentsList } from "@/components/attachments-list";
+import { ArrowLeft, Server, Paperclip } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { ChangeRequest, User, ConfigurationItem } from "@shared/schema";
 
@@ -130,6 +132,21 @@ export default function ChangeDetailPage() {
                   {formatDistanceToNow(new Date(change.createdAt), { addSuffix: true })}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  <CardTitle className="text-lg">Attachments</CardTitle>
+                </div>
+                <FileUpload changeRequestId={id} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AttachmentsList changeRequestId={id} />
             </CardContent>
           </Card>
         </div>

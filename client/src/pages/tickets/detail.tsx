@@ -8,7 +8,9 @@ import { StatusBadge } from "@/components/status-badge";
 import { PriorityBadge } from "@/components/priority-badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MessageSquare, Server } from "lucide-react";
+import { FileUpload } from "@/components/file-upload";
+import { AttachmentsList } from "@/components/attachments-list";
+import { ArrowLeft, MessageSquare, Server, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -226,6 +228,21 @@ export default function TicketDetailPage() {
                   {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  <CardTitle className="text-lg">Attachments</CardTitle>
+                </div>
+                <FileUpload ticketId={id} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AttachmentsList ticketId={id} />
             </CardContent>
           </Card>
         </div>

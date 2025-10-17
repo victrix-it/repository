@@ -125,6 +125,21 @@ export const emailMessages = pgTable("email_messages", {
   convertedAt: timestamp("converted_at"),
 });
 
+// File Attachments
+export const attachments = pgTable("attachments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  originalFilename: varchar("original_filename", { length: 255 }).notNull(),
+  mimeType: varchar("mime_type", { length: 100 }).notNull(),
+  size: integer("size").notNull(), // Size in bytes
+  filePath: varchar("file_path", { length: 500 }).notNull(), // Storage path
+  uploadedById: varchar("uploaded_by_id").references(() => users.id).notNull(),
+  ticketId: varchar("ticket_id").references(() => tickets.id),
+  changeRequestId: varchar("change_request_id").references(() => changeRequests.id),
+  knowledgeBaseId: varchar("knowledge_base_id").references(() => knowledgeBase.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   ticketsCreated: many(tickets, { relationName: 'createdBy' }),
@@ -161,6 +176,7 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
     references: [configurationItems.id],
   }),
   comments: many(comments),
+  attachments: many(attachments),
 }));
 
 export const changeRequestsRelations = relations(changeRequests, ({ one, many }) => ({
@@ -179,13 +195,15 @@ export const changeRequestsRelations = relations(changeRequests, ({ one, many })
     references: [configurationItems.id],
   }),
   comments: many(comments),
+  attachments: many(attachments),
 }));
 
-export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
+export const knowledgeBaseRelations = relations(knowledgeBase, ({ one, many }) => ({
   createdBy: one(users, {
     fields: [knowledgeBase.createdById],
     references: [users.id],
   }),
+  attachments: many(attachments),
 }));
 
 export const commentsRelations = relations(comments, ({ one }) => ({
@@ -207,6 +225,25 @@ export const emailMessagesRelations = relations(emailMessages, ({ one }) => ({
   ticket: one(tickets, {
     fields: [emailMessages.ticketId],
     references: [tickets.id],
+  }),
+}));
+
+export const attachmentsRelations = relations(attachments, ({ one }) => ({
+  uploadedBy: one(users, {
+    fields: [attachments.uploadedById],
+    references: [users.id],
+  }),
+  ticket: one(tickets, {
+    fields: [attachments.ticketId],
+    references: [tickets.id],
+  }),
+  changeRequest: one(changeRequests, {
+    fields: [attachments.changeRequestId],
+    references: [changeRequests.id],
+  }),
+  knowledgeBaseArticle: one(knowledgeBase, {
+    fields: [attachments.knowledgeBaseId],
+    references: [knowledgeBase.id],
   }),
 }));
 
@@ -258,6 +295,12 @@ export const insertEmailMessageSchema = createInsertSchema(emailMessages).omit({
   convertedAt: true,
 });
 
+export const insertAttachmentSchema = createInsertSchema(attachments).omit({
+  id: true,
+  uploadedById: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -279,3 +322,6 @@ export type Comment = typeof comments.$inferSelect;
 
 export type InsertEmailMessage = z.infer<typeof insertEmailMessageSchema>;
 export type EmailMessage = typeof emailMessages.$inferSelect;
+
+export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
+export type Attachment = typeof attachments.$inferSelect;

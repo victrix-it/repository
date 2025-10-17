@@ -5,7 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Eye, FileText, AlertCircle } from "lucide-react";
+import { FileUpload } from "@/components/file-upload";
+import { AttachmentsList } from "@/components/attachments-list";
+import { ArrowLeft, Eye, FileText, AlertCircle, Paperclip } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import type { KnowledgeBase, User } from "@shared/schema";
 
@@ -112,6 +114,21 @@ export default function KBDetailPage() {
                   {formatDistanceToNow(new Date(article.updatedAt), { addSuffix: true })}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" />
+                  <CardTitle className="text-lg">Attachments</CardTitle>
+                </div>
+                <FileUpload knowledgeBaseId={id} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <AttachmentsList knowledgeBaseId={id} />
             </CardContent>
           </Card>
         </div>
