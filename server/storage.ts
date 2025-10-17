@@ -7,6 +7,9 @@ import {
   comments,
   emailMessages,
   attachments,
+  teams,
+  teamMembers,
+  resolutionCategories,
   type User,
   type UpsertUser,
   type Ticket,
@@ -23,6 +26,12 @@ import {
   type InsertEmailMessage,
   type Attachment,
   type InsertAttachment,
+  type Team,
+  type InsertTeam,
+  type TeamMember,
+  type InsertTeamMember,
+  type ResolutionCategory,
+  type InsertResolutionCategory,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -57,7 +66,7 @@ export interface IStorage {
   incrementKBViews(id: string): Promise<void>;
   
   // Comment operations
-  createComment(comment: InsertComment): Promise<Comment>;
+  createComment(comment: InsertComment, createdById: string): Promise<Comment>;
   
   // Email operations
   createEmailMessage(email: InsertEmailMessage): Promise<EmailMessage>;
@@ -71,6 +80,23 @@ export interface IStorage {
   getAttachmentsByKB(kbId: string): Promise<Attachment[]>;
   getAttachment(id: string): Promise<Attachment | undefined>;
   deleteAttachment(id: string): Promise<void>;
+  
+  // Team operations
+  createTeam(team: InsertTeam): Promise<Team>;
+  getAllTeams(): Promise<Team[]>;
+  getTeam(id: string): Promise<Team | undefined>;
+  updateTeam(id: string, team: Partial<InsertTeam>): Promise<Team>;
+  deleteTeam(id: string): Promise<void>;
+  addTeamMember(teamMember: InsertTeamMember): Promise<TeamMember>;
+  removeTeamMember(teamId: string, userId: string): Promise<void>;
+  getTeamMembers(teamId: string): Promise<any[]>;
+  
+  // Resolution category operations
+  createResolutionCategory(category: InsertResolutionCategory): Promise<ResolutionCategory>;
+  getAllResolutionCategories(): Promise<ResolutionCategory[]>;
+  getResolutionCategory(id: string): Promise<ResolutionCategory | undefined>;
+  updateResolutionCategory(id: string, category: Partial<InsertResolutionCategory>): Promise<ResolutionCategory>;
+  deleteResolutionCategory(id: string): Promise<void>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -302,8 +328,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Comment operations
-  async createComment(comment: InsertComment): Promise<Comment> {
-    const [newComment] = await db.insert(comments).values(comment).returning();
+  async createComment(comment: InsertComment, createdById: string): Promise<Comment> {
+    const [newComment] = await db.insert(comments).values({
+      ...comment,
+      createdById,
+    }).returning();
     return newComment;
   }
 
@@ -391,6 +420,92 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAttachment(id: string): Promise<void> {
     await db.delete(attachments).where(eq(attachments.id, id));
+  }
+
+  // Team operations
+  async createTeam(team: InsertTeam): Promise<Team> {
+    const [newTeam] = await db.insert(teams).values(team).returning();
+    return newTeam;
+  }
+
+  async getAllTeams(): Promise<Team[]> {
+    return await db.select().from(teams).orderBy(teams.name);
+  }
+
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team;
+  }
+
+  async updateTeam(id: string, team: Partial<InsertTeam>): Promise<Team> {
+    const [updated] = await db
+      .update(teams)
+      .set({ ...team, updatedAt: new Date() })
+      .where(eq(teams.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    await db.delete(teamMembers).where(eq(teamMembers.teamId, id));
+    await db.delete(teams).where(eq(teams.id, id));
+  }
+
+  async addTeamMember(teamMember: InsertTeamMember): Promise<TeamMember> {
+    const [newMember] = await db.insert(teamMembers).values(teamMember).returning();
+    return newMember;
+  }
+
+  async removeTeamMember(teamId: string, userId: string): Promise<void> {
+    await db
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+  }
+
+  async getTeamMembers(teamId: string): Promise<any[]> {
+    const members = await db
+      .select({
+        id: teamMembers.id,
+        userId: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        role: users.role,
+        createdAt: teamMembers.createdAt,
+      })
+      .from(teamMembers)
+      .innerJoin(users, eq(teamMembers.userId, users.id))
+      .where(eq(teamMembers.teamId, teamId));
+    return members;
+  }
+
+  // Resolution category operations
+  async createResolutionCategory(category: InsertResolutionCategory): Promise<ResolutionCategory> {
+    const [newCategory] = await db.insert(resolutionCategories).values(category).returning();
+    return newCategory;
+  }
+
+  async getAllResolutionCategories(): Promise<ResolutionCategory[]> {
+    return await db.select().from(resolutionCategories).orderBy(resolutionCategories.name);
+  }
+
+  async getResolutionCategory(id: string): Promise<ResolutionCategory | undefined> {
+    const [category] = await db.select().from(resolutionCategories).where(eq(resolutionCategories.id, id));
+    return category;
+  }
+
+  async updateResolutionCategory(id: string, category: Partial<InsertResolutionCategory>): Promise<ResolutionCategory> {
+    const [updated] = await db
+      .update(resolutionCategories)
+      .set(category)
+      .where(eq(resolutionCategories.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteResolutionCategory(id: string): Promise<void> {
+    await db.delete(resolutionCategories).where(eq(resolutionCategories.id, id));
   }
 
   // Dashboard stats

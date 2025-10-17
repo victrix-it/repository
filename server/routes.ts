@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -97,10 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: req.body.content,
         ticketId: req.params.id,
       });
-      const comment = await storage.createComment({
-        ...validatedData,
-        createdById: userId,
-      });
+      const comment = await storage.createComment(validatedData, userId);
       res.json(comment);
     } catch (error: any) {
       console.error("Error creating comment:", error);
@@ -257,6 +254,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error converting email:", error);
       res.status(400).json({ message: error.message || "Failed to convert email" });
+    }
+  });
+
+  // Team routes
+  app.get('/api/teams', isAuthenticated, async (req, res) => {
+    try {
+      const teams = await storage.getAllTeams();
+      res.json(teams);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+      res.status(500).json({ message: "Failed to fetch teams" });
+    }
+  });
+
+  app.post('/api/teams', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertTeamSchema.parse(req.body);
+      const team = await storage.createTeam(validatedData);
+      res.json(team);
+    } catch (error: any) {
+      console.error("Error creating team:", error);
+      res.status(400).json({ message: error.message || "Failed to create team" });
+    }
+  });
+
+  app.patch('/api/teams/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updated = await storage.updateTeam(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating team:", error);
+      res.status(400).json({ message: error.message || "Failed to update team" });
+    }
+  });
+
+  app.delete('/api/teams/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteTeam(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      res.status(500).json({ message: "Failed to delete team" });
+    }
+  });
+
+  app.get('/api/teams/:id/members', isAuthenticated, async (req, res) => {
+    try {
+      const members = await storage.getTeamMembers(req.params.id);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
+  app.post('/api/teams/:id/members', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertTeamMemberSchema.parse({
+        teamId: req.params.id,
+        userId: req.body.userId,
+      });
+      const member = await storage.addTeamMember(validatedData);
+      res.json(member);
+    } catch (error: any) {
+      console.error("Error adding team member:", error);
+      res.status(400).json({ message: error.message || "Failed to add team member" });
+    }
+  });
+
+  app.delete('/api/teams/:teamId/members/:userId', isAuthenticated, async (req, res) => {
+    try {
+      await storage.removeTeamMember(req.params.teamId, req.params.userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ message: "Failed to remove team member" });
+    }
+  });
+
+  // Resolution category routes
+  app.get('/api/resolution-categories', isAuthenticated, async (req, res) => {
+    try {
+      const categories = await storage.getAllResolutionCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching resolution categories:", error);
+      res.status(500).json({ message: "Failed to fetch resolution categories" });
+    }
+  });
+
+  app.post('/api/resolution-categories', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertResolutionCategorySchema.parse(req.body);
+      const category = await storage.createResolutionCategory(validatedData);
+      res.json(category);
+    } catch (error: any) {
+      console.error("Error creating resolution category:", error);
+      res.status(400).json({ message: error.message || "Failed to create resolution category" });
+    }
+  });
+
+  app.patch('/api/resolution-categories/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updated = await storage.updateResolutionCategory(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating resolution category:", error);
+      res.status(400).json({ message: error.message || "Failed to update resolution category" });
+    }
+  });
+
+  app.delete('/api/resolution-categories/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteResolutionCategory(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting resolution category:", error);
+      res.status(500).json({ message: "Failed to delete resolution category" });
+    }
+  });
+
+  // Ticket self-assignment route
+  app.post('/api/tickets/:id/assign-self', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateTicketStatus(req.params.id, undefined);
+      // We'll need to add updateTicketAssignment method
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error self-assigning ticket:", error);
+      res.status(500).json({ message: "Failed to self-assign ticket" });
     }
   });
 

@@ -41,8 +41,35 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").default('user').notNull(),
+  isLdapUser: varchar("is_ldap_user").default('false').notNull(), // 'true' or 'false' for LDAP users
+  ldapDn: varchar("ldap_dn"), // Distinguished Name from LDAP
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Teams table
+export const teams = pgTable("teams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Team members (many-to-many relationship)
+export const teamMembers = pgTable("team_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").references(() => teams.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Resolution categories
+export const resolutionCategories = pgTable("resolution_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Configuration Items (CMDB)
@@ -69,6 +96,9 @@ export const tickets = pgTable("tickets", {
   category: varchar("category", { length: 100 }), // e.g., Hardware, Software, Network, Access
   tags: text("tags").array(), // Flexible tagging system
   assignedToId: varchar("assigned_to_id").references(() => users.id),
+  assignedToTeamId: varchar("assigned_to_team_id").references(() => teams.id),
+  resolutionCategoryId: varchar("resolution_category_id").references(() => resolutionCategories.id),
+  resolutionNotes: text("resolution_notes"),
   createdById: varchar("created_by_id").references(() => users.id).notNull(),
   linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id),
   emailMessageId: varchar("email_message_id"), // Reference to email if created from email
@@ -303,9 +333,34 @@ export const insertAttachmentSchema = createInsertSchema(attachments).omit({
   createdAt: true,
 });
 
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResolutionCategorySchema = createInsertSchema(resolutionCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type Team = typeof teams.$inferSelect;
+
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+
+export type InsertResolutionCategory = z.infer<typeof insertResolutionCategorySchema>;
+export type ResolutionCategory = typeof resolutionCategories.$inferSelect;
 
 export type InsertConfigurationItem = z.infer<typeof insertConfigurationItemSchema>;
 export type ConfigurationItem = typeof configurationItems.$inferSelect;
