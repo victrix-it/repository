@@ -11,6 +11,9 @@ import {
   teamMembers,
   resolutionCategories,
   systemSettings,
+  alertIntegrations,
+  alertFilterRules,
+  alertFieldMappings,
   type User,
   type UpsertUser,
   type Ticket,
@@ -35,6 +38,12 @@ import {
   type InsertResolutionCategory,
   type SystemSetting,
   type InsertSystemSetting,
+  type AlertIntegration,
+  type InsertAlertIntegration,
+  type AlertFilterRule,
+  type InsertAlertFilterRule,
+  type AlertFieldMapping,
+  type InsertAlertFieldMapping,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -109,6 +118,29 @@ export interface IStorage {
   getAllSettings(): Promise<SystemSetting[]>;
   upsertSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
   deleteSetting(key: string): Promise<void>;
+  
+  // Alert integration operations
+  createAlertIntegration(integration: InsertAlertIntegration): Promise<AlertIntegration>;
+  getAllAlertIntegrations(): Promise<AlertIntegration[]>;
+  getAlertIntegration(id: string): Promise<AlertIntegration | undefined>;
+  getAlertIntegrationByWebhookId(webhookId: string): Promise<AlertIntegration | undefined>;
+  updateAlertIntegration(id: string, integration: Partial<InsertAlertIntegration>): Promise<AlertIntegration>;
+  deleteAlertIntegration(id: string): Promise<void>;
+  
+  // Alert filter rule operations
+  createFilterRule(rule: InsertAlertFilterRule): Promise<AlertFilterRule>;
+  getFilterRulesByIntegration(integrationId: string): Promise<AlertFilterRule[]>;
+  updateFilterRule(id: string, rule: Partial<InsertAlertFilterRule>): Promise<AlertFilterRule>;
+  deleteFilterRule(id: string): Promise<void>;
+  
+  // Alert field mapping operations
+  createFieldMapping(mapping: InsertAlertFieldMapping): Promise<AlertFieldMapping>;
+  getFieldMappingsByIntegration(integrationId: string): Promise<AlertFieldMapping[]>;
+  updateFieldMapping(id: string, mapping: Partial<InsertAlertFieldMapping>): Promise<AlertFieldMapping>;
+  deleteFieldMapping(id: string): Promise<void>;
+  
+  // System user for automated operations
+  getOrCreateSystemUser(): Promise<string>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -569,6 +601,109 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSetting(key: string): Promise<void> {
     await db.delete(systemSettings).where(eq(systemSettings.key, key));
+  }
+
+  // Alert integration operations
+  async createAlertIntegration(integration: InsertAlertIntegration): Promise<AlertIntegration> {
+    const [newIntegration] = await db.insert(alertIntegrations).values(integration).returning();
+    return newIntegration;
+  }
+
+  async getAllAlertIntegrations(): Promise<AlertIntegration[]> {
+    return await db.select().from(alertIntegrations).orderBy(alertIntegrations.name);
+  }
+
+  async getAlertIntegration(id: string): Promise<AlertIntegration | undefined> {
+    const [integration] = await db.select().from(alertIntegrations).where(eq(alertIntegrations.id, id));
+    return integration;
+  }
+
+  async getAlertIntegrationByWebhookId(webhookId: string): Promise<AlertIntegration | undefined> {
+    const [integration] = await db.select().from(alertIntegrations).where(eq(alertIntegrations.webhookUrl, `/api/webhooks/alerts/${webhookId}`));
+    return integration;
+  }
+
+  async updateAlertIntegration(id: string, integration: Partial<InsertAlertIntegration>): Promise<AlertIntegration> {
+    const [updated] = await db
+      .update(alertIntegrations)
+      .set({ ...integration, updatedAt: new Date() })
+      .where(eq(alertIntegrations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteAlertIntegration(id: string): Promise<void> {
+    // Delete related filter rules and field mappings
+    await db.delete(alertFilterRules).where(eq(alertFilterRules.integrationId, id));
+    await db.delete(alertFieldMappings).where(eq(alertFieldMappings.integrationId, id));
+    await db.delete(alertIntegrations).where(eq(alertIntegrations.id, id));
+  }
+
+  // Alert filter rule operations
+  async createFilterRule(rule: InsertAlertFilterRule): Promise<AlertFilterRule> {
+    const [newRule] = await db.insert(alertFilterRules).values(rule).returning();
+    return newRule;
+  }
+
+  async getFilterRulesByIntegration(integrationId: string): Promise<AlertFilterRule[]> {
+    return await db.select().from(alertFilterRules)
+      .where(eq(alertFilterRules.integrationId, integrationId))
+      .orderBy(alertFilterRules.priority);
+  }
+
+  async updateFilterRule(id: string, rule: Partial<InsertAlertFilterRule>): Promise<AlertFilterRule> {
+    const [updated] = await db
+      .update(alertFilterRules)
+      .set(rule)
+      .where(eq(alertFilterRules.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFilterRule(id: string): Promise<void> {
+    await db.delete(alertFilterRules).where(eq(alertFilterRules.id, id));
+  }
+
+  // Alert field mapping operations
+  async createFieldMapping(mapping: InsertAlertFieldMapping): Promise<AlertFieldMapping> {
+    const [newMapping] = await db.insert(alertFieldMappings).values(mapping).returning();
+    return newMapping;
+  }
+
+  async getFieldMappingsByIntegration(integrationId: string): Promise<AlertFieldMapping[]> {
+    return await db.select().from(alertFieldMappings)
+      .where(eq(alertFieldMappings.integrationId, integrationId));
+  }
+
+  async updateFieldMapping(id: string, mapping: Partial<InsertAlertFieldMapping>): Promise<AlertFieldMapping> {
+    const [updated] = await db
+      .update(alertFieldMappings)
+      .set(mapping)
+      .where(eq(alertFieldMappings.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFieldMapping(id: string): Promise<void> {
+    await db.delete(alertFieldMappings).where(eq(alertFieldMappings.id, id));
+  }
+
+  // System user for automated operations
+  async getOrCreateSystemUser(): Promise<string> {
+    const systemEmail = 'system@helpdesk.local';
+    let user = await this.getUserByEmail(systemEmail);
+    
+    if (!user) {
+      user = await this.createUser({
+        email: systemEmail,
+        firstName: 'System',
+        lastName: 'Automation',
+        role: 'support',
+        authProvider: 'local',
+      });
+    }
+    
+    return user.id;
   }
 
   // Dashboard stats

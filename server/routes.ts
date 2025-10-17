@@ -2,8 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
+import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -432,8 +433,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alert integration routes
+  app.get('/api/alert-integrations', isAuthenticated, async (req, res) => {
+    try {
+      const integrations = await storage.getAllAlertIntegrations();
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching alert integrations:", error);
+      res.status(500).json({ message: "Failed to fetch alert integrations" });
+    }
+  });
+
+  app.post('/api/alert-integrations', isAuthenticated, async (req, res) => {
+    try {
+      const webhookId = generateWebhookId();
+      const apiKey = generateApiKey();
+      
+      const validatedData = insertAlertIntegrationSchema.parse({
+        ...req.body,
+        webhookUrl: `/api/webhooks/alerts/${webhookId}`,
+        apiKey: apiKey,
+      });
+      
+      const integration = await storage.createAlertIntegration(validatedData);
+      res.json({ ...integration, webhookId, apiKey });
+    } catch (error: any) {
+      console.error("Error creating alert integration:", error);
+      res.status(400).json({ message: error.message || "Failed to create alert integration" });
+    }
+  });
+
+  app.patch('/api/alert-integrations/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updated = await storage.updateAlertIntegration(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating alert integration:", error);
+      res.status(400).json({ message: error.message || "Failed to update alert integration" });
+    }
+  });
+
+  app.delete('/api/alert-integrations/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteAlertIntegration(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting alert integration:", error);
+      res.status(500).json({ message: "Failed to delete alert integration" });
+    }
+  });
+
+  // Alert filter rule routes
+  app.get('/api/alert-integrations/:integrationId/filters', isAuthenticated, async (req, res) => {
+    try {
+      const rules = await storage.getFilterRulesByIntegration(req.params.integrationId);
+      res.json(rules);
+    } catch (error) {
+      console.error("Error fetching filter rules:", error);
+      res.status(500).json({ message: "Failed to fetch filter rules" });
+    }
+  });
+
+  app.post('/api/alert-integrations/:integrationId/filters', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertAlertFilterRuleSchema.parse({
+        ...req.body,
+        integrationId: req.params.integrationId,
+      });
+      const rule = await storage.createFilterRule(validatedData);
+      res.json(rule);
+    } catch (error: any) {
+      console.error("Error creating filter rule:", error);
+      res.status(400).json({ message: error.message || "Failed to create filter rule" });
+    }
+  });
+
+  app.delete('/api/alert-filters/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteFilterRule(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting filter rule:", error);
+      res.status(500).json({ message: "Failed to delete filter rule" });
+    }
+  });
+
+  // Alert field mapping routes
+  app.get('/api/alert-integrations/:integrationId/mappings', isAuthenticated, async (req, res) => {
+    try {
+      const mappings = await storage.getFieldMappingsByIntegration(req.params.integrationId);
+      res.json(mappings);
+    } catch (error) {
+      console.error("Error fetching field mappings:", error);
+      res.status(500).json({ message: "Failed to fetch field mappings" });
+    }
+  });
+
+  app.post('/api/alert-integrations/:integrationId/mappings', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertAlertFieldMappingSchema.parse({
+        ...req.body,
+        integrationId: req.params.integrationId,
+      });
+      const mapping = await storage.createFieldMapping(validatedData);
+      res.json(mapping);
+    } catch (error: any) {
+      console.error("Error creating field mapping:", error);
+      res.status(400).json({ message: error.message || "Failed to create field mapping" });
+    }
+  });
+
+  app.delete('/api/alert-mappings/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteFieldMapping(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting field mapping:", error);
+      res.status(500).json({ message: "Failed to delete field mapping" });
+    }
+  });
+
   // Register attachment routes
   registerAttachmentRoutes(app);
+
+  // Register alert webhook routes
+  registerAlertWebhookRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

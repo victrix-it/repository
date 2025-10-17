@@ -82,6 +82,47 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Alert integrations (webhook configurations for monitoring systems)
+export const alertIntegrations = pgTable("alert_integrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  enabled: varchar("enabled", { length: 10 }).default('true').notNull(),
+  webhookUrl: varchar("webhook_url", { length: 500 }).unique().notNull(),
+  apiKey: varchar("api_key", { length: 255 }).notNull(),
+  sourceSystem: varchar("source_system", { length: 100 }), // e.g., 'solarwinds', 'nagios', 'zabbix'
+  defaultPriority: ticketPriorityEnum("default_priority").default('medium').notNull(),
+  defaultCategory: varchar("default_category", { length: 100 }),
+  autoAssignTeamId: varchar("auto_assign_team_id").references(() => teams.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Alert filter rules (to prevent certain alerts from creating tickets)
+export const alertFilterRules = pgTable("alert_filter_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  integrationId: varchar("integration_id").references(() => alertIntegrations.id).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  enabled: varchar("enabled", { length: 10 }).default('true').notNull(),
+  filterType: varchar("filter_type", { length: 50 }).notNull(), // 'include' or 'exclude'
+  fieldPath: varchar("field_path", { length: 255 }).notNull(), // JSON path to field, e.g., 'severity', 'host.name'
+  operator: varchar("operator", { length: 50 }).notNull(), // 'equals', 'contains', 'regex', 'greater_than', etc.
+  value: text("value").notNull(),
+  priority: integer("priority").default(0).notNull(), // Lower number = higher priority
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Alert field mappings (map alert fields to ticket fields)
+export const alertFieldMappings = pgTable("alert_field_mappings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  integrationId: varchar("integration_id").references(() => alertIntegrations.id).notNull(),
+  ticketField: varchar("ticket_field", { length: 100 }).notNull(), // 'title', 'description', 'priority', 'category'
+  alertFieldPath: varchar("alert_field_path", { length: 255 }).notNull(), // JSON path in alert payload
+  transform: varchar("transform", { length: 50 }), // 'uppercase', 'lowercase', 'trim', 'severity_to_priority'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Configuration Items (CMDB)
 export const configurationItems = pgTable("configuration_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -364,6 +405,22 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit
   updatedAt: true,
 });
 
+export const insertAlertIntegrationSchema = createInsertSchema(alertIntegrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAlertFilterRuleSchema = createInsertSchema(alertFilterRules).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAlertFieldMappingSchema = createInsertSchema(alertFieldMappings).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -379,6 +436,15 @@ export type ResolutionCategory = typeof resolutionCategories.$inferSelect;
 
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 export type SystemSetting = typeof systemSettings.$inferSelect;
+
+export type InsertAlertIntegration = z.infer<typeof insertAlertIntegrationSchema>;
+export type AlertIntegration = typeof alertIntegrations.$inferSelect;
+
+export type InsertAlertFilterRule = z.infer<typeof insertAlertFilterRuleSchema>;
+export type AlertFilterRule = typeof alertFilterRules.$inferSelect;
+
+export type InsertAlertFieldMapping = z.infer<typeof insertAlertFieldMappingSchema>;
+export type AlertFieldMapping = typeof alertFieldMappings.$inferSelect;
 
 export type InsertConfigurationItem = z.infer<typeof insertConfigurationItemSchema>;
 export type ConfigurationItem = typeof configurationItems.$inferSelect;
