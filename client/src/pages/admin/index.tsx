@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings, Palette, Webhook } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -134,6 +134,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Configure webhooks for SolarWinds, Nagios, and other monitoring systems
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/network-discovery">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-network-discovery">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <Network className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Network Discovery</CardTitle>
+                  <CardDescription>Automated CMDB population</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Scan networks to automatically discover and import devices into the CMDB
               </p>
             </CardContent>
           </Card>

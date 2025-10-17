@@ -26,6 +26,8 @@ import AdminPage from "@/pages/admin/index";
 import BrandingPage from "@/pages/admin/branding";
 import AuthSettingsPage from "@/pages/admin/auth-settings";
 import AlertIntegrationsPage from "@/pages/admin/alert-integrations";
+import NetworkDiscoveryPage from "@/pages/admin/network-discovery";
+import DiscoveryResultsPage from "@/pages/admin/discovery-results";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -54,6 +56,8 @@ function Router() {
           <Route path="/admin/branding" component={BrandingPage} />
           <Route path="/admin/auth-settings" component={AuthSettingsPage} />
           <Route path="/admin/alert-integrations" component={AlertIntegrationsPage} />
+          <Route path="/admin/network-discovery" component={NetworkDiscoveryPage} />
+          <Route path="/admin/discovery/:jobId" component={DiscoveryResultsPage} />
         </>
       )}
       <Route component={NotFound} />
