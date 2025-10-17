@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
 import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
@@ -662,6 +662,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error importing device:", error);
       res.status(400).json({ message: error.message || "Failed to import device" });
+    }
+  });
+
+  // Contact routes
+  app.get('/api/contacts', isAuthenticated, async (req, res) => {
+    try {
+      const contacts = await storage.getAllContacts();
+      res.json(contacts);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      res.status(500).json({ message: "Failed to fetch contacts" });
+    }
+  });
+
+  app.get('/api/contacts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const contact = await storage.getContact(req.params.id);
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+      res.json(contact);
+    } catch (error) {
+      console.error("Error fetching contact:", error);
+      res.status(500).json({ message: "Failed to fetch contact" });
+    }
+  });
+
+  app.post('/api/contacts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertContactSchema.parse(req.body);
+      const contact = await storage.createContact(validatedData, userId);
+      res.json(contact);
+    } catch (error: any) {
+      console.error("Error creating contact:", error);
+      res.status(400).json({ message: error.message || "Failed to create contact" });
+    }
+  });
+
+  app.patch('/api/contacts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertContactSchema.partial().parse(req.body);
+      const contact = await storage.updateContact(req.params.id, validatedData);
+      res.json(contact);
+    } catch (error: any) {
+      console.error("Error updating contact:", error);
+      res.status(400).json({ message: error.message || "Failed to update contact" });
+    }
+  });
+
+  app.delete('/api/contacts/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteContact(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      res.status(500).json({ message: "Failed to delete contact" });
     }
   });
 

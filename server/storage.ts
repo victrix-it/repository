@@ -17,6 +17,7 @@ import {
   discoveryCredentials,
   discoveryJobs,
   discoveredDevices,
+  contacts,
   type User,
   type UpsertUser,
   type Ticket,
@@ -53,6 +54,8 @@ import {
   type InsertDiscoveryJob,
   type DiscoveredDevice,
   type InsertDiscoveredDevice,
+  type Contact,
+  type InsertContact,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -172,6 +175,13 @@ export interface IStorage {
   getDiscoveredDevice(id: string): Promise<DiscoveredDevice | undefined>;
   updateDiscoveredDevice(id: string, device: Partial<InsertDiscoveredDevice>): Promise<DiscoveredDevice>;
   deleteDiscoveredDevice(id: string): Promise<void>;
+  
+  // Contact operations
+  createContact(contact: InsertContact, createdById: string): Promise<Contact>;
+  getAllContacts(): Promise<Contact[]>;
+  getContact(id: string): Promise<Contact | undefined>;
+  updateContact(id: string, contact: Partial<InsertContact>): Promise<Contact>;
+  deleteContact(id: string): Promise<void>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -828,6 +838,40 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDiscoveredDevice(id: string): Promise<void> {
     await db.delete(discoveredDevices).where(eq(discoveredDevices.id, id));
+  }
+
+  // Contact operations
+  async createContact(contact: InsertContact, createdById: string): Promise<Contact> {
+    const [newContact] = await db
+      .insert(contacts)
+      .values({
+        ...contact,
+        createdById,
+      })
+      .returning();
+    return newContact;
+  }
+
+  async getAllContacts(): Promise<Contact[]> {
+    return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+  }
+
+  async getContact(id: string): Promise<Contact | undefined> {
+    const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
+    return contact;
+  }
+
+  async updateContact(id: string, contact: Partial<InsertContact>): Promise<Contact> {
+    const [updated] = await db
+      .update(contacts)
+      .set({ ...contact, updatedAt: new Date() })
+      .where(eq(contacts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteContact(id: string): Promise<void> {
+    await db.delete(contacts).where(eq(contacts.id, id));
   }
 
   // Dashboard stats
