@@ -31,6 +31,7 @@ import DiscoveryResultsPage from "@/pages/admin/discovery-results";
 import CsvImportPage from "@/pages/admin/csv-import";
 import TeamsPage from "@/pages/admin/teams";
 import UserCsvImportPage from "@/pages/admin/user-csv-import";
+import UsersPage from "@/pages/admin/users";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -64,6 +65,7 @@ function Router() {
           <Route path="/admin/csv-import" component={CsvImportPage} />
           <Route path="/admin/teams" component={TeamsPage} />
           <Route path="/admin/user-csv-import" component={UserCsvImportPage} />
+          <Route path="/admin/users" component={UsersPage} />
         </>
       )}
       <Route component={NotFound} />

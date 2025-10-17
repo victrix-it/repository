@@ -13,6 +13,27 @@ export default function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Link href="/admin/users">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-users">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <UserPlus className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Users</CardTitle>
+                  <CardDescription>Manage system users</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                View and manage all system users, roles, and authentication methods
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/admin/teams">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-teams">
             <CardHeader>
@@ -29,27 +50,6 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Create and manage teams, add team members, and assign tickets to teams
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-
-        <Link href="/admin/users">
-          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-users">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-md bg-primary/10">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Users</CardTitle>
-                  <CardDescription>User management</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                View and manage user accounts, roles, and permissions
               </p>
             </CardContent>
           </Card>

@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FileUp, Download, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { FileUp, Download, CheckCircle2, XCircle, AlertCircle, Users, ArrowLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -75,9 +75,11 @@ export default function UserCsvImport() {
           variant="ghost"
           onClick={() => setLocation('/admin')}
           className="mb-2"
+          size="sm"
           data-testid="button-back-to-admin"
         >
-          ← Back to Admin
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin
         </Button>
         <h1 className="text-3xl font-bold" data-testid="text-page-title">User CSV Import</h1>
         <p className="text-muted-foreground">
@@ -219,6 +221,7 @@ export default function UserCsvImport() {
                   onClick={() => setLocation('/admin/users')}
                   data-testid="button-view-users"
                 >
+                  <Users className="mr-2 h-4 w-4" />
                   View Users
                 </Button>
               )}
