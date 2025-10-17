@@ -94,10 +94,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const validatedData = insertCommentSchema.parse({
         content: req.body.content,
-        createdById: userId,
         ticketId: req.params.id,
       });
-      const comment = await storage.createComment(validatedData);
+      const comment = await storage.createComment({
+        ...validatedData,
+        createdById: userId,
+      });
       res.json(comment);
     } catch (error: any) {
       console.error("Error creating comment:", error);

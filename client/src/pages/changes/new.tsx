@@ -128,11 +128,10 @@ export default function NewChangePage() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-ci">
-                            <SelectValue placeholder="Select CI" />
+                            <SelectValue placeholder="No CI" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">No CI</SelectItem>
                           {cis?.map((ci) => (
                             <SelectItem key={ci.id} value={ci.id}>
                               {ci.name} ({ci.type})

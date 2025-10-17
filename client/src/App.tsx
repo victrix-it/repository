@@ -14,10 +14,13 @@ import NewTicketPage from "@/pages/tickets/new";
 import TicketDetailPage from "@/pages/tickets/detail";
 import ChangesPage from "@/pages/changes/index";
 import NewChangePage from "@/pages/changes/new";
+import ChangeDetailPage from "@/pages/changes/detail";
 import CMDBPage from "@/pages/cmdb/index";
 import NewCIPage from "@/pages/cmdb/new";
+import CIDetailPage from "@/pages/cmdb/detail";
 import KnowledgePage from "@/pages/knowledge/index";
 import NewKBPage from "@/pages/knowledge/new";
+import KBDetailPage from "@/pages/knowledge/detail";
 import EmailsPage from "@/pages/emails/index";
 
 function Router() {
@@ -35,10 +38,13 @@ function Router() {
           <Route path="/tickets/:id" component={TicketDetailPage} />
           <Route path="/changes" component={ChangesPage} />
           <Route path="/changes/new" component={NewChangePage} />
+          <Route path="/changes/:id" component={ChangeDetailPage} />
           <Route path="/cmdb" component={CMDBPage} />
           <Route path="/cmdb/new" component={NewCIPage} />
+          <Route path="/cmdb/:id" component={CIDetailPage} />
           <Route path="/knowledge" component={KnowledgePage} />
           <Route path="/knowledge/new" component={NewKBPage} />
+          <Route path="/knowledge/:id" component={KBDetailPage} />
           <Route path="/emails" component={EmailsPage} />
         </>
       )}

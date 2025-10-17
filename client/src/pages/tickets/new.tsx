@@ -159,11 +159,10 @@ export default function NewTicketPage() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-assignee">
-                            <SelectValue placeholder="Select assignee" />
+                            <SelectValue placeholder="Unassigned" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Unassigned</SelectItem>
                           {users?.map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.firstName} {user.lastName}
@@ -186,11 +185,10 @@ export default function NewTicketPage() {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-ci">
-                          <SelectValue placeholder="Select CI" />
+                          <SelectValue placeholder="No CI" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No CI</SelectItem>
                         {cis?.map((ci) => (
                           <SelectItem key={ci.id} value={ci.id}>
                             {ci.name} ({ci.type})

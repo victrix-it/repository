@@ -180,11 +180,10 @@ export default function NewCIPage() {
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-owner">
-                          <SelectValue placeholder="Select owner" />
+                          <SelectValue placeholder="No owner" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">No owner</SelectItem>
                         {users?.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
                             {user.firstName} {user.lastName}

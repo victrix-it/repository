@@ -220,6 +220,8 @@ export const insertConfigurationItemSchema = createInsertSchema(configurationIte
 export const insertTicketSchema = createInsertSchema(tickets).omit({
   id: true,
   ticketNumber: true,
+  createdById: true,
+  emailMessageId: true,
   createdAt: true,
   updatedAt: true,
   resolvedAt: true,
@@ -228,6 +230,8 @@ export const insertTicketSchema = createInsertSchema(tickets).omit({
 export const insertChangeRequestSchema = createInsertSchema(changeRequests).omit({
   id: true,
   changeNumber: true,
+  requestedById: true,
+  approvedById: true,
   createdAt: true,
   updatedAt: true,
   implementedAt: true,
@@ -235,6 +239,7 @@ export const insertChangeRequestSchema = createInsertSchema(changeRequests).omit
 
 export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
   id: true,
+  createdById: true,
   views: true,
   createdAt: true,
   updatedAt: true,
@@ -242,6 +247,7 @@ export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit(
 
 export const insertCommentSchema = createInsertSchema(comments).omit({
   id: true,
+  createdById: true,
   createdAt: true,
 });
 
