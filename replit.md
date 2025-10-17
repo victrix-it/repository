@@ -9,6 +9,27 @@ The application follows a hybrid design approach inspired by Linear (efficient t
 ## Recent Changes
 
 **October 17, 2025:**
+- Enhanced CMDB with additional asset tracking fields
+  - Manufacturer field for device vendors
+  - Model field for specific device models
+  - Support Details field for 3rd party support contracts and vendor contact information
+  - CI Number with auto-increment format (CI000001, CI000002, etc.)
+  - All fields fully editable by admin users
+- Extended change requests with comprehensive ITIL planning fields
+  - Change Type enum (normal, emergency, retrospective)
+  - Priority field with same levels as tickets (low, medium, high, critical)
+  - Reason for change (text field)
+  - Prerequisites for implementation
+  - Communication plan detailing stakeholder notifications
+  - Detailed test plan
+  - Implementor details and contact information
+  - Rollback plan for reversing changes
+  - Impact assessment covering service downtime and affected systems
+- Added Contacts management system
+  - Vendor and support contact tracking
+  - Name, email, phone number, company, role fields
+  - Notes field for additional contact information
+  - Fully integrated with admin portal
 - Added file attachment support for tickets, changes, and knowledge base articles
   - Attachments table with 10MB file size limit
   - File upload/download/delete functionality
@@ -109,9 +130,21 @@ Preferred communication style: Simple, everyday language.
 - Users table with role-based access (user, support, admin)
 - Tickets with status workflow (open → in_progress → resolved → closed)
   - Includes category (varchar) and tags (text array) for organization
-- Change requests with approval workflow (draft → pending_approval → approved/rejected → scheduled → implemented)
-- Configuration items (CMDB) with types (server, application, database, network, storage)
-- Knowledge base articles (SOPs and known issues)
+  - File attachments support
+- Change requests with comprehensive ITIL fields
+  - Approval workflow (draft → pending_approval → approved/rejected → scheduled → implemented)
+  - Change type (normal, emergency, retrospective) and priority levels
+  - Planning fields: reason, prerequisites, communication plan, test plan, implementor details, rollback plan, impact assessment
+  - File attachments support
+- Configuration items (CMDB) with enhanced asset tracking
+  - Types (server, application, database, network, storage)
+  - CI Number auto-increment (CI000001 format)
+  - Manufacturer, model, serial number tracking
+  - Support details for vendor contracts
+  - Network discovery fields (IP address, subnet mask, discovered via, last discovered)
+- Contacts table for vendor/support contact management
+  - Name, email, phone, company, role, notes
+- Knowledge base articles (SOPs and known issues) with file attachments
 - Comments system for tickets and changes
 - Email messages tracking
 - Attachments table for file uploads (linked to tickets, changes, and KB articles)

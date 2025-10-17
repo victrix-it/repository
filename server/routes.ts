@@ -565,13 +565,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/discovery/credentials', isAuthenticated, async (req, res) => {
+  app.post('/api/discovery/credentials', isAuthenticated, async (req: any, res) => {
     try {
-      const validatedData = insertDiscoveryCredentialSchema.parse({
-        ...req.body,
-        createdById: req.user!.id,
-      });
-      const credential = await storage.createDiscoveryCredential(validatedData);
+      const userId = req.user.claims.sub;
+      const validatedData = insertDiscoveryCredentialSchema.parse(req.body);
+      const credential = await storage.createDiscoveryCredential(validatedData, userId);
       res.json(credential);
     } catch (error: any) {
       console.error("Error creating credential:", error);
@@ -600,13 +598,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/discovery/jobs', isAuthenticated, async (req, res) => {
+  app.post('/api/discovery/jobs', isAuthenticated, async (req: any, res) => {
     try {
-      const validatedData = insertDiscoveryJobSchema.parse({
-        ...req.body,
-        createdById: req.user!.id,
-      });
-      const job = await storage.createDiscoveryJob(validatedData);
+      const userId = req.user.claims.sub;
+      const validatedData = insertDiscoveryJobSchema.parse(req.body);
+      const job = await storage.createDiscoveryJob(validatedData, userId);
       
       // Start discovery in background
       runNetworkDiscovery(job.id, job.subnet, job.credentialIds || []).catch(error => {

@@ -155,7 +155,7 @@ export interface IStorage {
   getOrCreateSystemUser(): Promise<string>;
   
   // Discovery credential operations
-  createDiscoveryCredential(credential: InsertDiscoveryCredential): Promise<DiscoveryCredential>;
+  createDiscoveryCredential(credential: InsertDiscoveryCredential, createdById: string): Promise<DiscoveryCredential>;
   getAllDiscoveryCredentials(): Promise<DiscoveryCredential[]>;
   getDiscoveryCredential(id: string): Promise<DiscoveryCredential | undefined>;
   getDiscoveryCredentialsByIds(ids: string[]): Promise<DiscoveryCredential[]>;
@@ -163,7 +163,7 @@ export interface IStorage {
   deleteDiscoveryCredential(id: string): Promise<void>;
   
   // Discovery job operations
-  createDiscoveryJob(job: InsertDiscoveryJob): Promise<DiscoveryJob>;
+  createDiscoveryJob(job: InsertDiscoveryJob, createdById: string): Promise<DiscoveryJob>;
   getAllDiscoveryJobs(): Promise<DiscoveryJob[]>;
   getDiscoveryJob(id: string): Promise<DiscoveryJob | undefined>;
   updateDiscoveryJob(id: string, job: Partial<InsertDiscoveryJob>): Promise<DiscoveryJob>;
@@ -748,8 +748,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Discovery credential operations
-  async createDiscoveryCredential(credential: InsertDiscoveryCredential): Promise<DiscoveryCredential> {
-    const [newCredential] = await db.insert(discoveryCredentials).values(credential).returning();
+  async createDiscoveryCredential(credential: InsertDiscoveryCredential, createdById: string): Promise<DiscoveryCredential> {
+    const [newCredential] = await db.insert(discoveryCredentials).values({ ...credential, createdById }).returning();
     return newCredential;
   }
 
@@ -781,8 +781,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Discovery job operations
-  async createDiscoveryJob(job: InsertDiscoveryJob): Promise<DiscoveryJob> {
-    const [newJob] = await db.insert(discoveryJobs).values(job).returning();
+  async createDiscoveryJob(job: InsertDiscoveryJob, createdById: string): Promise<DiscoveryJob> {
+    const [newJob] = await db.insert(discoveryJobs).values({ ...job, createdById }).returning();
     return newJob;
   }
 
