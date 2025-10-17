@@ -14,6 +14,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Multer configuration for CSV uploads
+  const csvUpload = multer({ storage: multer.memoryStorage() });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -222,8 +225,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Import routes
-  const csvUpload = multer({ storage: multer.memoryStorage() });
-
   app.get('/api/configuration-items/csv/template', isAuthenticated, (req, res) => {
     try {
       const template = generateCsvTemplate();

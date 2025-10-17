@@ -30,6 +30,7 @@ import NetworkDiscoveryPage from "@/pages/admin/network-discovery";
 import DiscoveryResultsPage from "@/pages/admin/discovery-results";
 import CsvImportPage from "@/pages/admin/csv-import";
 import TeamsPage from "@/pages/admin/teams";
+import UserCsvImportPage from "@/pages/admin/user-csv-import";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -62,6 +63,7 @@ function Router() {
           <Route path="/admin/discovery/:jobId" component={DiscoveryResultsPage} />
           <Route path="/admin/csv-import" component={CsvImportPage} />
           <Route path="/admin/teams" component={TeamsPage} />
+          <Route path="/admin/user-csv-import" component={UserCsvImportPage} />
         </>
       )}
       <Route component={NotFound} />
