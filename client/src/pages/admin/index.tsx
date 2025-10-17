@@ -97,22 +97,22 @@ export default function AdminPage() {
           </Card>
         </Link>
 
-        <Link href="/admin/settings">
-          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-settings">
+        <Link href="/admin/auth-settings">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-auth-settings">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-md bg-primary/10">
                   <Settings className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle>System Settings</CardTitle>
-                  <CardDescription>Authentication & configuration</CardDescription>
+                  <CardTitle>Authentication Settings</CardTitle>
+                  <CardDescription>Configure login methods</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Configure LDAP integration, email settings, and system preferences
+                Configure local, LDAP, and SAML authentication methods
               </p>
             </CardContent>
           </Card>

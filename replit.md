@@ -25,6 +25,14 @@ The application follows a hybrid design approach inspired by Linear (efficient t
   - Live preview of branding changes
   - API endpoints for managing system settings
   - Admin-only access via role-based sidebar navigation
+- Implemented multi-authentication system (local, LDAP, SAML)
+  - Schema updated to support multiple auth providers (authProvider field)
+  - LDAP authentication strategy with configurable server settings
+  - SAML 2.0 authentication for enterprise SSO
+  - Local username/password authentication with bcrypt hashing
+  - Admin UI for configuring authentication methods
+  - Auth settings stored in system_settings table
+  - Multiple auth methods can be enabled simultaneously
 
 ## User Preferences
 

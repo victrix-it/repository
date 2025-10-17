@@ -101,11 +101,11 @@ export async function setupLdapAuth() {
           // Create new user from LDAP
           user = await storage.createUser({
             email: email,
-            firstName: firstName || '',
-            lastName: lastName || '',
+            firstName: firstName as string,
+            lastName: lastName as string,
             role: 'user',
             authProvider: 'ldap',
-            ldapDn: ldapUser.dn,
+            ldapDn: ldapUser.dn as string,
           });
         } else if (user.authProvider !== 'ldap') {
           // User exists but uses different auth method
@@ -155,7 +155,7 @@ export async function setupSamlAuth() {
       cert: cert || undefined,
       acceptedClockSkewMs: -1,
     },
-    async (profile: SamlProfile, done) => {
+    async (profile: SamlProfile, done: any) => {
       try {
         const email = profile.email || profile.nameID;
         const firstName = profile.givenName || profile.firstName || '';
@@ -172,11 +172,11 @@ export async function setupSamlAuth() {
           // Create new user from SAML
           user = await storage.createUser({
             email: email,
-            firstName: firstName || '',
-            lastName: lastName || '',
+            firstName: firstName as string,
+            lastName: lastName as string,
             role: 'user',
             authProvider: 'saml',
-            samlNameId: profile.nameID,
+            samlNameId: profile.nameID as string,
           });
         } else if (user.authProvider !== 'saml') {
           // User exists but uses different auth method
