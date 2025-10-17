@@ -66,6 +66,8 @@ export const tickets = pgTable("tickets", {
   description: text("description").notNull(),
   status: ticketStatusEnum("status").default('open').notNull(),
   priority: ticketPriorityEnum("priority").default('medium').notNull(),
+  category: varchar("category", { length: 100 }), // e.g., Hardware, Software, Network, Access
+  tags: text("tags").array(), // Flexible tagging system
   assignedToId: varchar("assigned_to_id").references(() => users.id),
   createdById: varchar("created_by_id").references(() => users.id).notNull(),
   linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id),

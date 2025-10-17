@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TagInput } from "@/components/tag-input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
@@ -20,6 +21,8 @@ const ticketFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   priority: z.enum(["low", "medium", "high", "critical"]),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   assignedToId: z.string().optional(),
   linkedCiId: z.string().optional(),
 });
@@ -44,6 +47,8 @@ export default function NewTicketPage() {
       title: "",
       description: "",
       priority: "medium",
+      category: "",
+      tags: [],
       assignedToId: "",
       linkedCiId: "",
     },
@@ -53,6 +58,8 @@ export default function NewTicketPage() {
     mutationFn: async (data: TicketFormData) => {
       const payload = {
         ...data,
+        category: data.category || null,
+        tags: data.tags && data.tags.length > 0 ? data.tags : null,
         assignedToId: data.assignedToId || null,
         linkedCiId: data.linkedCiId || null,
       };
@@ -124,6 +131,52 @@ export default function NewTicketPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category (Optional)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-category">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Hardware">Hardware</SelectItem>
+                          <SelectItem value="Software">Software</SelectItem>
+                          <SelectItem value="Network">Network</SelectItem>
+                          <SelectItem value="Access">Access</SelectItem>
+                          <SelectItem value="Email">Email</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (Optional)</FormLabel>
+                      <FormControl>
+                        <TagInput
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          placeholder="Type and press Enter to add tags"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField

@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/status-badge";
@@ -10,7 +11,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileUpload } from "@/components/file-upload";
 import { AttachmentsList } from "@/components/attachments-list";
-import { ArrowLeft, MessageSquare, Server, Paperclip } from "lucide-react";
+import { ArrowLeft, MessageSquare, Server, Paperclip, Tag } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -93,10 +94,25 @@ export default function TicketDetailPage() {
                     {ticket.ticketNumber}
                   </p>
                   <CardTitle className="text-2xl mb-3" data-testid="ticket-title">{ticket.title}</CardTitle>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap mb-3">
                     <StatusBadge status={ticket.status} type="ticket" />
                     <PriorityBadge priority={ticket.priority} />
+                    {ticket.category && (
+                      <Badge variant="outline" data-testid="ticket-category">
+                        {ticket.category}
+                      </Badge>
+                    )}
                   </div>
+                  {ticket.tags && ticket.tags.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Tag className="h-3 w-3 text-muted-foreground" />
+                      {ticket.tags.map((tag, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs" data-testid={`ticket-tag-${tag}`}>
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardHeader>

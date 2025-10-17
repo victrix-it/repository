@@ -3,7 +3,9 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, Tag } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { PriorityBadge } from "@/components/priority-badge";
 import { UserAvatar } from "@/components/user-avatar";
@@ -19,15 +21,24 @@ interface TicketWithRelations extends Ticket {
 
 export default function TicketsPage() {
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [tagFilter, setTagFilter] = useState<string>("");
 
   const { data: tickets, isLoading } = useQuery<TicketWithRelations[]>({
     queryKey: ["/api/tickets"],
   });
 
-  const filteredTickets = tickets?.filter(ticket =>
-    ticket.title.toLowerCase().includes(search.toLowerCase()) ||
-    ticket.ticketNumber.toLowerCase().includes(search.toLowerCase())
-  );
+  // Get unique categories and tags for filtering
+  const categories = Array.from(new Set(tickets?.map(t => t.category).filter(Boolean) || []));
+  const allTags = Array.from(new Set(tickets?.flatMap(t => t.tags || []) || []));
+
+  const filteredTickets = tickets?.filter(ticket => {
+    const matchesSearch = ticket.title.toLowerCase().includes(search.toLowerCase()) ||
+      ticket.ticketNumber.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !categoryFilter || ticket.category === categoryFilter;
+    const matchesTag = !tagFilter || (ticket.tags && ticket.tags.includes(tagFilter));
+    return matchesSearch && matchesCategory && matchesTag;
+  });
 
   if (isLoading) {
     return (
@@ -52,7 +63,7 @@ export default function TicketsPage() {
         </Link>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -62,6 +73,43 @@ export default function TicketsPage() {
             className="pl-9"
             data-testid="input-search-tickets"
           />
+        </div>
+        
+        <div className="flex gap-3 flex-wrap">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-48" data-testid="select-category-filter">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value=" ">All Categories</SelectItem>
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat!}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={tagFilter} onValueChange={setTagFilter}>
+            <SelectTrigger className="w-48" data-testid="select-tag-filter">
+              <SelectValue placeholder="All Tags" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value=" ">All Tags</SelectItem>
+              {allTags.map(tag => (
+                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {(categoryFilter || tagFilter) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => { setCategoryFilter(""); setTagFilter(""); }}
+              data-testid="button-clear-filters"
+            >
+              Clear Filters
+            </Button>
+          )}
         </div>
       </div>
 
@@ -78,6 +126,11 @@ export default function TicketsPage() {
                       </span>
                       <StatusBadge status={ticket.status} type="ticket" />
                       <PriorityBadge priority={ticket.priority} />
+                      {ticket.category && (
+                        <Badge variant="outline" className="text-xs" data-testid={`ticket-category-${ticket.id}`}>
+                          {ticket.category}
+                        </Badge>
+                      )}
                     </div>
                     <h3 className="font-medium mb-1 truncate" data-testid={`ticket-title-${ticket.id}`}>
                       {ticket.title}
@@ -85,6 +138,16 @@ export default function TicketsPage() {
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {ticket.description}
                     </p>
+                    {ticket.tags && ticket.tags.length > 0 && (
+                      <div className="flex items-center gap-1 mt-2 flex-wrap">
+                        <Tag className="h-3 w-3 text-muted-foreground" />
+                        {ticket.tags.map((tag, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs" data-testid={`ticket-tag-${ticket.id}-${tag}`}>
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     {ticket.assignedTo && (
