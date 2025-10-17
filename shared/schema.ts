@@ -41,8 +41,10 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").default('user').notNull(),
-  isLdapUser: varchar("is_ldap_user").default('false').notNull(), // 'true' or 'false' for LDAP users
+  authProvider: varchar("auth_provider", { length: 20 }).default('replit').notNull(), // replit, ldap, saml, local
+  passwordHash: varchar("password_hash", { length: 255 }), // For local auth only
   ldapDn: varchar("ldap_dn"), // Distinguished Name from LDAP
+  samlNameId: varchar("saml_name_id"), // NameID from SAML
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
