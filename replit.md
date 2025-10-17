@@ -6,6 +6,20 @@ This is an enterprise IT service management application that combines helpdesk t
 
 The application follows a hybrid design approach inspired by Linear (efficient ticket workflows), Notion (knowledge management), and Carbon Design (enterprise data management), prioritizing information clarity, minimal clicks, and rapid resolution workflows.
 
+## Recent Changes
+
+**October 17, 2025:**
+- Added file attachment support for tickets, changes, and knowledge base articles
+  - Attachments table with 10MB file size limit
+  - File upload/download/delete functionality
+  - Files stored in /uploads directory
+  - Integrated into detail pages for all three entity types
+- Added ticket categorization and tagging system
+  - Category field with predefined options (Hardware, Software, Network, Access, Email, Other)
+  - Flexible tagging system using text array
+  - Category and tag filtering on tickets list page
+  - Visual display of category and tags on ticket cards and detail pages
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -59,11 +73,13 @@ Preferred communication style: Simple, everyday language.
 **Schema Design**:
 - Users table with role-based access (user, support, admin)
 - Tickets with status workflow (open → in_progress → resolved → closed)
+  - Includes category (varchar) and tags (text array) for organization
 - Change requests with approval workflow (draft → pending_approval → approved/rejected → scheduled → implemented)
 - Configuration items (CMDB) with types (server, application, database, network, storage)
 - Knowledge base articles (SOPs and known issues)
 - Comments system for tickets and changes
 - Email messages tracking
+- Attachments table for file uploads (linked to tickets, changes, and KB articles)
 
 **Database Features**:
 - PostgreSQL enums for status fields ensuring data integrity
