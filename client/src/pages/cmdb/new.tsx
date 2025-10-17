@@ -15,12 +15,19 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { User } from "@shared/schema";
 
+type Team = {
+  id: string;
+  name: string;
+  description: string | null;
+};
+
 const ciFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.enum(["server", "application", "database", "network", "storage", "other"]),
   description: z.string().optional(),
   status: z.enum(["active", "inactive", "maintenance", "decommissioned"]),
   ownerId: z.string().optional(),
+  ownerTeamId: z.string().optional(),
 });
 
 type CIFormData = z.infer<typeof ciFormSchema>;
@@ -33,6 +40,10 @@ export default function NewCIPage() {
     queryKey: ["/api/users"],
   });
 
+  const { data: teams } = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
+  });
+
   const form = useForm<CIFormData>({
     resolver: zodResolver(ciFormSchema),
     defaultValues: {
@@ -41,6 +52,7 @@ export default function NewCIPage() {
       description: "",
       status: "active",
       ownerId: "",
+      ownerTeamId: "",
     },
   });
 
@@ -49,6 +61,7 @@ export default function NewCIPage() {
       const payload = {
         ...data,
         ownerId: data.ownerId || null,
+        ownerTeamId: data.ownerTeamId || null,
       };
       return await apiRequest("POST", "/api/configuration-items", payload);
     },
@@ -171,30 +184,57 @@ export default function NewCIPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="ownerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Owner (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-owner">
-                          <SelectValue placeholder="No owner" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {users?.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.firstName} {user.lastName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="ownerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Owner User (Optional)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-owner">
+                            <SelectValue placeholder="No user owner" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {users?.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.firstName} {user.lastName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="ownerTeamId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Owner Team (Optional)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-owner-team">
+                            <SelectValue placeholder="No team owner" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {teams?.map((team) => (
+                            <SelectItem key={team.id} value={team.id}>
+                              {team.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex gap-3">
                 <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit">
