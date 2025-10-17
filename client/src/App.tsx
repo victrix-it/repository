@@ -25,6 +25,7 @@ import EmailsPage from "@/pages/emails/index";
 import AdminPage from "@/pages/admin/index";
 import BrandingPage from "@/pages/admin/branding";
 import AuthSettingsPage from "@/pages/admin/auth-settings";
+import AlertIntegrationsPage from "@/pages/admin/alert-integrations";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -52,6 +53,7 @@ function Router() {
           <Route path="/admin" component={AdminPage} />
           <Route path="/admin/branding" component={BrandingPage} />
           <Route path="/admin/auth-settings" component={AuthSettingsPage} />
+          <Route path="/admin/alert-integrations" component={AlertIntegrationsPage} />
         </>
       )}
       <Route component={NotFound} />

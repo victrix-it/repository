@@ -33,6 +33,16 @@ The application follows a hybrid design approach inspired by Linear (efficient t
   - Admin UI for configuring authentication methods
   - Auth settings stored in system_settings table
   - Multiple auth methods can be enabled simultaneously
+- Implemented alert integration system for monitoring tools
+  - Webhook endpoints for receiving alerts from SolarWinds, Nagios, Zabbix, etc.
+  - Configurable alert integrations with unique webhook URLs and API keys
+  - Alert filtering system to prevent unwanted alerts from creating tickets
+  - Field mapping system to extract ticket data from alert payloads
+  - Support for multiple monitoring systems with different payload formats
+  - Automated ticket creation with team assignment and priority mapping
+  - System user for automated operations
+  - Filter rules support include/exclude logic with operators (equals, contains, regex, etc.)
+  - Field transformations (severity_to_priority, uppercase, lowercase, etc.)
 
 ## User Preferences
 
@@ -104,6 +114,7 @@ Preferred communication style: Simple, everyday language.
 - Timestamp tracking (createdAt, updatedAt) on all entities
 - Foreign key relationships with user references
 - JSONB fields for flexible metadata storage
+- Alert integration tables (alert_integrations, alert_filter_rules, alert_field_mappings)
 
 **Migration Strategy**: Drizzle Kit for schema migrations with push command for development
 
