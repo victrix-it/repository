@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface User {
@@ -76,9 +76,17 @@ export default function UsersPage() {
         </Link>
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Users</h1>
-        <p className="text-muted-foreground">Manage system users and their roles</p>
+      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold">Users</h1>
+          <p className="text-muted-foreground">Manage system users and their roles</p>
+        </div>
+        <Link href="/admin/user-csv-import">
+          <Button data-testid="button-create-user">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Import Users
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4">
