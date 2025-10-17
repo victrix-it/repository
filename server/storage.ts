@@ -14,6 +14,9 @@ import {
   alertIntegrations,
   alertFilterRules,
   alertFieldMappings,
+  discoveryCredentials,
+  discoveryJobs,
+  discoveredDevices,
   type User,
   type UpsertUser,
   type Ticket,
@@ -44,6 +47,12 @@ import {
   type InsertAlertFilterRule,
   type AlertFieldMapping,
   type InsertAlertFieldMapping,
+  type DiscoveryCredential,
+  type InsertDiscoveryCredential,
+  type DiscoveryJob,
+  type InsertDiscoveryJob,
+  type DiscoveredDevice,
+  type InsertDiscoveredDevice,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -141,6 +150,28 @@ export interface IStorage {
   
   // System user for automated operations
   getOrCreateSystemUser(): Promise<string>;
+  
+  // Discovery credential operations
+  createDiscoveryCredential(credential: InsertDiscoveryCredential): Promise<DiscoveryCredential>;
+  getAllDiscoveryCredentials(): Promise<DiscoveryCredential[]>;
+  getDiscoveryCredential(id: string): Promise<DiscoveryCredential | undefined>;
+  getDiscoveryCredentialsByIds(ids: string[]): Promise<DiscoveryCredential[]>;
+  updateDiscoveryCredential(id: string, credential: Partial<InsertDiscoveryCredential>): Promise<DiscoveryCredential>;
+  deleteDiscoveryCredential(id: string): Promise<void>;
+  
+  // Discovery job operations
+  createDiscoveryJob(job: InsertDiscoveryJob): Promise<DiscoveryJob>;
+  getAllDiscoveryJobs(): Promise<DiscoveryJob[]>;
+  getDiscoveryJob(id: string): Promise<DiscoveryJob | undefined>;
+  updateDiscoveryJob(id: string, job: Partial<InsertDiscoveryJob>): Promise<DiscoveryJob>;
+  deleteDiscoveryJob(id: string): Promise<void>;
+  
+  // Discovered device operations
+  createDiscoveredDevice(device: InsertDiscoveredDevice): Promise<DiscoveredDevice>;
+  getDiscoveredDevicesByJob(jobId: string): Promise<DiscoveredDevice[]>;
+  getDiscoveredDevice(id: string): Promise<DiscoveredDevice | undefined>;
+  updateDiscoveredDevice(id: string, device: Partial<InsertDiscoveredDevice>): Promise<DiscoveredDevice>;
+  deleteDiscoveredDevice(id: string): Promise<void>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -704,6 +735,99 @@ export class DatabaseStorage implements IStorage {
     }
     
     return user.id;
+  }
+
+  // Discovery credential operations
+  async createDiscoveryCredential(credential: InsertDiscoveryCredential): Promise<DiscoveryCredential> {
+    const [newCredential] = await db.insert(discoveryCredentials).values(credential).returning();
+    return newCredential;
+  }
+
+  async getAllDiscoveryCredentials(): Promise<DiscoveryCredential[]> {
+    return await db.select().from(discoveryCredentials).orderBy(discoveryCredentials.name);
+  }
+
+  async getDiscoveryCredential(id: string): Promise<DiscoveryCredential | undefined> {
+    const [credential] = await db.select().from(discoveryCredentials).where(eq(discoveryCredentials.id, id));
+    return credential;
+  }
+
+  async getDiscoveryCredentialsByIds(ids: string[]): Promise<DiscoveryCredential[]> {
+    if (ids.length === 0) return [];
+    return await db.select().from(discoveryCredentials).where(sql`${discoveryCredentials.id} = ANY(${ids})`);
+  }
+
+  async updateDiscoveryCredential(id: string, credential: Partial<InsertDiscoveryCredential>): Promise<DiscoveryCredential> {
+    const [updated] = await db
+      .update(discoveryCredentials)
+      .set({ ...credential, updatedAt: new Date() })
+      .where(eq(discoveryCredentials.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteDiscoveryCredential(id: string): Promise<void> {
+    await db.delete(discoveryCredentials).where(eq(discoveryCredentials.id, id));
+  }
+
+  // Discovery job operations
+  async createDiscoveryJob(job: InsertDiscoveryJob): Promise<DiscoveryJob> {
+    const [newJob] = await db.insert(discoveryJobs).values(job).returning();
+    return newJob;
+  }
+
+  async getAllDiscoveryJobs(): Promise<DiscoveryJob[]> {
+    return await db.select().from(discoveryJobs).orderBy(desc(discoveryJobs.createdAt));
+  }
+
+  async getDiscoveryJob(id: string): Promise<DiscoveryJob | undefined> {
+    const [job] = await db.select().from(discoveryJobs).where(eq(discoveryJobs.id, id));
+    return job;
+  }
+
+  async updateDiscoveryJob(id: string, job: Partial<InsertDiscoveryJob>): Promise<DiscoveryJob> {
+    const [updated] = await db
+      .update(discoveryJobs)
+      .set(job)
+      .where(eq(discoveryJobs.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteDiscoveryJob(id: string): Promise<void> {
+    // Delete associated discovered devices
+    await db.delete(discoveredDevices).where(eq(discoveredDevices.jobId, id));
+    await db.delete(discoveryJobs).where(eq(discoveryJobs.id, id));
+  }
+
+  // Discovered device operations
+  async createDiscoveredDevice(device: InsertDiscoveredDevice): Promise<DiscoveredDevice> {
+    const [newDevice] = await db.insert(discoveredDevices).values(device).returning();
+    return newDevice;
+  }
+
+  async getDiscoveredDevicesByJob(jobId: string): Promise<DiscoveredDevice[]> {
+    return await db.select().from(discoveredDevices)
+      .where(eq(discoveredDevices.jobId, jobId))
+      .orderBy(discoveredDevices.hostname);
+  }
+
+  async getDiscoveredDevice(id: string): Promise<DiscoveredDevice | undefined> {
+    const [device] = await db.select().from(discoveredDevices).where(eq(discoveredDevices.id, id));
+    return device;
+  }
+
+  async updateDiscoveredDevice(id: string, device: Partial<InsertDiscoveredDevice>): Promise<DiscoveredDevice> {
+    const [updated] = await db
+      .update(discoveredDevices)
+      .set(device)
+      .where(eq(discoveredDevices.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteDiscoveredDevice(id: string): Promise<void> {
+    await db.delete(discoveredDevices).where(eq(discoveredDevices.id, id));
   }
 
   // Dashboard stats

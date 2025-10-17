@@ -2,9 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
+import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -550,6 +551,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting field mapping:", error);
       res.status(500).json({ message: "Failed to delete field mapping" });
+    }
+  });
+
+  // Discovery credential routes
+  app.get('/api/discovery/credentials', isAuthenticated, async (req, res) => {
+    try {
+      const credentials = await storage.getAllDiscoveryCredentials();
+      res.json(credentials);
+    } catch (error) {
+      console.error("Error fetching credentials:", error);
+      res.status(500).json({ message: "Failed to fetch credentials" });
+    }
+  });
+
+  app.post('/api/discovery/credentials', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertDiscoveryCredentialSchema.parse({
+        ...req.body,
+        createdById: req.user!.id,
+      });
+      const credential = await storage.createDiscoveryCredential(validatedData);
+      res.json(credential);
+    } catch (error: any) {
+      console.error("Error creating credential:", error);
+      res.status(400).json({ message: error.message || "Failed to create credential" });
+    }
+  });
+
+  app.delete('/api/discovery/credentials/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteDiscoveryCredential(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting credential:", error);
+      res.status(500).json({ message: "Failed to delete credential" });
+    }
+  });
+
+  // Discovery job routes
+  app.get('/api/discovery/jobs', isAuthenticated, async (req, res) => {
+    try {
+      const jobs = await storage.getAllDiscoveryJobs();
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      res.status(500).json({ message: "Failed to fetch jobs" });
+    }
+  });
+
+  app.post('/api/discovery/jobs', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertDiscoveryJobSchema.parse({
+        ...req.body,
+        createdById: req.user!.id,
+      });
+      const job = await storage.createDiscoveryJob(validatedData);
+      
+      // Start discovery in background
+      runNetworkDiscovery(job.id, job.subnet, job.credentialIds || []).catch(error => {
+        console.error(`[discovery] Background discovery failed for job ${job.id}:`, error);
+      });
+      
+      res.json(job);
+    } catch (error: any) {
+      console.error("Error creating discovery job:", error);
+      res.status(400).json({ message: error.message || "Failed to create discovery job" });
+    }
+  });
+
+  app.get('/api/discovery/jobs/:id', isAuthenticated, async (req, res) => {
+    try {
+      const job = await storage.getDiscoveryJob(req.params.id);
+      if (!job) {
+        return res.status(404).json({ message: "Job not found" });
+      }
+      res.json(job);
+    } catch (error) {
+      console.error("Error fetching job:", error);
+      res.status(500).json({ message: "Failed to fetch job" });
+    }
+  });
+
+  app.delete('/api/discovery/jobs/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteDiscoveryJob(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      res.status(500).json({ message: "Failed to delete job" });
+    }
+  });
+
+  // Discovered devices routes
+  app.get('/api/discovery/jobs/:jobId/devices', isAuthenticated, async (req, res) => {
+    try {
+      const devices = await storage.getDiscoveredDevicesByJob(req.params.jobId);
+      res.json(devices);
+    } catch (error) {
+      console.error("Error fetching discovered devices:", error);
+      res.status(500).json({ message: "Failed to fetch discovered devices" });
+    }
+  });
+
+  app.post('/api/discovery/devices/:deviceId/import', isAuthenticated, async (req, res) => {
+    try {
+      const { ciType } = req.body;
+      const ciId = await importDeviceToCMDB(req.params.deviceId, ciType);
+      res.json({ success: true, ciId });
+    } catch (error: any) {
+      console.error("Error importing device:", error);
+      res.status(400).json({ message: error.message || "Failed to import device" });
     }
   });
 

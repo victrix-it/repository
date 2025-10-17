@@ -123,15 +123,72 @@ export const alertFieldMappings = pgTable("alert_field_mappings", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Discovery credentials (for network scanning)
+export const discoveryCredentials = pgTable("discovery_credentials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  credentialType: varchar("credential_type", { length: 50 }).notNull(), // 'ssh-password', 'ssh-key', 'snmp'
+  username: varchar("username", { length: 255 }),
+  password: text("password"), // Encrypted in production
+  privateKey: text("private_key"), // For SSH key-based auth
+  snmpCommunity: varchar("snmp_community", { length: 255 }), // For SNMP
+  port: integer("port").default(22), // SSH port, SNMP port, etc.
+  description: text("description"),
+  createdById: varchar("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Discovery jobs (network scan jobs)
+export const discoveryJobs = pgTable("discovery_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  subnet: varchar("subnet", { length: 100 }).notNull(), // e.g., 192.168.1.0/24
+  status: varchar("status", { length: 50 }).default('pending').notNull(), // pending, running, completed, failed
+  credentialIds: text("credential_ids").array(), // Multiple credentials to try
+  discoveredCount: integer("discovered_count").default(0),
+  totalHosts: integer("total_hosts").default(0),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  error: text("error"),
+  createdById: varchar("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Discovered devices (temporary storage before import to CMDB)
+export const discoveredDevices = pgTable("discovered_devices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").references(() => discoveryJobs.id).notNull(),
+  hostname: varchar("hostname", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  subnetMask: varchar("subnet_mask", { length: 45 }),
+  serialNumber: varchar("serial_number", { length: 255 }),
+  deviceType: varchar("device_type", { length: 100 }), // 'linux', 'windows', 'network', 'unknown'
+  osVersion: varchar("os_version", { length: 255 }),
+  manufacturer: varchar("manufacturer", { length: 255 }),
+  model: varchar("model", { length: 255 }),
+  imported: varchar("imported", { length: 10 }).default('false'), // Whether imported to CMDB
+  importedCiId: varchar("imported_ci_id").references(() => configurationItems.id),
+  discoveryMethod: varchar("discovery_method", { length: 50 }), // 'ssh', 'snmp', 'ping'
+  rawData: jsonb("raw_data"), // Complete discovery data
+  discoveredAt: timestamp("discovered_at").defaultNow().notNull(),
+});
+
 // Configuration Items (CMDB)
 export const configurationItems = pgTable("configuration_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar("name", { length: 255 }).notNull(),
+  ciNumber: varchar("ci_number", { length: 20 }).unique(), // e.g., CI-00001
+  name: varchar("name", { length: 255 }).notNull(), // Hostname
   type: ciTypeEnum("type").notNull(),
   description: text("description"),
   status: ciStatusEnum("status").default('active').notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6
+  subnetMask: varchar("subnet_mask", { length: 45 }), // e.g., 255.255.255.0 or /24
+  serialNumber: varchar("serial_number", { length: 255 }),
   ownerId: varchar("owner_id").references(() => users.id),
   properties: jsonb("properties"), // Flexible field for CI-specific properties
+  discoveredVia: varchar("discovered_via", { length: 50 }), // 'manual', 'ssh', 'snmp', 'discovery'
+  lastDiscovered: timestamp("last_discovered"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -421,6 +478,24 @@ export const insertAlertFieldMappingSchema = createInsertSchema(alertFieldMappin
   createdAt: true,
 });
 
+export const insertDiscoveryCredentialSchema = createInsertSchema(discoveryCredentials).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDiscoveryJobSchema = createInsertSchema(discoveryJobs).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+});
+
+export const insertDiscoveredDeviceSchema = createInsertSchema(discoveredDevices).omit({
+  id: true,
+  discoveredAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -445,6 +520,15 @@ export type AlertFilterRule = typeof alertFilterRules.$inferSelect;
 
 export type InsertAlertFieldMapping = z.infer<typeof insertAlertFieldMappingSchema>;
 export type AlertFieldMapping = typeof alertFieldMappings.$inferSelect;
+
+export type InsertDiscoveryCredential = z.infer<typeof insertDiscoveryCredentialSchema>;
+export type DiscoveryCredential = typeof discoveryCredentials.$inferSelect;
+
+export type InsertDiscoveryJob = z.infer<typeof insertDiscoveryJobSchema>;
+export type DiscoveryJob = typeof discoveryJobs.$inferSelect;
+
+export type InsertDiscoveredDevice = z.infer<typeof insertDiscoveredDeviceSchema>;
+export type DiscoveredDevice = typeof discoveredDevices.$inferSelect;
 
 export type InsertConfigurationItem = z.infer<typeof insertConfigurationItemSchema>;
 export type ConfigurationItem = typeof configurationItems.$inferSelect;
