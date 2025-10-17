@@ -43,6 +43,17 @@ The application follows a hybrid design approach inspired by Linear (efficient t
   - System user for automated operations
   - Filter rules support include/exclude logic with operators (equals, contains, regex, etc.)
   - Field transformations (severity_to_priority, uppercase, lowercase, etc.)
+- Implemented network discovery system for CMDB auto-population
+  - SSH-based device interrogation for Linux/Unix systems
+  - Discovery credentials management (SSH password, SSH key, SNMP)
+  - Discovery jobs tracking with progress monitoring
+  - Automatic extraction of hostname, IP address, subnet mask, serial number, manufacturer, model, OS version
+  - Discovered devices staging area for review before import
+  - Bulk or selective import of discovered devices to CMDB
+  - Extended CMDB schema with network-specific fields (ipAddress, subnetMask, serialNumber, ciNumber)
+  - Background discovery execution with real-time status updates
+  - Admin UI for managing credentials, running scans, and importing devices
+  - All CMDB fields fully editable by admin users
 
 ## User Preferences
 
@@ -115,6 +126,8 @@ Preferred communication style: Simple, everyday language.
 - Foreign key relationships with user references
 - JSONB fields for flexible metadata storage
 - Alert integration tables (alert_integrations, alert_filter_rules, alert_field_mappings)
+- Network discovery tables (discovery_credentials, discovery_jobs, discovered_devices)
+- Extended configuration_items with network discovery fields
 
 **Migration Strategy**: Drizzle Kit for schema migrations with push command for development
 
@@ -187,6 +200,10 @@ Preferred communication style: Simple, everyday language.
 - **@replit/vite-plugin-runtime-error-modal**: Development error overlay
 - **@replit/vite-plugin-cartographer**: Development tooling
 - **tsx**: TypeScript execution for development
+
+### Network Discovery Tools
+- **ssh2**: SSH client for device interrogation
+- **ip-address**: IPv4/IPv6 CIDR parsing and IP range generation
 
 ### Build & Deployment
 - **esbuild**: Server-side bundler for production

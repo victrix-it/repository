@@ -58,7 +58,7 @@ export default function NetworkDiscovery() {
 
   const createCredentialMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('/api/discovery/credentials', 'POST', data);
+      return await apiRequest('POST', '/api/discovery/credentials', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/discovery/credentials'] });
@@ -77,7 +77,7 @@ export default function NetworkDiscovery() {
 
   const deleteCredentialMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/discovery/credentials/${id}`, 'DELETE');
+      return await apiRequest('DELETE', `/api/discovery/credentials/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/discovery/credentials'] });
@@ -87,7 +87,7 @@ export default function NetworkDiscovery() {
 
   const createJobMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('/api/discovery/jobs', 'POST', data);
+      return await apiRequest('POST', '/api/discovery/jobs', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/discovery/jobs'] });
@@ -109,7 +109,7 @@ export default function NetworkDiscovery() {
 
   const deleteJobMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/discovery/jobs/${id}`, 'DELETE');
+      return await apiRequest('DELETE', `/api/discovery/jobs/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/discovery/jobs'] });

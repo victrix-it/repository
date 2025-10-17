@@ -30,7 +30,7 @@ export default function DiscoveryResults() {
 
   const importDeviceMutation = useMutation({
     mutationFn: async ({ deviceId, ciType }: { deviceId: string; ciType: string }) => {
-      return await apiRequest(`/api/discovery/devices/${deviceId}/import`, 'POST', { ciType });
+      return await apiRequest('POST', `/api/discovery/devices/${deviceId}/import`, { ciType });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/discovery/jobs', jobId, 'devices'] });
