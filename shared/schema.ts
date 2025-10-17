@@ -191,6 +191,7 @@ export const configurationItems = pgTable("configuration_items", {
   model: varchar("model", { length: 255 }),
   supportDetails: text("support_details"), // 3rd party support contracts and vendor contact details
   ownerId: varchar("owner_id").references(() => users.id),
+  ownerTeamId: varchar("owner_team_id").references(() => teams.id),
   properties: jsonb("properties"), // Flexible field for CI-specific properties
   discoveredVia: varchar("discovered_via", { length: 50 }), // 'manual', 'ssh', 'snmp', 'discovery'
   lastDiscovered: timestamp("last_discovered"),
