@@ -42,7 +42,10 @@ import { eq, desc, and, isNull, sql } from "drizzle-orm";
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  createUser(userData: Partial<User>): Promise<User>;
+  updateUser(id: string, userData: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
 
   // Ticket operations
@@ -135,6 +138,25 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: Partial<User>): Promise<User> {
+    const [user] = await db.insert(users).values(userData as any).returning();
+    return user;
+  }
+
+  async updateUser(id: string, userData: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 
   // Ticket operations
