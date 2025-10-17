@@ -75,6 +75,29 @@ The application follows a hybrid design approach inspired by Linear (efficient t
   - Background discovery execution with real-time status updates
   - Admin UI for managing credentials, running scans, and importing devices
   - All CMDB fields fully editable by admin users
+- Implemented CSV bulk import system for CMDB
+  - CSV template generation with all CMDB fields
+  - Validation and preview of CSV data before import
+  - Flexible column matching (case-insensitive, multiple name variations)
+  - Error reporting with row numbers and detailed messages
+  - Bulk import of configuration items from CSV files
+  - Admin UI at /admin/csv-import with template download and file upload
+- Implemented teams management system
+  - CRUD operations for teams (create, read, update, delete)
+  - Multi-team membership support (users can belong to multiple teams)
+  - Team member management with add/remove functionality
+  - Team ownership assignment for configuration items
+  - Extended CMDB with ownerTeamId field for team-based asset ownership
+  - Admin UI at /admin/teams for team and member management
+- Implemented user CSV bulk import feature
+  - CSV template with firstName, lastName, email, password, role columns
+  - Bcrypt password hashing for secure storage (minimum 8 characters)
+  - Email validation and duplicate detection
+  - Local auth provider setup for imported users
+  - Role assignment (user, support, admin)
+  - Error reporting for validation failures
+  - Admin UI at /admin/user-csv-import with template download and import functionality
+  - Users list page at /admin/users showing all system users with role and auth provider badges
 
 ## User Preferences
 
