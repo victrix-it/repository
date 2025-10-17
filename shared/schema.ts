@@ -17,6 +17,8 @@ import { z } from "zod";
 export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
 export const ticketPriorityEnum = pgEnum('ticket_priority', ['low', 'medium', 'high', 'critical']);
 export const changeStatusEnum = pgEnum('change_status', ['draft', 'pending_approval', 'approved', 'rejected', 'scheduled', 'implemented', 'cancelled']);
+export const changeTypeEnum = pgEnum('change_type', ['normal', 'emergency', 'retrospective']);
+export const changePriorityEnum = pgEnum('change_priority', ['low', 'medium', 'high', 'critical']);
 export const ciTypeEnum = pgEnum('ci_type', ['server', 'application', 'database', 'network', 'storage', 'other']);
 export const ciStatusEnum = pgEnum('ci_status', ['active', 'inactive', 'maintenance', 'decommissioned']);
 export const kbTypeEnum = pgEnum('kb_type', ['sop', 'known_issue']);
@@ -177,7 +179,7 @@ export const discoveredDevices = pgTable("discovered_devices", {
 // Configuration Items (CMDB)
 export const configurationItems = pgTable("configuration_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  ciNumber: varchar("ci_number", { length: 20 }).unique(), // e.g., CI-00001
+  ciNumber: varchar("ci_number", { length: 20 }).unique(), // e.g., CI000001
   name: varchar("name", { length: 255 }).notNull(), // Hostname
   type: ciTypeEnum("type").notNull(),
   description: text("description"),
@@ -185,6 +187,9 @@ export const configurationItems = pgTable("configuration_items", {
   ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6
   subnetMask: varchar("subnet_mask", { length: 45 }), // e.g., 255.255.255.0 or /24
   serialNumber: varchar("serial_number", { length: 255 }),
+  manufacturer: varchar("manufacturer", { length: 255 }),
+  model: varchar("model", { length: 255 }),
+  supportDetails: text("support_details"), // 3rd party support contracts and vendor contact details
   ownerId: varchar("owner_id").references(() => users.id),
   properties: jsonb("properties"), // Flexible field for CI-specific properties
   discoveredVia: varchar("discovered_via", { length: 50 }), // 'manual', 'ssh', 'snmp', 'discovery'
@@ -222,6 +227,15 @@ export const changeRequests = pgTable("change_requests", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
   status: changeStatusEnum("status").default('draft').notNull(),
+  changeType: changeTypeEnum("change_type").default('normal').notNull(),
+  priority: changePriorityEnum("priority").default('medium').notNull(),
+  reason: text("reason"), // Reason for change
+  prerequisites: text("prerequisites"), // Steps needed before the change
+  communicationPlan: text("communication_plan"), // Who to contact and when
+  testPlan: text("test_plan"), // Detailed test plan
+  implementorDetails: text("implementor_details"), // Person doing the change and contact details
+  rollbackPlan: text("rollback_plan"), // Rollback details
+  impactAssessment: text("impact_assessment"), // Service impact, downtime, affected services
   requestedById: varchar("requested_by_id").references(() => users.id).notNull(),
   approvedById: varchar("approved_by_id").references(() => users.id),
   linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id),
@@ -278,6 +292,20 @@ export const attachments = pgTable("attachments", {
   changeRequestId: varchar("change_request_id").references(() => changeRequests.id),
   knowledgeBaseId: varchar("knowledge_base_id").references(() => knowledgeBase.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Contacts (vendor/support contacts)
+export const contacts = pgTable("contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  phoneNumber: varchar("phone_number", { length: 50 }),
+  company: varchar("company", { length: 255 }),
+  role: varchar("role", { length: 100 }),
+  notes: text("notes"),
+  createdById: varchar("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -496,6 +524,13 @@ export const insertDiscoveredDeviceSchema = createInsertSchema(discoveredDevices
   discoveredAt: true,
 });
 
+export const insertContactSchema = createInsertSchema(contacts).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -550,3 +585,6 @@ export type EmailMessage = typeof emailMessages.$inferSelect;
 
 export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
 export type Attachment = typeof attachments.$inferSelect;
+
+export type InsertContact = z.infer<typeof insertContactSchema>;
+export type Contact = typeof contacts.$inferSelect;
