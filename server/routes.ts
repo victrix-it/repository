@@ -6,6 +6,8 @@ import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemS
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
 import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
+import { importCIsFromCsv, generateCsvTemplate } from "./csvImport";
+import multer from "multer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -186,6 +188,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating CI:", error);
       res.status(400).json({ message: error.message || "Failed to create configuration item" });
+    }
+  });
+
+  // CSV Import routes
+  const csvUpload = multer({ storage: multer.memoryStorage() });
+
+  app.get('/api/configuration-items/csv/template', isAuthenticated, (req, res) => {
+    try {
+      const template = generateCsvTemplate();
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="ci-import-template.csv"');
+      res.send(template);
+    } catch (error) {
+      console.error("Error generating CSV template:", error);
+      res.status(500).json({ message: "Failed to generate CSV template" });
+    }
+  });
+
+  app.post('/api/configuration-items/csv/import', isAuthenticated, csvUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const fileContent = req.file.buffer.toString('utf-8');
+      const result = await importCIsFromCsv(fileContent);
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error importing CSV:", error);
+      res.status(400).json({ message: error.message || "Failed to import CSV" });
     }
   });
 

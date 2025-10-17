@@ -28,6 +28,7 @@ import AuthSettingsPage from "@/pages/admin/auth-settings";
 import AlertIntegrationsPage from "@/pages/admin/alert-integrations";
 import NetworkDiscoveryPage from "@/pages/admin/network-discovery";
 import DiscoveryResultsPage from "@/pages/admin/discovery-results";
+import CsvImportPage from "@/pages/admin/csv-import";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,6 +59,7 @@ function Router() {
           <Route path="/admin/alert-integrations" component={AlertIntegrationsPage} />
           <Route path="/admin/network-discovery" component={NetworkDiscoveryPage} />
           <Route path="/admin/discovery/:jobId" component={DiscoveryResultsPage} />
+          <Route path="/admin/csv-import" component={CsvImportPage} />
         </>
       )}
       <Route component={NotFound} />

@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -155,6 +155,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Scan networks to automatically discover and import devices into the CMDB
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/csv-import">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-csv-import">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <FileSpreadsheet className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>CSV Import</CardTitle>
+                  <CardDescription>Bulk CMDB import</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Import configuration items in bulk from a CSV file
               </p>
             </CardContent>
           </Card>
