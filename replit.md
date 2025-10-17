@@ -9,6 +9,10 @@ The application follows a hybrid design approach inspired by Linear (efficient t
 ## Recent Changes
 
 **October 17, 2025:**
+- Renamed "Tickets" to "Incidents" throughout the user interface
+  - Updated sidebar navigation, page titles, buttons, and all user-facing text
+  - API routes and database schema remain unchanged for compatibility
+  - Internal variable names and TypeScript types preserved
 - Enhanced CMDB with additional asset tracking fields
   - Manufacturer field for device vendors
   - Model field for specific device models
