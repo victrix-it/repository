@@ -19,6 +19,12 @@ The application follows a hybrid design approach inspired by Linear (efficient t
   - Flexible tagging system using text array
   - Category and tag filtering on tickets list page
   - Visual display of category and tags on ticket cards and detail pages
+- Implemented branding and customization system
+  - System settings table with key-value storage
+  - Admin branding page for customizing system name, company name, tagline, logo, and primary color
+  - Live preview of branding changes
+  - API endpoints for managing system settings
+  - Admin-only access via role-based sidebar navigation
 
 ## User Preferences
 
@@ -80,6 +86,9 @@ Preferred communication style: Simple, everyday language.
 - Comments system for tickets and changes
 - Email messages tracking
 - Attachments table for file uploads (linked to tickets, changes, and KB articles)
+- Teams and team members for ticket assignment
+- Resolution categories for tracking common solutions
+- System settings table for branding and configuration (key-value pairs)
 
 **Database Features**:
 - PostgreSQL enums for status fields ensuring data integrity

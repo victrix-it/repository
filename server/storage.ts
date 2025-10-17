@@ -10,6 +10,7 @@ import {
   teams,
   teamMembers,
   resolutionCategories,
+  systemSettings,
   type User,
   type UpsertUser,
   type Ticket,
@@ -32,6 +33,8 @@ import {
   type InsertTeamMember,
   type ResolutionCategory,
   type InsertResolutionCategory,
+  type SystemSetting,
+  type InsertSystemSetting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -97,6 +100,12 @@ export interface IStorage {
   getResolutionCategory(id: string): Promise<ResolutionCategory | undefined>;
   updateResolutionCategory(id: string, category: Partial<InsertResolutionCategory>): Promise<ResolutionCategory>;
   deleteResolutionCategory(id: string): Promise<void>;
+  
+  // System settings operations
+  getSetting(key: string): Promise<SystemSetting | undefined>;
+  getAllSettings(): Promise<SystemSetting[]>;
+  upsertSetting(setting: InsertSystemSetting): Promise<SystemSetting>;
+  deleteSetting(key: string): Promise<void>;
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
@@ -263,7 +272,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChangeStatus(id: string, status: string): Promise<void> {
-    await db.update(changeRequests).set({ status, updatedAt: new Date() }).where(eq(changeRequests.id, id));
+    await db.update(changeRequests).set({ 
+      status: status as any, 
+      updatedAt: new Date() 
+    }).where(eq(changeRequests.id, id));
   }
 
   // Configuration Item operations
@@ -506,6 +518,35 @@ export class DatabaseStorage implements IStorage {
 
   async deleteResolutionCategory(id: string): Promise<void> {
     await db.delete(resolutionCategories).where(eq(resolutionCategories.id, id));
+  }
+
+  // System settings operations
+  async getSetting(key: string): Promise<SystemSetting | undefined> {
+    const [setting] = await db.select().from(systemSettings).where(eq(systemSettings.key, key));
+    return setting;
+  }
+
+  async getAllSettings(): Promise<SystemSetting[]> {
+    return await db.select().from(systemSettings);
+  }
+
+  async upsertSetting(setting: InsertSystemSetting): Promise<SystemSetting> {
+    const [upserted] = await db
+      .insert(systemSettings)
+      .values(setting)
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: {
+          value: setting.value,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return upserted;
+  }
+
+  async deleteSetting(key: string): Promise<void> {
+    await db.delete(systemSettings).where(eq(systemSettings.key, key));
   }
 
   // Dashboard stats

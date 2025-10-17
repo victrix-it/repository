@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -71,6 +71,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Define categories for ticket resolution to track common solutions
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/branding">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-branding">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <Palette className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Branding</CardTitle>
+                  <CardDescription>Customize appearance</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Configure system name, logos, colors, and visual identity
               </p>
             </CardContent>
           </Card>

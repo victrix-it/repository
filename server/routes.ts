@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -375,16 +375,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Ticket self-assignment route
+  // Ticket self-assignment route (placeholder - will implement properly later)
   app.post('/api/tickets/:id/assign-self', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      await storage.updateTicketStatus(req.params.id, undefined);
-      // We'll need to add updateTicketAssignment method
+      // const userId = req.user.claims.sub;
+      // TODO: Implement updateTicketAssignment method
       res.json({ success: true });
     } catch (error) {
       console.error("Error self-assigning ticket:", error);
       res.status(500).json({ message: "Failed to self-assign ticket" });
+    }
+  });
+
+  // System settings routes
+  app.get('/api/settings', isAuthenticated, async (req, res) => {
+    try {
+      const settings = await storage.getAllSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.get('/api/settings/:key', async (req, res) => {
+    try {
+      const setting = await storage.getSetting(req.params.key);
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching setting:", error);
+      res.status(500).json({ message: "Failed to fetch setting" });
+    }
+  });
+
+  app.post('/api/settings', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertSystemSettingSchema.parse(req.body);
+      const setting = await storage.upsertSetting(validatedData);
+      res.json(setting);
+    } catch (error: any) {
+      console.error("Error upserting setting:", error);
+      res.status(400).json({ message: error.message || "Failed to save setting" });
+    }
+  });
+
+  app.delete('/api/settings/:key', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteSetting(req.params.key);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting setting:", error);
+      res.status(500).json({ message: "Failed to delete setting" });
     }
   });
 

@@ -72,6 +72,14 @@ export const resolutionCategories = pgTable("resolution_categories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// System settings (branding, configuration)
+export const systemSettings = pgTable("system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 100 }).unique().notNull(),
+  value: text("value"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Configuration Items (CMDB)
 export const configurationItems = pgTable("configuration_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -349,6 +357,11 @@ export const insertResolutionCategorySchema = createInsertSchema(resolutionCateg
   createdAt: true,
 });
 
+export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -361,6 +374,9 @@ export type TeamMember = typeof teamMembers.$inferSelect;
 
 export type InsertResolutionCategory = z.infer<typeof insertResolutionCategorySchema>;
 export type ResolutionCategory = typeof resolutionCategories.$inferSelect;
+
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+export type SystemSetting = typeof systemSettings.$inferSelect;
 
 export type InsertConfigurationItem = z.infer<typeof insertConfigurationItemSchema>;
 export type ConfigurationItem = typeof configurationItems.$inferSelect;
