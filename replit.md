@@ -8,6 +8,16 @@ The application follows a hybrid design approach inspired by Linear (efficient t
 
 ## Recent Changes
 
+**October 18, 2025:**
+- Verified and confirmed CMDB fields are displaying correctly
+  - Manufacturer, model, serial number, IP address, subnet mask fields visible on new CI form
+  - All extended CMDB fields display properly on CI detail pages
+  - Support details shown in dedicated card section
+- Verified incident attachments functionality
+  - File upload/download/delete working on incident detail pages
+  - Added helpful note to new incident form explaining attachments can be added after creation
+  - Attachments require existing entity ID, so they're available on detail pages only
+
 **October 17, 2025:**
 - Renamed "Tickets" to "Incidents" throughout the user interface
   - Updated sidebar navigation, page titles, buttons, and all user-facing text
