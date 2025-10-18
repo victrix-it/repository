@@ -197,7 +197,7 @@ export default function CustomersPage() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="Customer description" data-testid="input-description" />
+                        <Textarea {...field} value={field.value || ""} placeholder="Customer description" data-testid="input-description" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -212,7 +212,7 @@ export default function CustomersPage() {
                       <FormItem>
                         <FormLabel>Contact Name</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="John Doe" data-testid="input-contact-name" />
+                          <Input {...field} value={field.value || ""} placeholder="John Doe" data-testid="input-contact-name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -225,7 +225,7 @@ export default function CustomersPage() {
                       <FormItem>
                         <FormLabel>Contact Email</FormLabel>
                         <FormControl>
-                          <Input {...field} type="email" placeholder="john@acme.com" data-testid="input-contact-email" />
+                          <Input {...field} value={field.value || ""} type="email" placeholder="john@acme.com" data-testid="input-contact-email" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -238,7 +238,7 @@ export default function CustomersPage() {
                       <FormItem>
                         <FormLabel>Contact Phone</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="+1 555-0100" data-testid="input-contact-phone" />
+                          <Input {...field} value={field.value || ""} placeholder="+1 555-0100" data-testid="input-contact-phone" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -340,7 +340,7 @@ export default function CustomersPage() {
                                   <FormItem>
                                     <FormLabel>Code</FormLabel>
                                     <FormControl>
-                                      <Input {...field} data-testid="input-edit-code" />
+                                      <Input {...field} value={field.value || ""} data-testid="input-edit-code" />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -355,7 +355,7 @@ export default function CustomersPage() {
                                 <FormItem>
                                   <FormLabel>Description</FormLabel>
                                   <FormControl>
-                                    <Textarea {...field} data-testid="input-edit-description" />
+                                    <Textarea {...field} value={field.value || ""} data-testid="input-edit-description" />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -370,7 +370,7 @@ export default function CustomersPage() {
                                   <FormItem>
                                     <FormLabel>Contact Name</FormLabel>
                                     <FormControl>
-                                      <Input {...field} data-testid="input-edit-contact-name" />
+                                      <Input {...field} value={field.value || ""} data-testid="input-edit-contact-name" />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -383,7 +383,7 @@ export default function CustomersPage() {
                                   <FormItem>
                                     <FormLabel>Contact Email</FormLabel>
                                     <FormControl>
-                                      <Input {...field} type="email" data-testid="input-edit-contact-email" />
+                                      <Input {...field} value={field.value || ""} type="email" data-testid="input-edit-contact-email" />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -396,7 +396,7 @@ export default function CustomersPage() {
                                   <FormItem>
                                     <FormLabel>Contact Phone</FormLabel>
                                     <FormControl>
-                                      <Input {...field} data-testid="input-edit-contact-phone" />
+                                      <Input {...field} value={field.value || ""} data-testid="input-edit-contact-phone" />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>

@@ -2,133 +2,7 @@
 
 ## Overview
 
-This is an enterprise IT service management application that combines helpdesk ticket tracking, change management (ITIL-style change requests), a Configuration Management Database (CMDB), knowledge base (SOPs and known issues), and email integration. The system is designed for productivity-focused workflows with a professional, information-dense interface suitable for IT support teams.
-
-The application follows a hybrid design approach inspired by Linear (efficient ticket workflows), Notion (knowledge management), and Carbon Design (enterprise data management), prioritizing information clarity, minimal clicks, and rapid resolution workflows.
-
-## Recent Changes
-
-**October 18, 2025 (Evening):**
-- **Multi-Customer Support (In Progress)**
-  - Added customers table to database schema with fields: name, code, description, contact info, active status
-  - Added customerId foreign key to teams and configuration_items tables
-  - Created full CRUD API routes for customer management
-  - Implemented admin customers page (/admin/customers) with create, edit, delete functionality
-  - Customers page includes contact information tracking and active/inactive status
-  
-  **Remaining Work:**
-  - Add customer selector to team creation/edit forms
-  - Add customer selector to CI creation/edit forms  
-  - Add customer filtering to teams and CIs list pages
-  - Create multi-customer mode system setting (toggle between single/multi-customer)
-  - Add sidebar navigation link to customers page
-  - Fix TypeScript null/undefined handling in customers form
-  - Test end-to-end multi-customer workflows
-
-**October 18, 2025 (Earlier):**
-- Verified and confirmed CMDB fields are displaying correctly
-  - Manufacturer, model, serial number, IP address, subnet mask fields visible on new CI form
-  - All extended CMDB fields display properly on CI detail pages
-  - Support details shown in dedicated card section
-- Verified incident attachments functionality
-  - File upload/download/delete working on incident detail pages
-  - Added helpful note to new incident form explaining attachments can be added after creation
-  - Attachments require existing entity ID, so they're available on detail pages only
-
-**October 17, 2025:**
-- Renamed "Tickets" to "Incidents" throughout the user interface
-  - Updated sidebar navigation, page titles, buttons, and all user-facing text
-  - API routes and database schema remain unchanged for compatibility
-  - Internal variable names and TypeScript types preserved
-- Enhanced CMDB with additional asset tracking fields
-  - Manufacturer field for device vendors
-  - Model field for specific device models
-  - Support Details field for 3rd party support contracts and vendor contact information
-  - CI Number with auto-increment format (CI000001, CI000002, etc.)
-  - All fields fully editable by admin users
-- Extended change requests with comprehensive ITIL planning fields
-  - Change Type enum (normal, emergency, retrospective)
-  - Priority field with same levels as tickets (low, medium, high, critical)
-  - Reason for change (text field)
-  - Prerequisites for implementation
-  - Communication plan detailing stakeholder notifications
-  - Detailed test plan
-  - Implementor details and contact information
-  - Rollback plan for reversing changes
-  - Impact assessment covering service downtime and affected systems
-- Added Contacts management system
-  - Vendor and support contact tracking
-  - Name, email, phone number, company, role fields
-  - Notes field for additional contact information
-  - Fully integrated with admin portal
-- Added file attachment support for tickets, changes, and knowledge base articles
-  - Attachments table with 10MB file size limit
-  - File upload/download/delete functionality
-  - Files stored in /uploads directory
-  - Integrated into detail pages for all three entity types
-- Added ticket categorization and tagging system
-  - Category field with predefined options (Hardware, Software, Network, Access, Email, Other)
-  - Flexible tagging system using text array
-  - Category and tag filtering on tickets list page
-  - Visual display of category and tags on ticket cards and detail pages
-- Implemented branding and customization system
-  - System settings table with key-value storage
-  - Admin branding page for customizing system name, company name, tagline, logo, and primary color
-  - Live preview of branding changes
-  - API endpoints for managing system settings
-  - Admin-only access via role-based sidebar navigation
-- Implemented multi-authentication system (local, LDAP, SAML)
-  - Schema updated to support multiple auth providers (authProvider field)
-  - LDAP authentication strategy with configurable server settings
-  - SAML 2.0 authentication for enterprise SSO
-  - Local username/password authentication with bcrypt hashing
-  - Admin UI for configuring authentication methods
-  - Auth settings stored in system_settings table
-  - Multiple auth methods can be enabled simultaneously
-- Implemented alert integration system for monitoring tools
-  - Webhook endpoints for receiving alerts from SolarWinds, Nagios, Zabbix, etc.
-  - Configurable alert integrations with unique webhook URLs and API keys
-  - Alert filtering system to prevent unwanted alerts from creating tickets
-  - Field mapping system to extract ticket data from alert payloads
-  - Support for multiple monitoring systems with different payload formats
-  - Automated ticket creation with team assignment and priority mapping
-  - System user for automated operations
-  - Filter rules support include/exclude logic with operators (equals, contains, regex, etc.)
-  - Field transformations (severity_to_priority, uppercase, lowercase, etc.)
-- Implemented network discovery system for CMDB auto-population
-  - SSH-based device interrogation for Linux/Unix systems
-  - Discovery credentials management (SSH password, SSH key, SNMP)
-  - Discovery jobs tracking with progress monitoring
-  - Automatic extraction of hostname, IP address, subnet mask, serial number, manufacturer, model, OS version
-  - Discovered devices staging area for review before import
-  - Bulk or selective import of discovered devices to CMDB
-  - Extended CMDB schema with network-specific fields (ipAddress, subnetMask, serialNumber, ciNumber)
-  - Background discovery execution with real-time status updates
-  - Admin UI for managing credentials, running scans, and importing devices
-  - All CMDB fields fully editable by admin users
-- Implemented CSV bulk import system for CMDB
-  - CSV template generation with all CMDB fields
-  - Validation and preview of CSV data before import
-  - Flexible column matching (case-insensitive, multiple name variations)
-  - Error reporting with row numbers and detailed messages
-  - Bulk import of configuration items from CSV files
-  - Admin UI at /admin/csv-import with template download and file upload
-- Implemented teams management system
-  - CRUD operations for teams (create, read, update, delete)
-  - Multi-team membership support (users can belong to multiple teams)
-  - Team member management with add/remove functionality
-  - Team ownership assignment for configuration items
-  - Extended CMDB with ownerTeamId field for team-based asset ownership
-  - Admin UI at /admin/teams for team and member management
-- Implemented user CSV bulk import feature
-  - CSV template with firstName, lastName, email, password, role columns
-  - Bcrypt password hashing for secure storage (minimum 8 characters)
-  - Email validation and duplicate detection
-  - Local auth provider setup for imported users
-  - Role assignment (user, support, admin)
-  - Error reporting for validation failures
-  - Admin UI at /admin/user-csv-import with template download and import functionality
-  - Users list page at /admin/users showing all system users with role and auth provider badges
+This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, and email integration. It targets IT support teams with a productivity-focused workflow and a professional, information-dense interface. The system's design is inspired by Linear for efficient workflows, Notion for knowledge management, and Carbon Design for enterprise data management, emphasizing clarity, minimal clicks, and rapid resolution. A key ambition is to support multi-customer environments, allowing for customer-specific data isolation and management.
 
 ## User Preferences
 
@@ -138,161 +12,72 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework**: React with TypeScript using Vite as the build tool
-
-**Routing**: Wouter for client-side routing, providing a lightweight alternative to React Router
-
-**State Management**: TanStack Query (React Query) for server state management with infinite stale time and disabled auto-refetching, optimizing for explicit data updates
-
-**UI Framework**: shadcn/ui components built on Radix UI primitives with Tailwind CSS for styling
-
-**Design System**: 
-- Custom color palette with dark mode primary (background base: 220 15% 8%)
-- Professional blue primary color (217 91% 60%)
-- Status-based color coding (success/green, warning/yellow, error/red, info/blue)
-- Priority indicators (critical/red through low/neutral)
-- Information-dense layouts optimized for rapid scanning
-
-**Key Design Decisions**:
-- New York style variant of shadcn/ui for cleaner aesthetics
-- CSS variables for theming flexibility
-- Custom border radius values (9px lg, 6px md, 3px sm)
-- Hover and active elevation effects for interactive elements
+**Framework**: React with TypeScript, using Vite for building.
+**Routing**: Wouter for lightweight client-side routing.
+**State Management**: TanStack Query for server state management, optimized for explicit data updates.
+**UI Framework**: shadcn/ui components built on Radix UI primitives, styled with Tailwind CSS.
+**Design System**: Features a custom dark mode palette, professional blue primary color, status-based color coding (success, warning, error, info), priority indicators, and information-dense layouts. Uses the New York style variant of shadcn/ui, CSS variables for theming, and custom border radius values.
 
 ### Backend Architecture
 
-**Framework**: Express.js with TypeScript running on Node.js
-
-**API Pattern**: RESTful API design with route handlers in `/server/routes.ts`
-
-**Authentication**: Replit OIDC (OpenID Connect) integration using passport.js with session-based authentication
-
-**Session Management**: PostgreSQL-backed sessions using connect-pg-simple for persistence across restarts
-
-**Error Handling**: Centralized error middleware catching all route errors and returning appropriate HTTP status codes
-
-**Development Tools**:
-- Vite middleware integration for HMR in development
-- Custom logging for API requests with duration tracking
-- Runtime error overlay plugin for better DX
+**Framework**: Express.js with TypeScript on Node.js.
+**API Pattern**: RESTful API design.
+**Authentication**: Replit OIDC (OpenID Connect) integration using passport.js with session-based authentication.
+**Session Management**: PostgreSQL-backed sessions using connect-pg-simple.
+**Error Handling**: Centralized middleware for comprehensive error handling.
 
 ### Data Architecture
 
-**ORM**: Drizzle ORM with Neon serverless PostgreSQL driver
-
-**Schema Design**:
-- Users table with role-based access (user, support, admin)
-- Tickets with status workflow (open → in_progress → resolved → closed)
-  - Includes category (varchar) and tags (text array) for organization
-  - File attachments support
-- Change requests with comprehensive ITIL fields
-  - Approval workflow (draft → pending_approval → approved/rejected → scheduled → implemented)
-  - Change type (normal, emergency, retrospective) and priority levels
-  - Planning fields: reason, prerequisites, communication plan, test plan, implementor details, rollback plan, impact assessment
-  - File attachments support
-- Configuration items (CMDB) with enhanced asset tracking
-  - Types (server, application, database, network, storage)
-  - CI Number auto-increment (CI000001 format)
-  - Manufacturer, model, serial number tracking
-  - Support details for vendor contracts
-  - Network discovery fields (IP address, subnet mask, discovered via, last discovered)
-- Contacts table for vendor/support contact management
-  - Name, email, phone, company, role, notes
-- Knowledge base articles (SOPs and known issues) with file attachments
-- Comments system for tickets and changes
-- Email messages tracking
-- Attachments table for file uploads (linked to tickets, changes, and KB articles)
-- Teams and team members for ticket assignment
-- Resolution categories for tracking common solutions
-- System settings table for branding and configuration (key-value pairs)
-
-**Database Features**:
-- PostgreSQL enums for status fields ensuring data integrity
-- UUID generation for primary keys using gen_random_uuid()
-- Timestamp tracking (createdAt, updatedAt) on all entities
-- Foreign key relationships with user references
-- JSONB fields for flexible metadata storage
-- Alert integration tables (alert_integrations, alert_filter_rules, alert_field_mappings)
-- Network discovery tables (discovery_credentials, discovery_jobs, discovered_devices)
-- Extended configuration_items with network discovery fields
-
-**Migration Strategy**: Drizzle Kit for schema migrations with push command for development
+**ORM**: Drizzle ORM with Neon serverless PostgreSQL driver.
+**Schema Design**: Includes tables for Users (role-based access), Tickets (with status workflow, categories, tags, attachments), Change Requests (ITIL fields, approval workflow, attachments), Configuration Items (CMDB with asset tracking, CI numbers, network discovery fields), Contacts, Knowledge Base articles, Comments, Email messages, Attachments, Teams, Resolution Categories, and System Settings. Supports multi-customer data separation.
+**Database Features**: Utilizes PostgreSQL enums, UUIDs for primary keys, timestamp tracking, foreign key relationships, and JSONB fields. Includes specific tables for alert integrations, network discovery, and user management.
+**Migration Strategy**: Drizzle Kit for schema migrations.
 
 ### Authentication & Authorization
 
-**Provider**: Replit Auth with OIDC discovery
-
-**Flow**:
-1. Unauthenticated users redirected to landing page
-2. Login initiated via `/api/login` endpoint
-3. OIDC callback creates/updates user session
-4. Session stored in PostgreSQL with 7-day TTL
-5. All API routes protected with `isAuthenticated` middleware
-
-**User Management**:
-- User profiles auto-created from OIDC claims
-- Profile includes email, firstName, lastName, profileImageUrl
-- Role assignment (defaults to 'user')
-- User lookup and listing capabilities
-
-**Session Security**:
-- HTTP-only cookies
-- Secure flag enabled
-- 7-day session lifetime
-- PostgreSQL-backed for horizontal scalability
+**Provider**: Replit Auth with OIDC discovery.
+**Flow**: Redirects unauthenticated users to a landing page, initiates login via `/api/login`, and uses OIDC callback for session creation/updates. Sessions are PostgreSQL-backed with a 7-day TTL. All API routes are protected by `isAuthenticated` middleware.
+**User Management**: User profiles are auto-created from OIDC claims, include email, name, and profile image, and default to a 'user' role.
+**Session Security**: Employs HTTP-only, secure cookies with a 7-day session lifetime.
 
 ### Key Architectural Patterns
 
-**Separation of Concerns**:
-- `/client` - Frontend React application
-- `/server` - Express backend and API routes  
-- `/shared` - Shared TypeScript types and database schema
-
-**Type Safety**: Full TypeScript coverage with Zod validation schemas generated from Drizzle schema using drizzle-zod
-
-**Path Aliases**:
-- `@/` → client/src/
-- `@shared/` → shared/
-- `@assets/` → attached_assets/
-
-**Query Strategy**: React Query with custom fetch wrapper handling 401s, JSON parsing, and error transformation
-
-**Component Organization**:
-- UI components in `/client/src/components/ui` (shadcn/ui)
-- Feature components in `/client/src/components` (app-sidebar, status-badge, priority-badge, user-avatar)
-- Page components in `/client/src/pages`
+**Separation of Concerns**: Clearly separates frontend (`/client`), backend (`/server`), and shared TypeScript types and database schema (`/shared`).
+**Type Safety**: Achieved with full TypeScript coverage and Zod validation schemas generated from Drizzle.
+**Path Aliases**: Uses `@/` for client, `@shared/` for shared, and `@assets/` for attached assets.
+**Query Strategy**: Custom fetch wrapper with React Query for handling 401s, JSON parsing, and error transformation.
+**Component Organization**: Organizes UI components, feature components, and page components into distinct directories.
 
 ## External Dependencies
 
 ### Database
-- **Neon PostgreSQL**: Serverless PostgreSQL with WebSocket connection pooling
-- **connect-pg-simple**: Session store implementation for PostgreSQL
+- **Neon PostgreSQL**: Serverless PostgreSQL.
+- **connect-pg-simple**: PostgreSQL session store.
 
 ### Authentication
-- **Replit Auth**: OIDC provider for user authentication
-- **openid-client**: OpenID Connect client library
-- **passport**: Authentication middleware
+- **Replit Auth**: OIDC provider.
+- **openid-client**: OpenID Connect client library.
+- **passport**: Authentication middleware.
 
 ### UI Libraries
-- **Radix UI**: Unstyled accessible component primitives (30+ components)
-- **Tailwind CSS**: Utility-first CSS framework
-- **class-variance-authority**: CSS variant API
-- **cmdk**: Command palette component
-- **lucide-react**: Icon library
-- **react-day-picker**: Date picker component
-- **date-fns**: Date utility library
+- **Radix UI**: Accessible component primitives.
+- **Tailwind CSS**: Utility-first CSS framework.
+- **class-variance-authority**: CSS variant API.
+- **cmdk**: Command palette component.
+- **lucide-react**: Icon library.
+- **react-day-picker**: Date picker component.
+- **date-fns**: Date utility library.
 
 ### Development Tools
-- **Vite**: Build tool and dev server with HMR
-- **@replit/vite-plugin-runtime-error-modal**: Development error overlay
-- **@replit/vite-plugin-cartographer**: Development tooling
-- **tsx**: TypeScript execution for development
+- **Vite**: Build tool and dev server.
+- **@replit/vite-plugin-runtime-error-modal**: Development error overlay.
+- **@replit/vite-plugin-cartographer**: Development tooling.
+- **tsx**: TypeScript execution.
 
 ### Network Discovery Tools
-- **ssh2**: SSH client for device interrogation
-- **ip-address**: IPv4/IPv6 CIDR parsing and IP range generation
+- **ssh2**: SSH client.
+- **ip-address**: IP address parsing and range generation.
 
 ### Build & Deployment
-- **esbuild**: Server-side bundler for production
-- **vite build**: Client-side production build
-- Output: `/dist/public` (client), `/dist` (server)
+- **esbuild**: Server-side bundler.
+- **vite build**: Client-side production build.

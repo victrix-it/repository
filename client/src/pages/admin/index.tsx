@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus, Building2 } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -50,6 +50,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Create and manage teams, add team members, and assign tickets to teams
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/customers">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-customers">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Customers</CardTitle>
+                  <CardDescription>Multi-customer support</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Manage customers for MSP multi-tenancy and customer data isolation
               </p>
             </CardContent>
           </Card>
