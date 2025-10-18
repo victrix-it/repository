@@ -95,6 +95,9 @@ export default function NewTicketPage() {
       <Card className="max-w-3xl">
         <CardHeader>
           <CardTitle className="text-2xl">Create New Incident</CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            After creating this incident, you can add file attachments on the incident detail page.
+          </p>
         </CardHeader>
         <CardContent>
           <Form {...form}>
