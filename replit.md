@@ -8,7 +8,24 @@ The application follows a hybrid design approach inspired by Linear (efficient t
 
 ## Recent Changes
 
-**October 18, 2025:**
+**October 18, 2025 (Evening):**
+- **Multi-Customer Support (In Progress)**
+  - Added customers table to database schema with fields: name, code, description, contact info, active status
+  - Added customerId foreign key to teams and configuration_items tables
+  - Created full CRUD API routes for customer management
+  - Implemented admin customers page (/admin/customers) with create, edit, delete functionality
+  - Customers page includes contact information tracking and active/inactive status
+  
+  **Remaining Work:**
+  - Add customer selector to team creation/edit forms
+  - Add customer selector to CI creation/edit forms  
+  - Add customer filtering to teams and CIs list pages
+  - Create multi-customer mode system setting (toggle between single/multi-customer)
+  - Add sidebar navigation link to customers page
+  - Fix TypeScript null/undefined handling in customers form
+  - Test end-to-end multi-customer workflows
+
+**October 18, 2025 (Earlier):**
 - Verified and confirmed CMDB fields are displaying correctly
   - Manufacturer, model, serial number, IP address, subnet mask fields visible on new CI form
   - All extended CMDB fields display properly on CI detail pages
