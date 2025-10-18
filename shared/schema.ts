@@ -56,6 +56,7 @@ export const teams = pgTable("teams", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer support
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -66,6 +67,20 @@ export const teamMembers = pgTable("team_members", {
   teamId: varchar("team_id").references(() => teams.id).notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Customers (for multi-tenancy support)
+export const customers = pgTable("customers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  code: varchar("code", { length: 50 }).unique(), // Short code/abbreviation for customer
+  description: text("description"),
+  contactName: varchar("contact_name", { length: 255 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Resolution categories
@@ -190,6 +205,7 @@ export const configurationItems = pgTable("configuration_items", {
   manufacturer: varchar("manufacturer", { length: 255 }),
   model: varchar("model", { length: 255 }),
   supportDetails: text("support_details"), // 3rd party support contracts and vendor contact details
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer support
   ownerId: varchar("owner_id").references(() => users.id),
   ownerTeamId: varchar("owner_team_id").references(() => teams.id),
   properties: jsonb("properties"), // Flexible field for CI-specific properties
@@ -476,6 +492,12 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
   updatedAt: true,
 });
 
+export const insertCustomerSchema = createInsertSchema(customers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
   id: true,
   createdAt: true,
@@ -538,6 +560,9 @@ export type User = typeof users.$inferSelect;
 
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type Team = typeof teams.$inferSelect;
+
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Customer = typeof customers.$inferSelect;
 
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
