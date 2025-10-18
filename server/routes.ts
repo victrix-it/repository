@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertCustomerSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
 import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
@@ -396,6 +396,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing team member:", error);
       res.status(500).json({ message: "Failed to remove team member" });
+    }
+  });
+
+  // Customer routes
+  app.get('/api/customers', isAuthenticated, async (req, res) => {
+    try {
+      const customers = await storage.getAllCustomers();
+      res.json(customers);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  app.get('/api/customers/:id', isAuthenticated, async (req, res) => {
+    try {
+      const customer = await storage.getCustomer(req.params.id);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.json(customer);
+    } catch (error) {
+      console.error("Error fetching customer:", error);
+      res.status(500).json({ message: "Failed to fetch customer" });
+    }
+  });
+
+  app.post('/api/customers', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertCustomerSchema.parse(req.body);
+      const customer = await storage.createCustomer(validatedData);
+      res.json(customer);
+    } catch (error: any) {
+      console.error("Error creating customer:", error);
+      res.status(400).json({ message: error.message || "Failed to create customer" });
+    }
+  });
+
+  app.patch('/api/customers/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updated = await storage.updateCustomer(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating customer:", error);
+      res.status(400).json({ message: error.message || "Failed to update customer" });
+    }
+  });
+
+  app.delete('/api/customers/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteCustomer(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      res.status(500).json({ message: "Failed to delete customer" });
     }
   });
 

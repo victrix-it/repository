@@ -9,6 +9,7 @@ import {
   attachments,
   teams,
   teamMembers,
+  customers,
   resolutionCategories,
   systemSettings,
   alertIntegrations,
@@ -36,6 +37,8 @@ import {
   type InsertAttachment,
   type Team,
   type InsertTeam,
+  type Customer,
+  type InsertCustomer,
   type TeamMember,
   type InsertTeamMember,
   type ResolutionCategory,
@@ -117,6 +120,13 @@ export interface IStorage {
   addTeamMember(teamMember: InsertTeamMember): Promise<TeamMember>;
   removeTeamMember(teamId: string, userId: string): Promise<void>;
   getTeamMembers(teamId: string): Promise<any[]>;
+  
+  // Customer operations
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getAllCustomers(): Promise<Customer[]>;
+  getCustomer(id: string): Promise<Customer | undefined>;
+  updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer>;
+  deleteCustomer(id: string): Promise<void>;
   
   // Resolution category operations
   createResolutionCategory(category: InsertResolutionCategory): Promise<ResolutionCategory>;
@@ -588,6 +598,34 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(teamMembers.userId, users.id))
       .where(eq(teamMembers.teamId, teamId));
     return members;
+  }
+
+  // Customer operations
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    return newCustomer;
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers).orderBy(customers.name);
+  }
+
+  async getCustomer(id: string): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer;
+  }
+
+  async updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer> {
+    const [updated] = await db
+      .update(customers)
+      .set({ ...customer, updatedAt: new Date() })
+      .where(eq(customers.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCustomer(id: string): Promise<void> {
+    await db.delete(customers).where(eq(customers.id, id));
   }
 
   // Resolution category operations
