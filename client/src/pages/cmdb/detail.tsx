@@ -92,6 +92,48 @@ export default function CIDetailPage() {
               <CardTitle className="text-lg">Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {ci.ciNumber && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">CI Number</p>
+                  <p className="text-sm font-mono" data-testid="ci-number">{ci.ciNumber}</p>
+                </div>
+              )}
+
+              {ci.manufacturer && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Manufacturer</p>
+                  <p className="text-sm" data-testid="ci-manufacturer">{ci.manufacturer}</p>
+                </div>
+              )}
+
+              {ci.model && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Model</p>
+                  <p className="text-sm" data-testid="ci-model">{ci.model}</p>
+                </div>
+              )}
+
+              {ci.serialNumber && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Serial Number</p>
+                  <p className="text-sm font-mono" data-testid="ci-serial-number">{ci.serialNumber}</p>
+                </div>
+              )}
+
+              {ci.ipAddress && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">IP Address</p>
+                  <p className="text-sm font-mono" data-testid="ci-ip-address">{ci.ipAddress}</p>
+                </div>
+              )}
+
+              {ci.subnetMask && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Subnet Mask</p>
+                  <p className="text-sm font-mono" data-testid="ci-subnet-mask">{ci.subnetMask}</p>
+                </div>
+              )}
+
               {ci.owner && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Owner</p>
@@ -119,6 +161,19 @@ export default function CIDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {ci.supportDetails && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Support Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap" data-testid="ci-support-details">
+                  {ci.supportDetails}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

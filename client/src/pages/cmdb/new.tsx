@@ -26,6 +26,12 @@ const ciFormSchema = z.object({
   type: z.enum(["server", "application", "database", "network", "storage", "other"]),
   description: z.string().optional(),
   status: z.enum(["active", "inactive", "maintenance", "decommissioned"]),
+  ipAddress: z.string().optional(),
+  subnetMask: z.string().optional(),
+  serialNumber: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  supportDetails: z.string().optional(),
   ownerId: z.string().optional(),
   ownerTeamId: z.string().optional(),
 });
@@ -51,6 +57,12 @@ export default function NewCIPage() {
       type: "server",
       description: "",
       status: "active",
+      ipAddress: "",
+      subnetMask: "",
+      serialNumber: "",
+      manufacturer: "",
+      model: "",
+      supportDetails: "",
       ownerId: "",
       ownerTeamId: "",
     },
@@ -60,6 +72,12 @@ export default function NewCIPage() {
     mutationFn: async (data: CIFormData) => {
       const payload = {
         ...data,
+        ipAddress: data.ipAddress || null,
+        subnetMask: data.subnetMask || null,
+        serialNumber: data.serialNumber || null,
+        manufacturer: data.manufacturer || null,
+        model: data.model || null,
+        supportDetails: data.supportDetails || null,
         ownerId: data.ownerId || null,
         ownerTeamId: data.ownerTeamId || null,
       };
@@ -177,6 +195,101 @@ export default function NewCIPage() {
                         className="min-h-24"
                         {...field}
                         data-testid="input-description"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="manufacturer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Manufacturer (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Dell, HP, Cisco" {...field} data-testid="input-manufacturer" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="model"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Model (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., PowerEdge R740" {...field} data-testid="input-model" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="serialNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Serial Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., SN123456789" {...field} data-testid="input-serial-number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="ipAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>IP Address (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 192.168.1.100" {...field} data-testid="input-ip-address" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="subnetMask"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subnet Mask (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 255.255.255.0 or /24" {...field} data-testid="input-subnet-mask" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="supportDetails"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Support Details (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="3rd party support contracts, vendor contact details"
+                        className="min-h-24"
+                        {...field}
+                        data-testid="input-support-details"
                       />
                     </FormControl>
                     <FormMessage />
