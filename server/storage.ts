@@ -20,6 +20,7 @@ import {
   discoveredDevices,
   contacts,
   problems,
+  roles,
   type User,
   type UpsertUser,
   type Ticket,
@@ -64,6 +65,8 @@ import {
   type InsertProblem,
   type SlaTemplate,
   type InsertSlaTemplate,
+  type Role,
+  type InsertRole,
   slaTemplates,
 } from "@shared/schema";
 import { db } from "./db";
@@ -152,6 +155,13 @@ export interface IStorage {
   updateSlaTemplate(id: string, template: Partial<InsertSlaTemplate>): Promise<SlaTemplate>;
   deleteSlaTemplate(id: string): Promise<void>;
   setDefaultSlaTemplate(id: string): Promise<void>;
+  
+  // Role operations
+  createRole(role: InsertRole): Promise<Role>;
+  getRole(id: string): Promise<Role | undefined>;
+  getAllRoles(): Promise<Role[]>;
+  updateRole(id: string, role: Partial<InsertRole>): Promise<Role | undefined>;
+  deleteRole(id: string): Promise<void>;
   
   // Resolution category operations
   createResolutionCategory(category: InsertResolutionCategory): Promise<ResolutionCategory>;
@@ -901,6 +911,34 @@ export class DatabaseStorage implements IStorage {
     await db.update(slaTemplates).set({ isDefault: 'false' });
     // Then set the specified template as default
     await db.update(slaTemplates).set({ isDefault: 'true' }).where(eq(slaTemplates.id, id));
+  }
+
+  // Role operations
+  async createRole(role: InsertRole): Promise<Role> {
+    const [newRole] = await db.insert(roles).values(role).returning();
+    return newRole;
+  }
+
+  async getRole(id: string): Promise<Role | undefined> {
+    const [role] = await db.select().from(roles).where(eq(roles.id, id));
+    return role;
+  }
+
+  async getAllRoles(): Promise<Role[]> {
+    return await db.select().from(roles).orderBy(roles.name);
+  }
+
+  async updateRole(id: string, role: Partial<InsertRole>): Promise<Role | undefined> {
+    const [updated] = await db
+      .update(roles)
+      .set({ ...role, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteRole(id: string): Promise<void> {
+    await db.delete(roles).where(eq(roles.id, id));
   }
 
   // Resolution category operations

@@ -1,10 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: string;
@@ -14,12 +35,80 @@ interface User {
   role: string;
   authProvider: string;
   profileImageUrl?: string;
+  roleId?: string;
+  customerId?: string;
+}
+
+interface Role {
+  id: string;
+  name: string;
+}
+
+interface Customer {
+  id: string;
+  name: string;
 }
 
 export default function UsersPage() {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    roleId: "",
+    customerId: "",
+    authProvider: "local",
+  });
+
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ['/api/users'],
   });
+
+  const { data: roles } = useQuery<Role[]>({
+    queryKey: ['/api/roles'],
+  });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ['/api/customers'],
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('/api/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setOpen(false);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        roleId: "",
+        customerId: "",
+        authProvider: "local",
+      });
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createUserMutation.mutate(formData);
+  };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -81,12 +170,101 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">Users</h1>
           <p className="text-muted-foreground">Manage system users and their roles</p>
         </div>
-        <Link href="/admin/user-csv-import">
-          <Button data-testid="button-create-user">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Import Users
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-create-user">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Create User
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Create New User</DialogTitle>
+                  <DialogDescription>
+                    Add a new user to the system
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      required
+                      data-testid="input-firstName"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      required
+                      data-testid="input-lastName"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                      data-testid="input-email"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="roleId">Role</Label>
+                    <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+                      <SelectTrigger data-testid="select-role">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles?.map((role) => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="customerId">Company (Optional)</Label>
+                    <Select value={formData.customerId} onValueChange={(value) => setFormData({ ...formData, customerId: value })}>
+                      <SelectTrigger data-testid="select-customer">
+                        <SelectValue placeholder="Select a company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {customers?.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" disabled={createUserMutation.isPending} data-testid="button-submit">
+                    {createUserMutation.isPending ? "Creating..." : "Create User"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Link href="/admin/user-csv-import">
+            <Button variant="outline" data-testid="button-import-users">
+              <Upload className="h-4 w-4 mr-2" />
+              Import Users
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4">

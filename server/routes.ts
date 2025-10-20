@@ -40,6 +40,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/users', isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.createUser(req.body);
+      res.json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  // Role routes
+  app.get('/api/roles', isAuthenticated, async (req, res) => {
+    try {
+      const roles = await storage.getAllRoles();
+      res.json(roles);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      res.status(500).json({ message: "Failed to fetch roles" });
+    }
+  });
+
+  app.post('/api/roles', isAuthenticated, async (req, res) => {
+    try {
+      const role = await storage.createRole(req.body);
+      res.json(role);
+    } catch (error) {
+      console.error("Error creating role:", error);
+      res.status(500).json({ message: "Failed to create role" });
+    }
+  });
+
+  app.patch('/api/roles/:id', isAuthenticated, async (req, res) => {
+    try {
+      const role = await storage.updateRole(req.params.id, req.body);
+      res.json(role);
+    } catch (error) {
+      console.error("Error updating role:", error);
+      res.status(500).json({ message: "Failed to update role" });
+    }
+  });
+
   // User CSV Import routes
   app.get('/api/users/csv/template', isAuthenticated, (req, res) => {
     try {
