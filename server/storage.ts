@@ -19,6 +19,7 @@ import {
   discoveryJobs,
   discoveredDevices,
   contacts,
+  problems,
   type User,
   type UpsertUser,
   type Ticket,
@@ -59,6 +60,8 @@ import {
   type InsertDiscoveredDevice,
   type Contact,
   type InsertContact,
+  type Problem,
+  type InsertProblem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -94,6 +97,13 @@ export interface IStorage {
   getKnowledgeBase(id: string): Promise<any>;
   getAllKnowledgeBase(): Promise<any[]>;
   incrementKBViews(id: string): Promise<void>;
+  
+  // Problem operations
+  createProblem(problem: InsertProblem, createdById: string): Promise<Problem>;
+  getProblem(id: string): Promise<any>;
+  getAllProblems(): Promise<any[]>;
+  updateProblem(id: string, problem: Partial<InsertProblem>): Promise<Problem>;
+  updateProblemStatus(id: string, status: string): Promise<void>;
   
   // Comment operations
   createComment(comment: InsertComment, createdById: string): Promise<Comment>;
@@ -451,6 +461,80 @@ export class DatabaseStorage implements IStorage {
       .update(knowledgeBase)
       .set({ views: sql`${knowledgeBase.views} + 1` })
       .where(eq(knowledgeBase.id, id));
+  }
+
+  // Problem operations
+  async createProblem(problem: InsertProblem, createdById: string): Promise<Problem> {
+    const problemCount = await db.select({ count: sql<number>`count(*)` }).from(problems);
+    const problemNumber = `PRB-${String(Number(problemCount[0].count) + 1).padStart(5, '0')}`;
+    
+    const [newProblem] = await db
+      .insert(problems)
+      .values({ ...problem, problemNumber, createdById })
+      .returning();
+    return newProblem;
+  }
+
+  async getProblem(id: string): Promise<any> {
+    const [problem] = await db.select().from(problems).where(eq(problems.id, id));
+    if (!problem) return null;
+
+    const [createdBy] = problem.createdById
+      ? await db.select().from(users).where(eq(users.id, problem.createdById))
+      : [null];
+    const [assignedTo] = problem.assignedToId
+      ? await db.select().from(users).where(eq(users.id, problem.assignedToId))
+      : [null];
+    const [assignedToTeam] = problem.assignedToTeamId
+      ? await db.select().from(teams).where(eq(teams.id, problem.assignedToTeamId))
+      : [null];
+    const [linkedCI] = problem.linkedCiId
+      ? await db.select().from(configurationItems).where(eq(configurationItems.id, problem.linkedCiId))
+      : [null];
+    const [customer] = problem.customerId
+      ? await db.select().from(customers).where(eq(customers.id, problem.customerId))
+      : [null];
+
+    return { ...problem, createdBy, assignedTo, assignedToTeam, linkedCI, customer };
+  }
+
+  async getAllProblems(): Promise<any[]> {
+    const allProblems = await db.select().from(problems).orderBy(desc(problems.createdAt));
+    
+    return await Promise.all(
+      allProblems.map(async (problem) => {
+        const [createdBy] = problem.createdById
+          ? await db.select().from(users).where(eq(users.id, problem.createdById))
+          : [null];
+        const [assignedTo] = problem.assignedToId
+          ? await db.select().from(users).where(eq(users.id, problem.assignedToId))
+          : [null];
+        const [assignedToTeam] = problem.assignedToTeamId
+          ? await db.select().from(teams).where(eq(teams.id, problem.assignedToTeamId))
+          : [null];
+        const [customer] = problem.customerId
+          ? await db.select().from(customers).where(eq(customers.id, problem.customerId))
+          : [null];
+        return { ...problem, createdBy, assignedTo, assignedToTeam, customer };
+      })
+    );
+  }
+
+  async updateProblem(id: string, problem: Partial<InsertProblem>): Promise<Problem> {
+    const [updatedProblem] = await db
+      .update(problems)
+      .set({ ...problem, updatedAt: new Date() })
+      .where(eq(problems.id, id))
+      .returning();
+    return updatedProblem;
+  }
+
+  async updateProblemStatus(id: string, status: string): Promise<void> {
+    const updates: any = { status, updatedAt: new Date() };
+    if (status === 'resolved' || status === 'closed') {
+      updates.resolvedAt = new Date();
+    }
+    await db.update(problems).set(updates).where(eq(problems.id, id));
   }
 
   // Comment operations
