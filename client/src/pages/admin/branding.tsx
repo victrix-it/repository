@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Palette } from "lucide-react";
+import { ArrowLeft, Palette, Upload, X } from "lucide-react";
 import type { SystemSetting } from "@shared/schema";
 
 interface BrandingFormData {
@@ -18,10 +18,13 @@ interface BrandingFormData {
   logoUrl: string;
   primaryColor: string;
   tagline: string;
+  footerText: string;
 }
 
 export default function BrandingPage() {
   const { toast } = useToast();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const { data: settings } = useQuery<SystemSetting[]>({
     queryKey: ["/api/settings"],
@@ -39,6 +42,7 @@ export default function BrandingPage() {
       logoUrl: settingsMap['logo_url'] || '',
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
+      footerText: settingsMap['footer_text'] || '',
     },
     values: {
       systemName: settingsMap['system_name'] || 'Helpdesk & CMDB',
@@ -46,8 +50,44 @@ export default function BrandingPage() {
       logoUrl: settingsMap['logo_url'] || '',
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
+      footerText: settingsMap['footer_text'] || '',
     },
   });
+
+  const handleLogoUpload = async (file: File) => {
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await fetch('/api/branding/logo', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload logo');
+      }
+
+      const data = await response.json();
+      form.setValue('logoUrl', data.logoUrl);
+      setLogoFile(null);
+      
+      toast({
+        title: "Success",
+        description: "Logo uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload logo",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const saveMutation = useMutation({
     mutationFn: async (data: BrandingFormData) => {
@@ -57,6 +97,7 @@ export default function BrandingPage() {
         { key: 'logo_url', value: data.logoUrl },
         { key: 'primary_color', value: data.primaryColor },
         { key: 'tagline', value: data.tagline },
+        { key: 'footer_text', value: data.footerText },
       ];
 
       for (const setting of settingsToSave) {
@@ -161,17 +202,67 @@ export default function BrandingPage() {
                     )}
                   />
 
+                  <div className="space-y-3">
+                    <FormLabel>Logo</FormLabel>
+                    {form.watch('logoUrl') && (
+                      <div className="flex items-center gap-3 p-3 border rounded-md">
+                        <img 
+                          src={form.watch('logoUrl')} 
+                          alt="Current logo" 
+                          className="h-12 w-auto"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Current Logo</p>
+                          <p className="text-xs text-muted-foreground">{form.watch('logoUrl')}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => form.setValue('logoUrl', '')}
+                          data-testid="button-remove-logo"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex gap-3">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setLogoFile(file);
+                            handleLogoUpload(file);
+                          }
+                        }}
+                        disabled={uploadingLogo}
+                        data-testid="input-logo-file"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Upload a logo image (PNG, JPG, SVG recommended). Max size: 2MB
+                    </p>
+                  </div>
+
                   <FormField
                     control={form.control}
-                    name="logoUrl"
+                    name="footerText"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Logo URL</FormLabel>
+                        <FormLabel>Footer Text</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/logo.png" {...field} data-testid="input-logo-url" />
+                          <Textarea 
+                            placeholder="© 2025 Your Company. All rights reserved." 
+                            {...field} 
+                            data-testid="input-footer-text"
+                            rows={3}
+                          />
                         </FormControl>
                         <FormDescription>
-                          URL to your company logo image (leave empty for text-only branding)
+                          Text displayed at the bottom of every page (supports multiple lines)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -261,6 +352,17 @@ export default function BrandingPage() {
                   />
                 </div>
               </div>
+
+              {form.watch('footerText') && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Footer Preview</p>
+                  <div className="border rounded-md p-3 text-center">
+                    <p className="text-xs text-muted-foreground whitespace-pre-line">
+                      {form.watch('footerText')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

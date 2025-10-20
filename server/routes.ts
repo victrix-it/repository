@@ -18,6 +18,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Multer configuration for CSV uploads
   const csvUpload = multer({ storage: multer.memoryStorage() });
 
+  // Multer configuration for logo uploads
+  const logoStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      const uploadDir = 'uploads/branding';
+      const fs = require('fs');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (_req, file, cb) => {
+      const ext = file.originalname.split('.').pop();
+      cb(null, `logo-${Date.now()}.${ext}`);
+    },
+  });
+
+  const logoUpload = multer({
+    storage: logoStorage,
+    limits: {
+      fileSize: 2 * 1024 * 1024, // 2MB limit
+    },
+    fileFilter: (_req, file, cb: any) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    },
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -963,6 +993,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting setting:", error);
       res.status(500).json({ message: "Failed to delete setting" });
+    }
+  });
+
+  // Branding logo upload
+  app.post('/api/branding/logo', isAuthenticated, logoUpload.single('logo'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Generate the URL path for the logo
+      const logoUrl = `/uploads/branding/${req.file.filename}`;
+
+      // Update the logo_url setting
+      await storage.upsertSetting({ key: 'logo_url', value: logoUrl });
+
+      res.json({ logoUrl });
+    } catch (error: any) {
+      console.error("Error uploading logo:", error);
+      // Clean up file on error
+      if (req.file) {
+        const fs = require('fs');
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ message: error.message || "Failed to upload logo" });
     }
   });
 
