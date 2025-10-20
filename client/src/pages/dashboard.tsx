@@ -74,22 +74,24 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="hover-elevate">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Open Incidents
-            </CardTitle>
-            <Ticket className="h-4 w-4 text-chart-5" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold" data-testid="stat-open-tickets">
-              {stats?.openTickets || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Awaiting response
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/tickets">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Open Incidents
+              </CardTitle>
+              <Ticket className="h-4 w-4 text-chart-5" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold" data-testid="stat-open-tickets">
+                {stats?.openTickets || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Awaiting response
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <Card className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
@@ -125,22 +127,24 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="hover-elevate">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending Changes
-            </CardTitle>
-            <GitBranch className="h-4 w-4 text-chart-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold" data-testid="stat-pending-changes">
-              {stats?.pendingChanges || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Awaiting approval
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/changes">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Pending Changes
+              </CardTitle>
+              <GitBranch className="h-4 w-4 text-chart-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold" data-testid="stat-pending-changes">
+                {stats?.pendingChanges || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Awaiting approval
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
