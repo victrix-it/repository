@@ -74,10 +74,10 @@ export default function KBDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap font-sans text-foreground" data-testid="article-content">
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="whitespace-pre-wrap font-sans text-foreground bg-transparent" data-testid="article-content">
                   {article.content}
-                </pre>
+                </div>
               </div>
             </CardContent>
           </Card>

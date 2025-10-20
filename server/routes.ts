@@ -74,6 +74,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/users/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const user = await storage.updateUser(req.params.id, req.body);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
   // Role routes
   app.get('/api/roles', isAuthenticated, async (req, res) => {
     try {
