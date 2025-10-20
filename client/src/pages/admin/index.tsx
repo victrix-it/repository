@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus, Building2 } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus, Building2, Clock } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -92,6 +92,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Define categories for ticket resolution to track common solutions
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/sla-templates">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-sla-templates">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <Clock className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>SLA Templates</CardTitle>
+                  <CardDescription>Service level agreements</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Define SLA templates with response and resolution time targets for different priorities
               </p>
             </CardContent>
           </Card>

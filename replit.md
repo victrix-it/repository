@@ -6,6 +6,10 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **Admin Dashboard Update** (October 20, 2025): Added SLA Templates to admin section navigation
+  - Added SLA Templates card with Clock icon to admin dashboard grid
+  - Links to `/admin/sla-templates` for managing service level agreement templates
+  - Test-verified: Card displays correctly and navigates to SLA management page
 - **CMDB View Enhancements** (October 20, 2025): Added view modes and filtering capabilities
   - View toggle: Switch between Tiles (grid) and List views
   - Type filter: Filter CIs by type (Server, Application, Database, Network, Storage, Other, or All Types)
