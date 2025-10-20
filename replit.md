@@ -6,16 +6,26 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **CMDB View Enhancements** (October 20, 2025): Added view modes and filtering capabilities
+  - View toggle: Switch between Tiles (grid) and List views
+  - Type filter: Filter CIs by type (Server, Application, Database, Network, Storage, Other, or All Types)
+  - List view shows more information inline (CI number, name, description, status, type, IP address)
+  - Tiles view maintains grid layout with cards showing icon, CI number, name, status, type, and description
+  - Test-verified: View switching, type filtering, and search work correctly across both view modes
+- **Roles & User Management** (October 20, 2025): Implemented comprehensive RBAC system
+  - Created roles table with granular permissions (canCreateTicket, canUpdateTicket, canCloseTicket, canViewAllTickets, canApproveChanges, canManageKnowledgebase, canRunReports)
+  - Added 9 default ITIL-based roles: End User, L1 Analyst, L2 Engineer, Problem Manager, Change Manager, ITSM Lead, Knowledge Manager, System Administrator, Tenant Admin
+  - Updated users table with roleId and customerId for role-based access and multi-tenancy
+  - Created "Create User" dialog for manual user creation with role and company assignment
+  - Fixed upsertUser to handle email conflicts correctly (uses email as conflict target)
 - **CI Number Auto-Generation** (October 20, 2025): Implemented automatic sequential CI numbering system
   - Format: CI00001, CI00002, etc. (5-digit zero-padded)
   - Auto-generated in createConfigurationItem storage function when ciNumber is not provided
   - Displayed prominently in CMDB list page, CI detail page header, and when CIs are linked to tickets/changes
   - Sequential numbering based on highest existing CI number using PostgreSQL regex pattern matching
-  - Test-verified: Creates sequential CI numbers (CI00001, CI00002, etc.) and displays correctly across all views
 - Implemented complete SLA templates management system with admin UI, CRUD operations, and default "Victrix Standard SLA" template
 - Created PriorityMatrixGuide component displaying Impact × Urgency matrix to help users determine correct priority
 - Updated all creation forms (tickets, changes, problems) to use impact/urgency fields instead of direct priority selection
-- Fixed upsertUser bug that caused login failures by handling conflicts on primary key (id) instead of just email
 
 ## User Preferences
 
