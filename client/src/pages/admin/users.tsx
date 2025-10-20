@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { ArrowLeft, UserPlus, Upload } from "lucide-react";
+import { ArrowLeft, UserPlus, Upload, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import {
@@ -54,6 +54,8 @@ export default function UsersPage() {
   const { toast } = useToast();
   const { hasPermission } = usePermissions();
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -61,6 +63,13 @@ export default function UsersPage() {
     roleId: "",
     customerId: "",
     authProvider: "local",
+  });
+  const [editFormData, setEditFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    roleId: "",
+    customerId: "",
   });
 
   const { data: users, isLoading } = useQuery<User[]>({
@@ -104,6 +113,28 @@ export default function UsersPage() {
     },
   });
 
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return await apiRequest('PATCH', `/api/users/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setEditOpen(false);
+      setSelectedUser(null);
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -122,6 +153,40 @@ export default function UsersPage() {
     };
     
     createUserMutation.mutate(submitData);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedUser) return;
+    
+    if (!editFormData.roleId) {
+      toast({
+        title: "Error",
+        description: "Please select a role for the user",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const submitData = {
+      ...editFormData,
+      customerId: editFormData.customerId || undefined,
+    };
+    
+    updateUserMutation.mutate({ id: selectedUser.id, data: submitData });
+  };
+
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      roleId: user.roleId || "",
+      customerId: user.customerId || "",
+    });
+    setEditOpen(true);
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -303,19 +368,114 @@ export default function UsersPage() {
                     {user.email}
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Badge variant={getRoleBadgeVariant(user.role)} data-testid={`badge-role-${user.id}`}>
                     {user.role}
                   </Badge>
                   <Badge variant="outline" data-testid={`badge-auth-${user.id}`}>
                     {getAuthProviderLabel(user.authProvider)}
                   </Badge>
+                  {hasPermission('canManageUsers') && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditClick(user)}
+                      data-testid={`button-edit-${user.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
           </Card>
         ))}
       </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <form onSubmit={handleEditSubmit}>
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>
+                Update user information and permissions
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-firstName">First Name</Label>
+                <Input
+                  id="edit-firstName"
+                  value={editFormData.firstName}
+                  onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
+                  required
+                  data-testid="input-edit-firstName"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-lastName">Last Name</Label>
+                <Input
+                  id="edit-lastName"
+                  value={editFormData.lastName}
+                  onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
+                  required
+                  data-testid="input-edit-lastName"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  required
+                  data-testid="input-edit-email"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-roleId">Role</Label>
+                <Select value={editFormData.roleId} onValueChange={(value) => setEditFormData({ ...editFormData, roleId: value })}>
+                  <SelectTrigger data-testid="select-edit-role">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles?.map((role) => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-customerId">Company (Optional)</Label>
+                <Select value={editFormData.customerId || "none"} onValueChange={(value) => setEditFormData({ ...editFormData, customerId: value === "none" ? "" : value })}>
+                  <SelectTrigger data-testid="select-edit-customer">
+                    <SelectValue placeholder="None (no company assigned)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {customers?.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateUserMutation.isPending} data-testid="button-update-user">
+                {updateUserMutation.isPending ? "Updating..." : "Update User"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {users && users.length === 0 && (
         <Card>

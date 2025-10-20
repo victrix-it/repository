@@ -1,12 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Server, Database, Network, HardDrive, Box } from "lucide-react";
+import { ArrowLeft, Server, Database, Network, HardDrive, Box, Pencil } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { ConfigurationItem, User, Customer } from "@shared/schema";
 
 const ciTypeIcons = {
@@ -25,10 +48,88 @@ interface CIWithRelations extends ConfigurationItem {
 
 export default function CIDetailPage() {
   const { id } = useParams();
+  const { toast } = useToast();
+  const { hasPermission } = usePermissions();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    type: "",
+    status: "",
+    description: "",
+    manufacturer: "",
+    model: "",
+    serialNumber: "",
+    ipAddress: "",
+    subnetMask: "",
+    ownerId: "",
+    customerId: "",
+    supportDetails: "",
+  });
 
   const { data: ci, isLoading } = useQuery<CIWithRelations>({
     queryKey: ["/api/configuration-items", id],
   });
+
+  const { data: users } = useQuery<User[]>({
+    queryKey: ['/api/users'],
+  });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ['/api/customers'],
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('PATCH', `/api/configuration-items/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/configuration-items", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/configuration-items"] });
+      setEditOpen(false);
+      toast({
+        title: "Success",
+        description: "Configuration item updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update configuration item",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditClick = () => {
+    if (!ci) return;
+    setEditFormData({
+      name: ci.name,
+      type: ci.type,
+      status: ci.status,
+      description: ci.description || "",
+      manufacturer: ci.manufacturer || "",
+      model: ci.model || "",
+      serialNumber: ci.serialNumber || "",
+      ipAddress: ci.ipAddress || "",
+      subnetMask: ci.subnetMask || "",
+      ownerId: ci.ownerId || "",
+      customerId: ci.customerId || "",
+      supportDetails: ci.supportDetails || "",
+    });
+    setEditOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const submitData = {
+      ...editFormData,
+      ownerId: editFormData.ownerId || undefined,
+      customerId: editFormData.customerId || undefined,
+    };
+    
+    updateMutation.mutate(submitData);
+  };
 
   if (isLoading) {
     return (
@@ -51,12 +152,20 @@ export default function CIDetailPage() {
 
   return (
     <div className="p-8">
-      <Link href="/cmdb">
-        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to CMDB
-        </Button>
-      </Link>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <Link href="/cmdb">
+          <Button variant="ghost" size="sm" data-testid="button-back">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to CMDB
+          </Button>
+        </Link>
+        {hasPermission('canManageCMDB') && (
+          <Button onClick={handleEditClick} data-testid="button-edit-ci">
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit CI
+          </Button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
@@ -194,6 +303,179 @@ export default function CIDetailPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <form onSubmit={handleEditSubmit}>
+            <DialogHeader>
+              <DialogTitle>Edit Configuration Item</DialogTitle>
+              <DialogDescription>
+                Update configuration item details
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-name">Name *</Label>
+                  <Input
+                    id="edit-name"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    required
+                    data-testid="input-edit-name"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-type">Type *</Label>
+                  <Select value={editFormData.type} onValueChange={(value) => setEditFormData({ ...editFormData, type: value })}>
+                    <SelectTrigger data-testid="select-edit-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="server">Server</SelectItem>
+                      <SelectItem value="application">Application</SelectItem>
+                      <SelectItem value="database">Database</SelectItem>
+                      <SelectItem value="network">Network</SelectItem>
+                      <SelectItem value="storage">Storage</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-status">Status *</Label>
+                <Select value={editFormData.status} onValueChange={(value) => setEditFormData({ ...editFormData, status: value })}>
+                  <SelectTrigger data-testid="select-edit-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="decommissioned">Decommissioned</SelectItem>
+                    <SelectItem value="maintenance">Maintenance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                  data-testid="input-edit-description"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-manufacturer">Manufacturer</Label>
+                  <Input
+                    id="edit-manufacturer"
+                    value={editFormData.manufacturer}
+                    onChange={(e) => setEditFormData({ ...editFormData, manufacturer: e.target.value })}
+                    data-testid="input-edit-manufacturer"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-model">Model</Label>
+                  <Input
+                    id="edit-model"
+                    value={editFormData.model}
+                    onChange={(e) => setEditFormData({ ...editFormData, model: e.target.value })}
+                    data-testid="input-edit-model"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-serialNumber">Serial Number</Label>
+                <Input
+                  id="edit-serialNumber"
+                  value={editFormData.serialNumber}
+                  onChange={(e) => setEditFormData({ ...editFormData, serialNumber: e.target.value })}
+                  data-testid="input-edit-serial-number"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-ipAddress">IP Address</Label>
+                  <Input
+                    id="edit-ipAddress"
+                    value={editFormData.ipAddress}
+                    onChange={(e) => setEditFormData({ ...editFormData, ipAddress: e.target.value })}
+                    data-testid="input-edit-ip-address"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-subnetMask">Subnet Mask</Label>
+                  <Input
+                    id="edit-subnetMask"
+                    value={editFormData.subnetMask}
+                    onChange={(e) => setEditFormData({ ...editFormData, subnetMask: e.target.value })}
+                    data-testid="input-edit-subnet-mask"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-owner">Owner</Label>
+                  <Select value={editFormData.ownerId || "none"} onValueChange={(value) => setEditFormData({ ...editFormData, ownerId: value === "none" ? "" : value })}>
+                    <SelectTrigger data-testid="select-edit-owner">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {users?.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.firstName} {user.lastName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-customer">Customer</Label>
+                  <Select value={editFormData.customerId || "none"} onValueChange={(value) => setEditFormData({ ...editFormData, customerId: value === "none" ? "" : value })}>
+                    <SelectTrigger data-testid="select-edit-customer">
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {customers?.map((customer) => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-supportDetails">Support Details</Label>
+                <Textarea
+                  id="edit-supportDetails"
+                  value={editFormData.supportDetails}
+                  onChange={(e) => setEditFormData({ ...editFormData, supportDetails: e.target.value })}
+                  data-testid="input-edit-support-details"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending} data-testid="button-update-ci">
+                {updateMutation.isPending ? "Updating..." : "Update CI"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
