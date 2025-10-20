@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import type { User } from "@shared/schema";
+import type { User, Customer } from "@shared/schema";
 
 type Team = {
   id: string;
@@ -34,6 +34,7 @@ const ciFormSchema = z.object({
   supportDetails: z.string().optional(),
   ownerId: z.string().optional(),
   ownerTeamId: z.string().optional(),
+  customerId: z.string().optional(),
 });
 
 type CIFormData = z.infer<typeof ciFormSchema>;
@@ -48,6 +49,10 @@ export default function NewCIPage() {
 
   const { data: teams } = useQuery<Team[]>({
     queryKey: ["/api/teams"],
+  });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
   });
 
   const form = useForm<CIFormData>({
@@ -65,6 +70,7 @@ export default function NewCIPage() {
       supportDetails: "",
       ownerId: "",
       ownerTeamId: "",
+      customerId: "",
     },
   });
 
@@ -80,6 +86,7 @@ export default function NewCIPage() {
         supportDetails: data.supportDetails || null,
         ownerId: data.ownerId || null,
         ownerTeamId: data.ownerTeamId || null,
+        customerId: data.customerId || null,
       };
       return await apiRequest("POST", "/api/configuration-items", payload);
     },
@@ -348,6 +355,31 @@ export default function NewCIPage() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="customerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-customer">
+                          <SelectValue placeholder="No customer assigned" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {customers?.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex gap-3">
                 <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit">
