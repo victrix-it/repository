@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   AlertCircle,
+  BarChart3,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -127,6 +128,16 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                {hasPermission('canRunReports') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location === '/reports'} data-testid="nav-reports">
+                      <Link href="/reports">
+                        <BarChart3 className="h-4 w-4" />
+                        <span>Reports</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.startsWith('/admin')} data-testid="nav-admin">
                     <Link href="/admin">
