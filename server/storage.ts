@@ -86,12 +86,14 @@ export interface IStorage {
   createTicket(ticket: InsertTicket, createdById: string): Promise<Ticket>;
   getTicket(id: string): Promise<any>;
   getAllTickets(): Promise<any[]>;
+  getTicketsByCI(ciId: string): Promise<any[]>;
   updateTicketStatus(id: string, status: string): Promise<void>;
   
   // Change Request operations
   createChangeRequest(change: InsertChangeRequest, requestedById: string): Promise<ChangeRequest>;
   getChangeRequest(id: string): Promise<any>;
   getAllChangeRequests(): Promise<any[]>;
+  getChangeRequestsByCI(ciId: string): Promise<any[]>;
   updateChangeStatus(id: string, status: string): Promise<void>;
   
   // Configuration Item operations
@@ -109,6 +111,7 @@ export interface IStorage {
   createProblem(problem: InsertProblem, createdById: string): Promise<Problem>;
   getProblem(id: string): Promise<any>;
   getAllProblems(): Promise<any[]>;
+  getProblemsByCI(ciId: string): Promise<any[]>;
   updateProblem(id: string, problem: Partial<InsertProblem>): Promise<Problem>;
   updateProblemStatus(id: string, status: string): Promise<void>;
   linkTicketToProblem(ticketId: string, problemId: string): Promise<void>;
@@ -391,6 +394,26 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
+  async getTicketsByCI(ciId: string): Promise<any[]> {
+    const ciTickets = await db
+      .select()
+      .from(tickets)
+      .where(eq(tickets.linkedCiId, ciId))
+      .orderBy(desc(tickets.createdAt));
+    
+    return await Promise.all(
+      ciTickets.map(async (ticket) => {
+        const [createdBy] = ticket.createdById
+          ? await db.select().from(users).where(eq(users.id, ticket.createdById))
+          : [null];
+        const [assignedTo] = ticket.assignedToId
+          ? await db.select().from(users).where(eq(users.id, ticket.assignedToId))
+          : [null];
+        return { ...ticket, createdBy, assignedTo };
+      })
+    );
+  }
+
   async updateTicketStatus(id: string, status: string): Promise<void> {
     const updates: any = { status, updatedAt: new Date() };
     if (status === 'resolved') {
@@ -438,6 +461,26 @@ export class DatabaseStorage implements IStorage {
     
     return await Promise.all(
       allChanges.map(async (change) => {
+        const [requestedBy] = change.requestedById
+          ? await db.select().from(users).where(eq(users.id, change.requestedById))
+          : [null];
+        const [approvedBy] = change.approvedById
+          ? await db.select().from(users).where(eq(users.id, change.approvedById))
+          : [null];
+        return { ...change, requestedBy, approvedBy };
+      })
+    );
+  }
+
+  async getChangeRequestsByCI(ciId: string): Promise<any[]> {
+    const ciChanges = await db
+      .select()
+      .from(changeRequests)
+      .where(eq(changeRequests.linkedCiId, ciId))
+      .orderBy(desc(changeRequests.createdAt));
+    
+    return await Promise.all(
+      ciChanges.map(async (change) => {
         const [requestedBy] = change.requestedById
           ? await db.select().from(users).where(eq(users.id, change.requestedById))
           : [null];
@@ -592,6 +635,26 @@ export class DatabaseStorage implements IStorage {
           ? await db.select().from(customers).where(eq(customers.id, problem.customerId))
           : [null];
         return { ...problem, createdBy, assignedTo, assignedToTeam, customer };
+      })
+    );
+  }
+
+  async getProblemsByCI(ciId: string): Promise<any[]> {
+    const ciProblems = await db
+      .select()
+      .from(problems)
+      .where(eq(problems.linkedCiId, ciId))
+      .orderBy(desc(problems.createdAt));
+    
+    return await Promise.all(
+      ciProblems.map(async (problem) => {
+        const [createdBy] = problem.createdById
+          ? await db.select().from(users).where(eq(users.id, problem.createdById))
+          : [null];
+        const [assignedTo] = problem.assignedToId
+          ? await db.select().from(users).where(eq(users.id, problem.assignedToId))
+          : [null];
+        return { ...problem, createdBy, assignedTo };
       })
     );
   }

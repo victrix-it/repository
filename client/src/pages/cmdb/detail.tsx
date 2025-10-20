@@ -78,6 +78,21 @@ export default function CIDetailPage() {
     queryKey: ['/api/customers'],
   });
 
+  const { data: relatedTickets } = useQuery<any[]>({
+    queryKey: ["/api/configuration-items", id, "tickets"],
+    enabled: !!id,
+  });
+
+  const { data: relatedChanges } = useQuery<any[]>({
+    queryKey: ["/api/configuration-items", id, "changes"],
+    enabled: !!id,
+  });
+
+  const { data: relatedProblems } = useQuery<any[]>({
+    queryKey: ["/api/configuration-items", id, "problems"],
+    enabled: !!id,
+  });
+
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
       return await apiRequest('PATCH', `/api/configuration-items/${id}`, data);
@@ -301,6 +316,87 @@ export default function CIDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Related Tickets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedTickets && relatedTickets.length > 0 ? (
+                <div className="space-y-2">
+                  {relatedTickets.map((ticket) => (
+                    <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{ticket.ticketNumber}</p>
+                            <p className="text-sm text-muted-foreground">{ticket.title}</p>
+                          </div>
+                          <StatusBadge status={ticket.status} type="ticket" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No related tickets</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Related Changes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedChanges && relatedChanges.length > 0 ? (
+                <div className="space-y-2">
+                  {relatedChanges.map((change) => (
+                    <Link key={change.id} href={`/changes/${change.id}`}>
+                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`change-${change.id}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{change.changeNumber}</p>
+                            <p className="text-sm text-muted-foreground">{change.title}</p>
+                          </div>
+                          <StatusBadge status={change.status} type="change" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No related changes</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Related Problems</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {relatedProblems && relatedProblems.length > 0 ? (
+                <div className="space-y-2">
+                  {relatedProblems.map((problem) => (
+                    <Link key={problem.id} href={`/problems/${problem.id}`}>
+                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`problem-${problem.id}`}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{problem.problemNumber}</p>
+                            <p className="text-sm text-muted-foreground">{problem.title}</p>
+                          </div>
+                          <StatusBadge status={problem.status} type="problem" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No related problems</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 

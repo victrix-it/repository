@@ -298,6 +298,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/configuration-items/:id/tickets', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
+    try {
+      const tickets = await storage.getTicketsByCI(req.params.id);
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching CI tickets:", error);
+      res.status(500).json({ message: "Failed to fetch related tickets" });
+    }
+  });
+
+  app.get('/api/configuration-items/:id/changes', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
+    try {
+      const changes = await storage.getChangeRequestsByCI(req.params.id);
+      res.json(changes);
+    } catch (error) {
+      console.error("Error fetching CI changes:", error);
+      res.status(500).json({ message: "Failed to fetch related changes" });
+    }
+  });
+
+  app.get('/api/configuration-items/:id/problems', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
+    try {
+      const problems = await storage.getProblemsByCI(req.params.id);
+      res.json(problems);
+    } catch (error) {
+      console.error("Error fetching CI problems:", error);
+      res.status(500).json({ message: "Failed to fetch related problems" });
+    }
+  });
+
   app.post('/api/configuration-items', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
     try {
       const validatedData = insertConfigurationItemSchema.parse(req.body);
