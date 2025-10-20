@@ -6,6 +6,15 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **RBAC System Implementation** (October 20, 2025): Complete role-based access control with 12 granular permissions
+  - Created comprehensive permission system: canCreateTickets, canUpdateOwnTickets, canUpdateAllTickets, canCloseTickets, canViewAllTickets, canApproveChanges, canManageKnowledgebase, canRunReports, canManageUsers, canManageRoles, canManageCMDB, canViewCMDB, isTenantScoped
+  - Backend middleware (requirePermission) for permission enforcement on all protected routes
+  - Frontend permission hooks (usePermissions) for conditional UI rendering
+  - Auto-assign "End User" role to new OIDC users on first login
+  - Updated /api/auth/user to include role details with full permissions object
+  - Sidebar displays user's role name (data-testid="user-role")
+  - Navigation menu items filtered based on user permissions
+  - Test-verified: Permission enforcement working correctly across all routes and UI components
 - **Admin Dashboard Update** (October 20, 2025): Added SLA Templates to admin section navigation
   - Added SLA Templates card with Clock icon to admin dashboard grid
   - Links to `/admin/sla-templates` for managing service level agreement templates
@@ -64,8 +73,17 @@ Preferred communication style: Simple, everyday language.
 
 **Provider**: Replit Auth with OIDC discovery.
 **Flow**: Redirects unauthenticated users to a landing page, initiates login via `/api/login`, and uses OIDC callback for session creation/updates. Sessions are PostgreSQL-backed with a 7-day TTL. All API routes are protected by `isAuthenticated` middleware.
-**User Management**: User profiles are auto-created from OIDC claims, include email, name, and profile image, and default to a 'user' role.
+**User Management**: User profiles are auto-created from OIDC claims, include email, name, and profile image, and are automatically assigned to the "End User" role on first login.
 **Session Security**: Employs HTTP-only, secure cookies with a 7-day session lifetime.
+
+**RBAC System**: Comprehensive role-based access control with 12 granular permissions:
+- **Permission Types**: canCreateTickets, canUpdateOwnTickets, canUpdateAllTickets, canCloseTickets, canViewAllTickets, canApproveChanges, canManageKnowledgebase, canRunReports, canManageUsers, canManageRoles, canManageCMDB, canViewCMDB, isTenantScoped
+- **Default Roles**: 9 ITIL-based roles (End User, L1 Analyst, L2 Engineer, Problem Manager, Change Manager, ITSM Lead, Knowledge Manager, System Administrator, Tenant Admin)
+- **Backend Enforcement**: requirePermission middleware in server/permissions.ts checks permissions on protected routes
+- **Frontend Enforcement**: usePermissions hook in client/src/hooks/usePermissions.ts provides hasPermission(), hasAnyPermission(), hasAllPermissions() for conditional UI rendering
+- **Permission Checking**: getUserWithRole helper function in server/permissions.ts retrieves user with role and permission details
+- **API Integration**: GET /api/auth/user returns user object with roleDetails containing permissions object
+- **UI Integration**: Sidebar displays role name, navigation menu filtered by permissions, admin functions restricted to authorized users
 
 ### Key Architectural Patterns
 
