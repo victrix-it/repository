@@ -37,6 +37,8 @@ export default function CustomersPage() {
       contactEmail: undefined,
       contactPhone: undefined,
       isActive: "true",
+      responseTimeSla: undefined,
+      resolutionTimeSla: undefined,
     },
   });
 
@@ -246,6 +248,49 @@ export default function CustomersPage() {
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={createForm.control}
+                    name="responseTimeSla"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Response SLA (minutes)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="number"
+                            value={field.value ?? ""} 
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                            placeholder="60" 
+                            data-testid="input-response-sla" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={createForm.control}
+                    name="resolutionTimeSla"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Resolution SLA (minutes)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="number"
+                            value={field.value ?? ""} 
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                            placeholder="240" 
+                            data-testid="input-resolution-sla" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                     Cancel
@@ -303,6 +348,8 @@ export default function CustomersPage() {
                               contactEmail: customer.contactEmail || undefined,
                               contactPhone: customer.contactPhone || undefined,
                               isActive: customer.isActive,
+                              responseTimeSla: customer.responseTimeSla || undefined,
+                              resolutionTimeSla: customer.resolutionTimeSla || undefined,
                             });
                           }}
                           data-testid={`button-edit-${customer.id}`}
@@ -397,6 +444,47 @@ export default function CustomersPage() {
                                     <FormLabel>Contact Phone</FormLabel>
                                     <FormControl>
                                       <Input {...field} value={field.value || ""} data-testid="input-edit-contact-phone" />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={editForm.control}
+                                name="responseTimeSla"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Response SLA (minutes)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        type="number"
+                                        value={field.value ?? ""} 
+                                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                        data-testid="input-edit-response-sla" 
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={editForm.control}
+                                name="resolutionTimeSla"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Resolution SLA (minutes)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        type="number"
+                                        value={field.value ?? ""} 
+                                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                        data-testid="input-edit-resolution-sla" 
+                                      />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
