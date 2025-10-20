@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertCustomerSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema, insertProblemSchema } from "@shared/schema";
+import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertCustomerSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema, insertProblemSchema, insertSlaTemplateSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
 import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
@@ -553,6 +553,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting customer:", error);
       res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
+  // SLA Template routes
+  app.get('/api/sla-templates', isAuthenticated, async (req, res) => {
+    try {
+      const templates = await storage.getAllSlaTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching SLA templates:", error);
+      res.status(500).json({ message: "Failed to fetch SLA templates" });
+    }
+  });
+
+  app.get('/api/sla-templates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const template = await storage.getSlaTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ message: "SLA template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching SLA template:", error);
+      res.status(500).json({ message: "Failed to fetch SLA template" });
+    }
+  });
+
+  app.post('/api/sla-templates', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertSlaTemplateSchema.parse(req.body);
+      const template = await storage.createSlaTemplate(validatedData);
+      res.json(template);
+    } catch (error: any) {
+      console.error("Error creating SLA template:", error);
+      res.status(400).json({ message: error.message || "Failed to create SLA template" });
+    }
+  });
+
+  app.patch('/api/sla-templates/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updated = await storage.updateSlaTemplate(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating SLA template:", error);
+      res.status(400).json({ message: error.message || "Failed to update SLA template" });
+    }
+  });
+
+  app.delete('/api/sla-templates/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteSlaTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting SLA template:", error);
+      res.status(500).json({ message: "Failed to delete SLA template" });
+    }
+  });
+
+  app.post('/api/sla-templates/:id/set-default', isAuthenticated, async (req, res) => {
+    try {
+      await storage.setDefaultSlaTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting default SLA template:", error);
+      res.status(500).json({ message: "Failed to set default SLA template" });
     }
   });
 

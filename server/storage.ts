@@ -62,6 +62,9 @@ import {
   type InsertContact,
   type Problem,
   type InsertProblem,
+  type SlaTemplate,
+  type InsertSlaTemplate,
+  slaTemplates,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -141,6 +144,14 @@ export interface IStorage {
   getCustomer(id: string): Promise<Customer | undefined>;
   updateCustomer(id: string, customer: Partial<InsertCustomer>): Promise<Customer>;
   deleteCustomer(id: string): Promise<void>;
+  
+  // SLA Template operations
+  createSlaTemplate(template: InsertSlaTemplate): Promise<SlaTemplate>;
+  getAllSlaTemplates(): Promise<SlaTemplate[]>;
+  getSlaTemplate(id: string): Promise<SlaTemplate | undefined>;
+  updateSlaTemplate(id: string, template: Partial<InsertSlaTemplate>): Promise<SlaTemplate>;
+  deleteSlaTemplate(id: string): Promise<void>;
+  setDefaultSlaTemplate(id: string): Promise<void>;
   
   // Resolution category operations
   createResolutionCategory(category: InsertResolutionCategory): Promise<ResolutionCategory>;
@@ -687,7 +698,7 @@ export class DatabaseStorage implements IStorage {
         title: email.subject,
         description: `From: ${email.fromAddress}\n\n${email.body}`,
         status: 'open',
-        priority: 'medium',
+        priority: 'p3',
         createdById,
         emailMessageId: emailId,
       })
@@ -833,6 +844,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomer(id: string): Promise<void> {
     await db.delete(customers).where(eq(customers.id, id));
+  }
+
+  // SLA Template operations
+  async createSlaTemplate(template: InsertSlaTemplate): Promise<SlaTemplate> {
+    const [newTemplate] = await db.insert(slaTemplates).values(template).returning();
+    return newTemplate;
+  }
+
+  async getAllSlaTemplates(): Promise<SlaTemplate[]> {
+    return await db.select().from(slaTemplates).orderBy(desc(slaTemplates.isDefault), slaTemplates.name);
+  }
+
+  async getSlaTemplate(id: string): Promise<SlaTemplate | undefined> {
+    const [template] = await db.select().from(slaTemplates).where(eq(slaTemplates.id, id));
+    return template;
+  }
+
+  async updateSlaTemplate(id: string, template: Partial<InsertSlaTemplate>): Promise<SlaTemplate> {
+    const [updated] = await db
+      .update(slaTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(slaTemplates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteSlaTemplate(id: string): Promise<void> {
+    await db.delete(slaTemplates).where(eq(slaTemplates.id, id));
+  }
+
+  async setDefaultSlaTemplate(id: string): Promise<void> {
+    // First, set all templates to non-default
+    await db.update(slaTemplates).set({ isDefault: 'false' });
+    // Then set the specified template as default
+    await db.update(slaTemplates).set({ isDefault: 'true' }).where(eq(slaTemplates.id, id));
   }
 
   // Resolution category operations
@@ -1137,7 +1183,7 @@ export class DatabaseStorage implements IStorage {
     const [criticalTickets] = await db
       .select({ count: sql<number>`count(*)` })
       .from(tickets)
-      .where(eq(tickets.priority, 'critical'));
+      .where(eq(tickets.priority, 'p1'));
 
     const [pendingChanges] = await db
       .select({ count: sql<number>`count(*)` })
