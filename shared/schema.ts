@@ -73,14 +73,23 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: userRoleEnum("role").default('user').notNull(), // Legacy role field - kept for backwards compatibility
-  roleId: varchar("role_id").references(() => roles.id), // New custom role reference
+  roleId: varchar("role_id").references(() => roles.id), // Primary role reference (for compatibility)
   customerId: varchar("customer_id").references(() => customers.id), // Company/tenant assignment
   authProvider: varchar("auth_provider", { length: 20 }).default('replit').notNull(), // replit, ldap, saml, local
   passwordHash: varchar("password_hash", { length: 255 }), // For local auth only
   ldapDn: varchar("ldap_dn"), // Distinguished Name from LDAP
   samlNameId: varchar("saml_name_id"), // NameID from SAML
+  status: varchar("status", { length: 20 }).default('active').notNull(), // active, disabled
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User Roles (many-to-many relationship for multiple roles per user)
+export const userRoles = pgTable("user_roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  roleId: varchar("role_id").references(() => roles.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Teams table
@@ -441,7 +450,7 @@ export const contacts = pgTable("contacts", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   ticketsCreated: many(tickets, { relationName: 'createdBy' }),
   ticketsAssigned: many(tickets, { relationName: 'assignedTo' }),
   changesRequested: many(changeRequests, { relationName: 'requestedBy' }),
@@ -449,6 +458,26 @@ export const usersRelations = relations(users, ({ many }) => ({
   knowledgeBaseArticles: many(knowledgeBase),
   comments: many(comments),
   ownedCIs: many(configurationItems),
+  userRoles: many(userRoles),
+  primaryRole: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id],
+  }),
+  customer: one(customers, {
+    fields: [users.customerId],
+    references: [customers.id],
+  }),
+}));
+
+export const userRolesRelations = relations(userRoles, ({ one }) => ({
+  user: one(users, {
+    fields: [userRoles.userId],
+    references: [users.id],
+  }),
+  role: one(roles, {
+    fields: [userRoles.roleId],
+    references: [roles.id],
+  }),
 }));
 
 export const configurationItemsRelations = relations(configurationItems, ({ one, many }) => ({
@@ -711,6 +740,11 @@ export const insertRoleSchema = createInsertSchema(roles).omit({
   updatedAt: true,
 });
 
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -780,3 +814,6 @@ export type Contact = typeof contacts.$inferSelect;
 
 export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type Role = typeof roles.$inferSelect;
+
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+export type UserRole = typeof userRoles.$inferSelect;
