@@ -15,16 +15,19 @@ import { z } from "zod";
 
 // Enums
 export const ticketStatusEnum = pgEnum('ticket_status', ['open', 'in_progress', 'resolved', 'closed']);
-export const ticketPriorityEnum = pgEnum('ticket_priority', ['low', 'medium', 'high', 'critical']);
+export const ticketPriorityEnum = pgEnum('ticket_priority', ['p1', 'p2', 'p3', 'p4', 'p5']);
 export const changeStatusEnum = pgEnum('change_status', ['draft', 'pending_approval', 'approved', 'rejected', 'scheduled', 'implemented', 'cancelled']);
 export const changeTypeEnum = pgEnum('change_type', ['normal', 'emergency', 'retrospective']);
-export const changePriorityEnum = pgEnum('change_priority', ['low', 'medium', 'high', 'critical']);
+export const changePriorityEnum = pgEnum('change_priority', ['p1', 'p2', 'p3', 'p4']);
 export const ciTypeEnum = pgEnum('ci_type', ['server', 'application', 'database', 'network', 'storage', 'other']);
 export const ciStatusEnum = pgEnum('ci_status', ['active', 'inactive', 'maintenance', 'decommissioned']);
 export const kbTypeEnum = pgEnum('kb_type', ['sop', 'known_issue']);
 export const userRoleEnum = pgEnum('user_role', ['user', 'support', 'admin']);
 export const problemStatusEnum = pgEnum('problem_status', ['open', 'investigating', 'known_error', 'resolved', 'closed']);
+export const problemPriorityEnum = pgEnum('problem_priority', ['p1', 'p2', 'p3', 'p4']);
 export const slaStatusEnum = pgEnum('sla_status', ['within_sla', 'at_risk', 'breached']);
+export const impactEnum = pgEnum('impact', ['high', 'medium', 'low']);
+export const urgencyEnum = pgEnum('urgency', ['critical', 'high', 'medium', 'low']);
 
 // Session storage table (required for Replit Auth)
 export const sessions = pgTable(
@@ -81,9 +84,7 @@ export const customers = pgTable("customers", {
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),
   isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
-  // SLA Configuration (in minutes)
-  responseTimeSla: integer("response_time_sla"), // Minutes to first response
-  resolutionTimeSla: integer("resolution_time_sla"), // Minutes to resolution
+  slaTemplateId: varchar("sla_template_id").references(() => slaTemplates.id), // Link to SLA template
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -104,6 +105,53 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// SLA Templates
+export const slaTemplates = pgTable("sla_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  isDefault: varchar("is_default", { length: 10 }).default('false').notNull(),
+  
+  // Incident SLAs (P1-P5) - in minutes
+  incidentP1Response: integer("incident_p1_response").default(15).notNull(),
+  incidentP1Resolution: integer("incident_p1_resolution").default(240).notNull(),
+  incidentP2Response: integer("incident_p2_response").default(30).notNull(),
+  incidentP2Resolution: integer("incident_p2_resolution").default(480).notNull(),
+  incidentP3Response: integer("incident_p3_response").default(60).notNull(),
+  incidentP3Resolution: integer("incident_p3_resolution").default(1440).notNull(),
+  incidentP4Response: integer("incident_p4_response").default(240).notNull(),
+  incidentP4Resolution: integer("incident_p4_resolution").default(4320).notNull(), // 3 business days
+  incidentP5Response: integer("incident_p5_response").default(1440).notNull(), // 1 business day
+  incidentP5Resolution: integer("incident_p5_resolution").notNull(), // As agreed (null or custom)
+  
+  // Change SLAs (P1-P4) - in minutes
+  changeP1Approval: integer("change_p1_approval").default(30).notNull(),
+  changeP1Implementation: integer("change_p1_implementation").default(60).notNull(),
+  changeP2Approval: integer("change_p2_approval").default(1440).notNull(), // 1 business day
+  changeP2Implementation: integer("change_p2_implementation").default(2880).notNull(), // 2 business days
+  changeP3Approval: integer("change_p3_approval").default(2880).notNull(),
+  changeP3Implementation: integer("change_p3_implementation").default(7200).notNull(), // 5 business days
+  changeP4Approval: integer("change_p4_approval").default(7200).notNull(),
+  changeP4Implementation: integer("change_p4_implementation").notNull(), // Scheduled as available
+  
+  // Problem SLAs (P1-P4) - in minutes
+  problemP1Response: integer("problem_p1_response").default(30).notNull(),
+  problemP1RcaTarget: integer("problem_p1_rca_target").default(2880).notNull(), // 2 business days
+  problemP1Resolution: integer("problem_p1_resolution").default(7200).notNull(), // 5 business days
+  problemP2Response: integer("problem_p2_response").default(60).notNull(),
+  problemP2RcaTarget: integer("problem_p2_rca_target").default(7200).notNull(),
+  problemP2Resolution: integer("problem_p2_resolution").default(14400).notNull(), // 10 business days
+  problemP3Response: integer("problem_p3_response").default(240).notNull(),
+  problemP3RcaTarget: integer("problem_p3_rca_target").default(14400).notNull(),
+  problemP3Resolution: integer("problem_p3_resolution").default(28800).notNull(), // 20 business days
+  problemP4Response: integer("problem_p4_response").default(1440).notNull(),
+  problemP4RcaTarget: integer("problem_p4_rca_target").default(28800).notNull(),
+  problemP4Resolution: integer("problem_p4_resolution").notNull(), // As scheduled
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Alert integrations (webhook configurations for monitoring systems)
 export const alertIntegrations = pgTable("alert_integrations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -113,7 +161,7 @@ export const alertIntegrations = pgTable("alert_integrations", {
   webhookUrl: varchar("webhook_url", { length: 500 }).unique().notNull(),
   apiKey: varchar("api_key", { length: 255 }).notNull(),
   sourceSystem: varchar("source_system", { length: 100 }), // e.g., 'solarwinds', 'nagios', 'zabbix'
-  defaultPriority: ticketPriorityEnum("default_priority").default('medium').notNull(),
+  defaultPriority: ticketPriorityEnum("default_priority").default('p3').notNull(),
   defaultCategory: varchar("default_category", { length: 100 }),
   autoAssignTeamId: varchar("auto_assign_team_id").references(() => teams.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -227,7 +275,9 @@ export const tickets = pgTable("tickets", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
   status: ticketStatusEnum("status").default('open').notNull(),
-  priority: ticketPriorityEnum("priority").default('medium').notNull(),
+  priority: ticketPriorityEnum("priority").default('p3').notNull(),
+  impact: impactEnum("impact").default('medium').notNull(), // For priority matrix
+  urgency: urgencyEnum("urgency").default('medium').notNull(), // For priority matrix
   category: varchar("category", { length: 100 }), // e.g., Hardware, Software, Network, Access
   tags: text("tags").array(), // Flexible tagging system
   assignedToId: varchar("assigned_to_id").references(() => users.id),
@@ -257,7 +307,9 @@ export const changeRequests = pgTable("change_requests", {
   description: text("description").notNull(),
   status: changeStatusEnum("status").default('draft').notNull(),
   changeType: changeTypeEnum("change_type").default('normal').notNull(),
-  priority: changePriorityEnum("priority").default('medium').notNull(),
+  priority: changePriorityEnum("priority").default('p3').notNull(),
+  impact: impactEnum("impact").default('medium').notNull(), // For priority matrix
+  urgency: urgencyEnum("urgency").default('medium').notNull(), // For priority matrix
   reason: text("reason"), // Reason for change
   prerequisites: text("prerequisites"), // Steps needed before the change
   communicationPlan: text("communication_plan"), // Who to contact and when
@@ -294,7 +346,9 @@ export const problems = pgTable("problems", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
   status: problemStatusEnum("status").default('open').notNull(),
-  priority: ticketPriorityEnum("priority").default('medium').notNull(), // Reuse ticket priority enum
+  priority: problemPriorityEnum("priority").default('p3').notNull(),
+  impact: impactEnum("impact").default('medium').notNull(), // For priority matrix
+  urgency: urgencyEnum("urgency").default('medium').notNull(), // For priority matrix
   rootCause: text("root_cause"), // Root cause analysis
   workaround: text("workaround"), // Temporary workaround
   solution: text("solution"), // Permanent solution
@@ -577,6 +631,12 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit
   updatedAt: true,
 });
 
+export const insertSlaTemplateSchema = createInsertSchema(slaTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertAlertIntegrationSchema = createInsertSchema(alertIntegrations).omit({
   id: true,
   createdAt: true,
@@ -636,6 +696,9 @@ export type ResolutionCategory = typeof resolutionCategories.$inferSelect;
 
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 export type SystemSetting = typeof systemSettings.$inferSelect;
+
+export type InsertSlaTemplate = z.infer<typeof insertSlaTemplateSchema>;
+export type SlaTemplate = typeof slaTemplates.$inferSelect;
 
 export type InsertAlertIntegration = z.infer<typeof insertAlertIntegrationSchema>;
 export type AlertIntegration = typeof alertIntegrations.$inferSelect;
