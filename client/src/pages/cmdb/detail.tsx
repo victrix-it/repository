@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -30,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { ConfigurationItem, User, Customer } from "@shared/schema";
+import type { ConfigurationItem, User, Customer, Team } from "@shared/schema";
 
 const ciTypeIcons = {
   server: Server,
@@ -44,6 +43,7 @@ const ciTypeIcons = {
 interface CIWithRelations extends ConfigurationItem {
   owner?: User | null;
   customer?: Customer | null;
+  ownerTeam?: Team | null;
 }
 
 export default function CIDetailPage() {
@@ -63,6 +63,7 @@ export default function CIDetailPage() {
     subnetMask: "",
     ownerId: "",
     customerId: "",
+    ownerTeamId: "",
     supportDetails: "",
   });
 
@@ -76,6 +77,10 @@ export default function CIDetailPage() {
 
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ['/api/customers'],
+  });
+
+  const { data: teams } = useQuery<Team[]>({
+    queryKey: ['/api/teams'],
   });
 
   const { data: relatedTickets } = useQuery<any[]>({
@@ -129,6 +134,7 @@ export default function CIDetailPage() {
       subnetMask: ci.subnetMask || "",
       ownerId: ci.ownerId || "",
       customerId: ci.customerId || "",
+      ownerTeamId: ci.ownerTeamId || "",
       supportDetails: ci.supportDetails || "",
     });
     setEditOpen(true);
@@ -141,6 +147,7 @@ export default function CIDetailPage() {
       ...editFormData,
       ownerId: editFormData.ownerId || undefined,
       customerId: editFormData.customerId || undefined,
+      ownerTeamId: editFormData.ownerTeamId || undefined,
     };
     
     updateMutation.mutate(submitData);
@@ -182,222 +189,235 @@ export default function CIDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start gap-3">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  {ci.ciNumber && (
-                    <div className="mb-2">
-                      <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded" data-testid="ci-number">
-                        {ci.ciNumber}
-                      </span>
-                    </div>
-                  )}
-                  <CardTitle className="text-2xl mb-3" data-testid="ci-name">{ci.name}</CardTitle>
-                  <div className="flex gap-2 flex-wrap">
-                    <StatusBadge status={ci.status} type="ci" />
-                    <span className="text-xs text-muted-foreground capitalize px-2 py-1 rounded-md bg-muted">
-                      {ci.type}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            {ci.description && (
-              <CardContent>
-                <p className="text-foreground whitespace-pre-wrap" data-testid="ci-description">
-                  {ci.description}
-                </p>
-              </CardContent>
-            )}
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Icon className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
               {ci.ciNumber && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">CI Number</p>
-                  <p className="text-sm font-mono" data-testid="ci-number">{ci.ciNumber}</p>
+                <div className="mb-2">
+                  <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded" data-testid="ci-number">
+                    {ci.ciNumber}
+                  </span>
                 </div>
               )}
+              <CardTitle className="text-2xl mb-3" data-testid="ci-name">{ci.name}</CardTitle>
+              <div className="flex gap-2 flex-wrap">
+                <StatusBadge status={ci.status} type="ci" />
+                <span className="text-xs text-muted-foreground capitalize px-2 py-1 rounded-md bg-muted">
+                  {ci.type}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        {ci.description && (
+          <CardContent>
+            <p className="text-foreground whitespace-pre-wrap" data-testid="ci-description">
+              {ci.description}
+            </p>
+          </CardContent>
+        )}
+      </Card>
 
-              {ci.manufacturer && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Manufacturer</p>
-                  <p className="text-sm" data-testid="ci-manufacturer">{ci.manufacturer}</p>
-                </div>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Technical Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Manufacturer</p>
+              <p className="text-sm" data-testid="ci-manufacturer">{ci.manufacturer || "Not specified"}</p>
+            </div>
 
-              {ci.model && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Model</p>
-                  <p className="text-sm" data-testid="ci-model">{ci.model}</p>
-                </div>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Model</p>
+              <p className="text-sm" data-testid="ci-model">{ci.model || "Not specified"}</p>
+            </div>
 
-              {ci.serialNumber && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Serial Number</p>
-                  <p className="text-sm font-mono" data-testid="ci-serial-number">{ci.serialNumber}</p>
-                </div>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Serial Number</p>
+              <p className="text-sm font-mono" data-testid="ci-serial-number">{ci.serialNumber || "Not specified"}</p>
+            </div>
 
-              {ci.ipAddress && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">IP Address</p>
-                  <p className="text-sm font-mono" data-testid="ci-ip-address">{ci.ipAddress}</p>
-                </div>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">IP Address</p>
+              <p className="text-sm font-mono" data-testid="ci-ip-address">{ci.ipAddress || "Not specified"}</p>
+            </div>
 
-              {ci.subnetMask && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Subnet Mask</p>
-                  <p className="text-sm font-mono" data-testid="ci-subnet-mask">{ci.subnetMask}</p>
-                </div>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Subnet Mask</p>
+              <p className="text-sm font-mono" data-testid="ci-subnet-mask">{ci.subnetMask || "Not specified"}</p>
+            </div>
 
-              {ci.owner && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Owner</p>
-                  <div className="flex items-center gap-2">
-                    <UserAvatar user={ci.owner} size="sm" />
-                    <span className="text-sm">
-                      {ci.owner.firstName} {ci.owner.lastName}
-                    </span>
-                  </div>
-                </div>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Discovery Method</p>
+              <p className="text-sm capitalize" data-testid="ci-discovered-via">{ci.discoveredVia || "Manual"}</p>
+            </div>
 
-              {ci.customer && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Customer</p>
+            {ci.lastDiscovered && (
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Last Discovered</p>
+                <p className="text-sm" data-testid="ci-last-discovered">
+                  {formatDistanceToNow(new Date(ci.lastDiscovered), { addSuffix: true })}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Ownership & Assignment</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Customer</p>
+              {ci.customer ? (
+                <>
                   <p className="text-sm font-medium" data-testid="ci-customer">{ci.customer.name}</p>
                   {ci.customer.code && (
                     <p className="text-xs text-muted-foreground">{ci.customer.code}</p>
                   )}
-                </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not assigned</p>
               )}
+            </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Created</p>
-                <p className="text-sm">
-                  {formatDistanceToNow(new Date(ci.createdAt), { addSuffix: true })}
-                </p>
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">Owner</p>
+              {ci.owner ? (
+                <div className="flex items-center gap-2">
+                  <UserAvatar user={ci.owner} size="sm" />
+                  <span className="text-sm">
+                    {ci.owner.firstName} {ci.owner.lastName}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not assigned</p>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Owner Team</p>
+              <p className="text-sm" data-testid="ci-owner-team">
+                {ci.ownerTeam?.name || "Not assigned"}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Created</p>
+              <p className="text-sm">
+                {formatDistanceToNow(new Date(ci.createdAt), { addSuffix: true })}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
+              <p className="text-sm">
+                {formatDistanceToNow(new Date(ci.updatedAt), { addSuffix: true })}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Support Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm whitespace-pre-wrap" data-testid="ci-support-details">
+              {ci.supportDetails || "No support details provided"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Related Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {relatedTickets && relatedTickets.length > 0 ? (
+              <div className="space-y-2">
+                {relatedTickets.map((ticket) => (
+                  <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+                    <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{ticket.ticketNumber}</p>
+                          <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
+                        </div>
+                        <StatusBadge status={ticket.status} type="ticket" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No related tickets</p>
+            )}
+          </CardContent>
+        </Card>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Last Updated</p>
-                <p className="text-sm">
-                  {formatDistanceToNow(new Date(ci.updatedAt), { addSuffix: true })}
-                </p>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Related Changes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {relatedChanges && relatedChanges.length > 0 ? (
+              <div className="space-y-2">
+                {relatedChanges.map((change) => (
+                  <Link key={change.id} href={`/changes/${change.id}`}>
+                    <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`change-${change.id}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{change.changeNumber}</p>
+                          <p className="text-sm text-muted-foreground truncate">{change.title}</p>
+                        </div>
+                        <StatusBadge status={change.status} type="change" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <p className="text-sm text-muted-foreground">No related changes</p>
+            )}
+          </CardContent>
+        </Card>
 
-          {ci.supportDetails && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Support Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm whitespace-pre-wrap" data-testid="ci-support-details">
-                  {ci.supportDetails}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Related Tickets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {relatedTickets && relatedTickets.length > 0 ? (
-                <div className="space-y-2">
-                  {relatedTickets.map((ticket) => (
-                    <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
-                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{ticket.ticketNumber}</p>
-                            <p className="text-sm text-muted-foreground">{ticket.title}</p>
-                          </div>
-                          <StatusBadge status={ticket.status} type="ticket" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Related Problems</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {relatedProblems && relatedProblems.length > 0 ? (
+              <div className="space-y-2">
+                {relatedProblems.map((problem) => (
+                  <Link key={problem.id} href={`/problems/${problem.id}`}>
+                    <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`problem-${problem.id}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{problem.problemNumber}</p>
+                          <p className="text-sm text-muted-foreground truncate">{problem.title}</p>
                         </div>
+                        <StatusBadge status={problem.status} type="problem" />
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No related tickets</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Related Changes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {relatedChanges && relatedChanges.length > 0 ? (
-                <div className="space-y-2">
-                  {relatedChanges.map((change) => (
-                    <Link key={change.id} href={`/changes/${change.id}`}>
-                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`change-${change.id}`}>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{change.changeNumber}</p>
-                            <p className="text-sm text-muted-foreground">{change.title}</p>
-                          </div>
-                          <StatusBadge status={change.status} type="change" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No related changes</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Related Problems</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {relatedProblems && relatedProblems.length > 0 ? (
-                <div className="space-y-2">
-                  {relatedProblems.map((problem) => (
-                    <Link key={problem.id} href={`/problems/${problem.id}`}>
-                      <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`problem-${problem.id}`}>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{problem.problemNumber}</p>
-                            <p className="text-sm text-muted-foreground">{problem.title}</p>
-                          </div>
-                          <StatusBadge status={problem.status} type="problem" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No related problems</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No related problems</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -563,11 +583,32 @@ export default function CIDetailPage() {
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="edit-ownerTeam">Owner Team</Label>
+                <Select 
+                  value={editFormData.ownerTeamId || "none"} 
+                  onValueChange={(value) => setEditFormData({ ...editFormData, ownerTeamId: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger data-testid="select-edit-owner-team">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {teams?.map((team) => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
                 <Label htmlFor="edit-supportDetails">Support Details</Label>
                 <Textarea
                   id="edit-supportDetails"
                   value={editFormData.supportDetails}
                   onChange={(e) => setEditFormData({ ...editFormData, supportDetails: e.target.value })}
+                  placeholder="Support contract details, vendor contacts, warranty information..."
                   data-testid="input-edit-support-details"
                 />
               </div>

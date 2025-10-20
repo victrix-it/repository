@@ -534,7 +534,15 @@ export class DatabaseStorage implements IStorage {
       ? await db.select().from(users).where(eq(users.id, ci.ownerId))
       : [null];
 
-    return { ...ci, owner };
+    const [customer] = ci.customerId
+      ? await db.select().from(customers).where(eq(customers.id, ci.customerId))
+      : [null];
+
+    const [ownerTeam] = ci.ownerTeamId
+      ? await db.select().from(teams).where(eq(teams.id, ci.ownerTeamId))
+      : [null];
+
+    return { ...ci, owner, customer, ownerTeam };
   }
 
   async getAllConfigurationItems(): Promise<ConfigurationItem[]> {
