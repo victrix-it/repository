@@ -36,6 +36,7 @@ import CustomersPage from "@/pages/admin/customers";
 import UserCsvImportPage from "@/pages/admin/user-csv-import";
 import UsersPage from "@/pages/admin/users";
 import ResolutionCategoriesPage from "@/pages/admin/resolution-categories";
+import SlaTemplatesPage from "@/pages/admin/sla-templates/index";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -74,6 +75,7 @@ function Router() {
           <Route path="/admin/user-csv-import" component={UserCsvImportPage} />
           <Route path="/admin/users" component={UsersPage} />
           <Route path="/admin/resolution-categories" component={ResolutionCategoriesPage} />
+          <Route path="/admin/sla-templates" component={SlaTemplatesPage} />
         </>
       )}
       <Route component={NotFound} />
