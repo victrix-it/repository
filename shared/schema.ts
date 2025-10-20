@@ -29,6 +29,31 @@ export const slaStatusEnum = pgEnum('sla_status', ['within_sla', 'at_risk', 'bre
 export const impactEnum = pgEnum('impact', ['high', 'medium', 'low']);
 export const urgencyEnum = pgEnum('urgency', ['critical', 'high', 'medium', 'low']);
 
+// Roles table - for custom role-based access control
+export const roles = pgTable("roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  
+  // Permissions
+  canCreateTickets: varchar("can_create_tickets", { length: 10 }).default('true').notNull(),
+  canUpdateOwnTickets: varchar("can_update_own_tickets", { length: 10 }).default('true').notNull(),
+  canUpdateAllTickets: varchar("can_update_all_tickets", { length: 10 }).default('false').notNull(),
+  canCloseTickets: varchar("can_close_tickets", { length: 10 }).default('false').notNull(),
+  canViewAllTickets: varchar("can_view_all_tickets", { length: 10 }).default('false').notNull(),
+  canApproveChanges: varchar("can_approve_changes", { length: 10 }).default('false').notNull(),
+  canManageKnowledgebase: varchar("can_manage_knowledgebase", { length: 10 }).default('false').notNull(),
+  canRunReports: varchar("can_run_reports", { length: 10 }).default('false').notNull(),
+  canManageUsers: varchar("can_manage_users", { length: 10 }).default('false').notNull(),
+  canManageRoles: varchar("can_manage_roles", { length: 10 }).default('false').notNull(),
+  canManageCMDB: varchar("can_manage_cmdb", { length: 10 }).default('false').notNull(),
+  canViewCMDB: varchar("can_view_cmdb", { length: 10 }).default('true').notNull(),
+  isTenantScoped: varchar("is_tenant_scoped", { length: 10 }).default('false').notNull(), // Limits user to their own company only
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Session storage table (required for Replit Auth)
 export const sessions = pgTable(
   "sessions",
@@ -47,7 +72,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: userRoleEnum("role").default('user').notNull(),
+  role: userRoleEnum("role").default('user').notNull(), // Legacy role field - kept for backwards compatibility
+  roleId: varchar("role_id").references(() => roles.id), // New custom role reference
+  customerId: varchar("customer_id").references(() => customers.id), // Company/tenant assignment
   authProvider: varchar("auth_provider", { length: 20 }).default('replit').notNull(), // replit, ldap, saml, local
   passwordHash: varchar("password_hash", { length: 255 }), // For local auth only
   ldapDn: varchar("ldap_dn"), // Distinguished Name from LDAP
@@ -678,6 +705,12 @@ export const insertContactSchema = createInsertSchema(contacts).omit({
   updatedAt: true,
 });
 
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -744,3 +777,6 @@ export type Attachment = typeof attachments.$inferSelect;
 
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type Contact = typeof contacts.$inferSelect;
+
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type Role = typeof roles.$inferSelect;
