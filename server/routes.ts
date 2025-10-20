@@ -348,6 +348,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Link ticket to problem
+  app.post('/api/problems/:problemId/link-ticket/:ticketId', isAuthenticated, async (req, res) => {
+    try {
+      await storage.linkTicketToProblem(req.params.ticketId, req.params.problemId);
+      res.json({ message: "Ticket linked to problem successfully" });
+    } catch (error) {
+      console.error("Error linking ticket to problem:", error);
+      res.status(500).json({ message: "Failed to link ticket to problem" });
+    }
+  });
+
+  // Unlink ticket from problem
+  app.post('/api/problems/:problemId/unlink-ticket/:ticketId', isAuthenticated, async (req, res) => {
+    try {
+      await storage.unlinkTicketFromProblem(req.params.ticketId);
+      res.json({ message: "Ticket unlinked from problem successfully" });
+    } catch (error) {
+      console.error("Error unlinking ticket from problem:", error);
+      res.status(500).json({ message: "Failed to unlink ticket from problem" });
+    }
+  });
+
+  // Get linked tickets for a problem
+  app.get('/api/problems/:problemId/linked-tickets', isAuthenticated, async (req, res) => {
+    try {
+      const tickets = await storage.getLinkedTicketsForProblem(req.params.problemId);
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching linked tickets:", error);
+      res.status(500).json({ message: "Failed to fetch linked tickets" });
+    }
+  });
+
+  // Detect recurring incidents
+  app.get('/api/problems/detect-recurring', isAuthenticated, async (req, res) => {
+    try {
+      const suggestions = await storage.detectRecurringIncidents();
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Error detecting recurring incidents:", error);
+      res.status(500).json({ message: "Failed to detect recurring incidents" });
+    }
+  });
+
   // Email routes
   app.get('/api/emails', isAuthenticated, async (req, res) => {
     try {

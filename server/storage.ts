@@ -104,6 +104,10 @@ export interface IStorage {
   getAllProblems(): Promise<any[]>;
   updateProblem(id: string, problem: Partial<InsertProblem>): Promise<Problem>;
   updateProblemStatus(id: string, status: string): Promise<void>;
+  linkTicketToProblem(ticketId: string, problemId: string): Promise<void>;
+  unlinkTicketFromProblem(ticketId: string): Promise<void>;
+  getLinkedTicketsForProblem(problemId: string): Promise<any[]>;
+  detectRecurringIncidents(): Promise<any[]>;
   
   // Comment operations
   createComment(comment: InsertComment, createdById: string): Promise<Comment>;
@@ -535,6 +539,119 @@ export class DatabaseStorage implements IStorage {
       updates.resolvedAt = new Date();
     }
     await db.update(problems).set(updates).where(eq(problems.id, id));
+  }
+
+  async linkTicketToProblem(ticketId: string, problemId: string): Promise<void> {
+    await db.update(tickets)
+      .set({ linkedProblemId: problemId, updatedAt: new Date() })
+      .where(eq(tickets.id, ticketId));
+  }
+
+  async unlinkTicketFromProblem(ticketId: string): Promise<void> {
+    await db.update(tickets)
+      .set({ linkedProblemId: null, updatedAt: new Date() })
+      .where(eq(tickets.id, ticketId));
+  }
+
+  async getLinkedTicketsForProblem(problemId: string): Promise<any[]> {
+    const linkedTickets = await db
+      .select({
+        id: tickets.id,
+        ticketNumber: tickets.ticketNumber,
+        title: tickets.title,
+        status: tickets.status,
+        priority: tickets.priority,
+        createdAt: tickets.createdAt,
+        createdBy: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        },
+      })
+      .from(tickets)
+      .leftJoin(users, eq(tickets.createdById, users.id))
+      .where(eq(tickets.linkedProblemId, problemId))
+      .orderBy(desc(tickets.createdAt));
+    
+    return linkedTickets;
+  }
+
+  async detectRecurringIncidents(): Promise<any[]> {
+    // This query detects tickets with similar characteristics that might indicate a recurring problem
+    // We'll look for patterns based on:
+    // 1. Similar titles (using case-insensitive matching on key words)
+    // 2. Same CI (linked configuration item)
+    // 3. Same category
+    // 4. Same customer
+    // 5. Multiple occurrences within a time window (e.g., last 30 days)
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Get all tickets from the last 30 days that don't have a linked problem
+    const recentTickets = await db
+      .select()
+      .from(tickets)
+      .where(
+        and(
+          sql`${tickets.createdAt} >= ${thirtyDaysAgo}`,
+          isNull(tickets.linkedProblemId)
+        )
+      )
+      .orderBy(desc(tickets.createdAt));
+    
+    // Group tickets by potential patterns
+    const patterns = new Map<string, any[]>();
+    
+    for (const ticket of recentTickets) {
+      // Create pattern keys based on different criteria
+      const keys: string[] = [];
+      
+      // Pattern 1: Same CI
+      if (ticket.linkedCiId) {
+        keys.push(`ci:${ticket.linkedCiId}`);
+      }
+      
+      // Pattern 2: Same category
+      if (ticket.category) {
+        keys.push(`category:${ticket.category}`);
+      }
+      
+      // Pattern 3: Same customer + category
+      if (ticket.customerId && ticket.category) {
+        keys.push(`customer-category:${ticket.customerId}:${ticket.category}`);
+      }
+      
+      // Add ticket to all relevant patterns
+      for (const key of keys) {
+        if (!patterns.has(key)) {
+          patterns.set(key, []);
+        }
+        patterns.get(key)!.push(ticket);
+      }
+    }
+    
+    // Filter patterns with 3 or more tickets (indicating recurring issue)
+    const suggestions = [];
+    for (const [patternKey, patternTickets] of Array.from(patterns.entries())) {
+      if (patternTickets.length >= 3) {
+        const [patternType, ...patternValues] = patternKey.split(':');
+        suggestions.push({
+          patternType,
+          patternKey,
+          count: patternTickets.length,
+          tickets: patternTickets.slice(0, 5), // Return up to 5 examples
+          suggestedTitle: `Recurring issue: ${patternTickets[0].category || 'Unknown category'}`,
+          suggestedDescription: `${patternTickets.length} similar incidents detected in the last 30 days`,
+        });
+      }
+    }
+    
+    // Sort by count (most recurring first)
+    suggestions.sort((a, b) => b.count - a.count);
+    
+    return suggestions;
   }
 
   // Comment operations
