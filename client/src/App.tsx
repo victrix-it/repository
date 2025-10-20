@@ -21,6 +21,7 @@ import CIDetailPage from "@/pages/cmdb/detail";
 import KnowledgePage from "@/pages/knowledge/index";
 import NewKBPage from "@/pages/knowledge/new";
 import KBDetailPage from "@/pages/knowledge/detail";
+import ProblemsPage from "@/pages/problems/index";
 import EmailsPage from "@/pages/emails/index";
 import AdminPage from "@/pages/admin/index";
 import BrandingPage from "@/pages/admin/branding";
@@ -57,6 +58,7 @@ function Router() {
           <Route path="/knowledge" component={KnowledgePage} />
           <Route path="/knowledge/new" component={NewKBPage} />
           <Route path="/knowledge/:id" component={KBDetailPage} />
+          <Route path="/problems" component={ProblemsPage} />
           <Route path="/emails" component={EmailsPage} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/admin/branding" component={BrandingPage} />

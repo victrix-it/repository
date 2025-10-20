@@ -7,6 +7,7 @@ import {
   Mail,
   Settings,
   LogOut,
+  AlertCircle,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
@@ -34,6 +35,11 @@ const mainItems = [
     title: "Incidents",
     url: "/tickets",
     icon: Ticket,
+  },
+  {
+    title: "Problems",
+    url: "/problems",
+    icon: AlertCircle,
   },
   {
     title: "Changes",
