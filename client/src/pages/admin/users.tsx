@@ -3,8 +3,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { ArrowLeft, UserPlus, Upload, Pencil } from "lucide-react";
+import { ArrowLeft, UserPlus, Upload, Pencil, MoreVertical, UserX, UserCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import {
   Dialog,
@@ -38,6 +56,7 @@ interface User {
   profileImageUrl?: string;
   roleId?: string;
   customerId?: string;
+  status?: string;
 }
 
 interface Role {
@@ -56,6 +75,8 @@ export default function UsersPage() {
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -130,6 +151,48 @@ export default function UsersPage() {
       toast({
         title: "Error",
         description: error.message || "Failed to update user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return await apiRequest('PATCH', `/api/users/${id}`, { status });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      toast({
+        title: "Success",
+        description: `User ${variables.status === 'active' ? 'enabled' : 'disabled'} successfully`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest('DELETE', `/api/users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     },
@@ -375,15 +438,58 @@ export default function UsersPage() {
                   <Badge variant="outline" data-testid={`badge-auth-${user.id}`}>
                     {getAuthProviderLabel(user.authProvider)}
                   </Badge>
+                  {user.status === 'disabled' && (
+                    <Badge variant="destructive" data-testid={`badge-status-${user.id}`}>
+                      Disabled
+                    </Badge>
+                  )}
                   {hasPermission('canManageUsers') && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditClick(user)}
-                      data-testid={`button-edit-${user.id}`}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" data-testid={`button-actions-${user.id}`}>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEditClick(user)} data-testid={`action-edit-${user.id}`}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => toggleUserStatusMutation.mutate({ 
+                            id: user.id, 
+                            status: user.status === 'active' ? 'disabled' : 'active' 
+                          })}
+                          data-testid={`action-toggle-${user.id}`}
+                        >
+                          {user.status === 'active' ? (
+                            <>
+                              <UserX className="h-4 w-4 mr-2" />
+                              Disable
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="h-4 w-4 mr-2" />
+                              Enable
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            setUserToDelete(user);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="text-destructive"
+                          data-testid={`action-delete-${user.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               </div>
@@ -484,6 +590,29 @@ export default function UsersPage() {
           </CardContent>
         </Card>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete {userToDelete?.firstName} {userToDelete?.lastName}? 
+              This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => userToDelete && deleteUserMutation.mutate(userToDelete.id)}
+              disabled={deleteUserMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

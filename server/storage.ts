@@ -79,6 +79,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   createUser(userData: Partial<User>): Promise<User>;
   updateUser(id: string, userData: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
 
   // Ticket operations
@@ -302,6 +303,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   // Ticket operations
