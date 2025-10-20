@@ -16,11 +16,13 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { User, ConfigurationItem } from "@shared/schema";
+import { PriorityMatrixGuide } from "@/components/priority-matrix-guide";
 
 const ticketFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  priority: z.enum(["low", "medium", "high", "critical"]),
+  impact: z.enum(["high", "medium", "low"]),
+  urgency: z.enum(["critical", "high", "medium", "low"]),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   assignedToId: z.string().optional(),
@@ -46,7 +48,8 @@ export default function NewTicketPage() {
     defaultValues: {
       title: "",
       description: "",
-      priority: "medium",
+      impact: "medium" as const,
+      urgency: "medium" as const,
       category: "",
       tags: [],
       assignedToId: "",
@@ -181,24 +184,49 @@ export default function NewTicketPage() {
                 />
               </div>
 
+              <PriorityMatrixGuide type="incident" className="mb-6" />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="priority"
+                  name="impact"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Priority</FormLabel>
+                      <FormLabel>Impact</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-priority">
-                            <SelectValue placeholder="Select priority" />
+                          <SelectTrigger data-testid="select-impact">
+                            <SelectValue placeholder="Select impact" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
+                          <SelectItem value="high">High - Affects entire org / critical service</SelectItem>
+                          <SelectItem value="medium">Medium - Affects a department or group</SelectItem>
+                          <SelectItem value="low">Low - Affects a single user / non-critical</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="urgency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Urgency</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-urgency">
+                            <SelectValue placeholder="Select urgency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="critical">Critical - Service unavailable or major outage</SelectItem>
+                          <SelectItem value="high">High - Severely degraded, limited workaround</SelectItem>
+                          <SelectItem value="medium">Medium - Degraded service, workaround available</SelectItem>
+                          <SelectItem value="low">Low - Minor issue or request</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

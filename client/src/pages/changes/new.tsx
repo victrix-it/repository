@@ -14,12 +14,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import type { ConfigurationItem } from "@shared/schema";
+import { PriorityMatrixGuide } from "@/components/priority-matrix-guide";
 
 const changeFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   changeType: z.enum(["normal", "emergency", "retrospective"]).default("normal"),
-  priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  impact: z.enum(["high", "medium", "low"]),
+  urgency: z.enum(["critical", "high", "medium", "low"]),
   reason: z.string().optional(),
   prerequisites: z.string().optional(),
   communicationPlan: z.string().optional(),
@@ -47,7 +49,8 @@ export default function NewChangePage() {
       title: "",
       description: "",
       changeType: "normal",
-      priority: "medium",
+      impact: "medium" as const,
+      urgency: "medium" as const,
       reason: "",
       prerequisites: "",
       communicationPlan: "",
@@ -143,23 +146,48 @@ export default function NewChangePage() {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="changeType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Change Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-change-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="emergency">Emergency</SelectItem>
+                        <SelectItem value="retrospective">Retrospective</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <PriorityMatrixGuide type="change" className="my-6" />
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="changeType"
+                  name="impact"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Change Type</FormLabel>
+                      <FormLabel>Impact</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-change-type">
-                            <SelectValue />
+                          <SelectTrigger data-testid="select-impact">
+                            <SelectValue placeholder="Select impact" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="emergency">Emergency</SelectItem>
-                          <SelectItem value="retrospective">Retrospective</SelectItem>
+                          <SelectItem value="high">High - Affects entire org / critical service</SelectItem>
+                          <SelectItem value="medium">Medium - Affects a department or group</SelectItem>
+                          <SelectItem value="low">Low - Affects a single user / non-critical</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -169,21 +197,21 @@ export default function NewChangePage() {
 
                 <FormField
                   control={form.control}
-                  name="priority"
+                  name="urgency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Priority</FormLabel>
+                      <FormLabel>Urgency</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger data-testid="select-priority">
-                            <SelectValue />
+                          <SelectTrigger data-testid="select-urgency">
+                            <SelectValue placeholder="Select urgency" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
+                          <SelectItem value="critical">Critical - Emergency change to restore service</SelectItem>
+                          <SelectItem value="high">High - Time-sensitive, significant impact</SelectItem>
+                          <SelectItem value="medium">Medium - Scheduled, moderate urgency</SelectItem>
+                          <SelectItem value="low">Low - Routine maintenance or enhancement</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
