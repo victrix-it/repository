@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RecurringIncidentsDetector } from "@/components/recurring-incidents-detector";
 import { useState } from "react";
 import type { Problem, User, Customer, Team, ConfigurationItem } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
@@ -77,6 +78,10 @@ export default function ProblemsPage() {
             New Problem
           </Button>
         </Link>
+      </div>
+
+      <div className="mb-6">
+        <RecurringIncidentsDetector />
       </div>
 
       <div className="mb-6 space-y-4">

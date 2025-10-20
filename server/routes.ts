@@ -301,6 +301,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Detect recurring incidents (must come before /:id route)
+  app.get('/api/problems/detect-recurring', isAuthenticated, async (req, res) => {
+    try {
+      const suggestions = await storage.detectRecurringIncidents();
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Error detecting recurring incidents:", error);
+      res.status(500).json({ message: "Failed to detect recurring incidents" });
+    }
+  });
+
   app.get('/api/problems/:id', isAuthenticated, async (req, res) => {
     try {
       const problem = await storage.getProblem(req.params.id);
@@ -378,17 +389,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching linked tickets:", error);
       res.status(500).json({ message: "Failed to fetch linked tickets" });
-    }
-  });
-
-  // Detect recurring incidents
-  app.get('/api/problems/detect-recurring', isAuthenticated, async (req, res) => {
-    try {
-      const suggestions = await storage.detectRecurringIncidents();
-      res.json(suggestions);
-    } catch (error) {
-      console.error("Error detecting recurring incidents:", error);
-      res.status(500).json({ message: "Failed to detect recurring incidents" });
     }
   });
 
