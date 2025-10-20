@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { getUserWithRole, requirePermission, optionalPermissionContext, getTenantFilter } from "./permissions";
 import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertCustomerSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema, insertProblemSchema, insertSlaTemplateSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
 import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from "./alertWebhook";
@@ -21,8 +22,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const userWithRole = await getUserWithRole(userId);
+      
+      if (!userWithRole) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return user with role permissions
+      res.json({
+        ...userWithRole,
+        permissions: userWithRole.roleDetails ? {
+          canCreateTickets: userWithRole.roleDetails.canCreateTickets === 'true',
+          canUpdateOwnTickets: userWithRole.roleDetails.canUpdateOwnTickets === 'true',
+          canUpdateAllTickets: userWithRole.roleDetails.canUpdateAllTickets === 'true',
+          canCloseTickets: userWithRole.roleDetails.canCloseTickets === 'true',
+          canViewAllTickets: userWithRole.roleDetails.canViewAllTickets === 'true',
+          canApproveChanges: userWithRole.roleDetails.canApproveChanges === 'true',
+          canManageKnowledgebase: userWithRole.roleDetails.canManageKnowledgebase === 'true',
+          canRunReports: userWithRole.roleDetails.canRunReports === 'true',
+          canManageUsers: userWithRole.roleDetails.canManageUsers === 'true',
+          canManageRoles: userWithRole.roleDetails.canManageRoles === 'true',
+          canManageCMDB: userWithRole.roleDetails.canManageCMDB === 'true',
+          canViewCMDB: userWithRole.roleDetails.canViewCMDB === 'true',
+          isTenantScoped: userWithRole.roleDetails.isTenantScoped === 'true',
+        } : null,
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -30,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
-  app.get('/api/users', isAuthenticated, async (req, res) => {
+  app.get('/api/users', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
     try {
       const users = await storage.getAllUsers();
       res.json(users);
@@ -40,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/users', isAuthenticated, async (req, res) => {
+  app.post('/api/users', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
     try {
       const user = await storage.createUser(req.body);
       res.json(user);
@@ -61,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/roles', isAuthenticated, async (req, res) => {
+  app.post('/api/roles', isAuthenticated, requirePermission('canManageRoles'), async (req, res) => {
     try {
       const role = await storage.createRole(req.body);
       res.json(role);
@@ -71,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/roles/:id', isAuthenticated, async (req, res) => {
+  app.patch('/api/roles/:id', isAuthenticated, requirePermission('canManageRoles'), async (req, res) => {
     try {
       const role = await storage.updateRole(req.params.id, req.body);
       res.json(role);
@@ -122,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Ticket routes
-  app.get('/api/tickets', isAuthenticated, async (req, res) => {
+  app.get('/api/tickets', isAuthenticated, optionalPermissionContext(), async (req: any, res) => {
     try {
       const tickets = await storage.getAllTickets();
       res.json(tickets);
@@ -145,7 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/tickets', isAuthenticated, async (req: any, res) => {
+  app.post('/api/tickets', isAuthenticated, requirePermission('canCreateTickets'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertTicketSchema.parse(req.body);
@@ -157,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/tickets/:id/status', isAuthenticated, async (req, res) => {
+  app.patch('/api/tickets/:id/status', isAuthenticated, requirePermission('canUpdateOwnTickets', 'canUpdateAllTickets', 'canCloseTickets'), async (req, res) => {
     try {
       const { status } = req.body;
       await storage.updateTicketStatus(req.params.id, status);
@@ -231,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Configuration Item routes
-  app.get('/api/configuration-items', isAuthenticated, async (req, res) => {
+  app.get('/api/configuration-items', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
     try {
       const cis = await storage.getAllConfigurationItems();
       res.json(cis);
@@ -241,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/configuration-items/:id', isAuthenticated, async (req, res) => {
+  app.get('/api/configuration-items/:id', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
     try {
       const ci = await storage.getConfigurationItem(req.params.id);
       if (!ci) {
@@ -254,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/configuration-items', isAuthenticated, async (req, res) => {
+  app.post('/api/configuration-items', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
     try {
       const validatedData = insertConfigurationItemSchema.parse(req.body);
       const ci = await storage.createConfigurationItem(validatedData);
@@ -266,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Import routes
-  app.get('/api/configuration-items/csv/template', isAuthenticated, (req, res) => {
+  app.get('/api/configuration-items/csv/template', isAuthenticated, requirePermission('canManageCMDB'), (req, res) => {
     try {
       const template = generateCsvTemplate();
       res.setHeader('Content-Type', 'text/csv');
@@ -278,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/configuration-items/csv/import', isAuthenticated, csvUpload.single('file'), async (req, res) => {
+  app.post('/api/configuration-items/csv/import', isAuthenticated, requirePermission('canManageCMDB'), csvUpload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -319,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/knowledge', isAuthenticated, async (req: any, res) => {
+  app.post('/api/knowledge', isAuthenticated, requirePermission('canManageKnowledgebase'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertKnowledgeBaseSchema.parse(req.body);
