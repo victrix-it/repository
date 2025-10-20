@@ -67,6 +67,13 @@ export default function CIDetailPage() {
                   <Icon className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
+                  {ci.ciNumber && (
+                    <div className="mb-2">
+                      <span className="text-sm font-mono text-muted-foreground bg-muted px-2 py-1 rounded" data-testid="ci-number">
+                        {ci.ciNumber}
+                      </span>
+                    </div>
+                  )}
                   <CardTitle className="text-2xl mb-3" data-testid="ci-name">{ci.name}</CardTitle>
                   <div className="flex gap-2 flex-wrap">
                     <StatusBadge status={ci.status} type="ci" />

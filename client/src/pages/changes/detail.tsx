@@ -241,6 +241,11 @@ export default function ChangeDetailPage() {
                     <div className="flex items-center gap-2 p-2 rounded-md hover-elevate active-elevate-2 border">
                       <Server className="h-4 w-4 text-muted-foreground" />
                       <div className="flex-1 min-w-0">
+                        {change.linkedCI.ciNumber && (
+                          <p className="text-xs font-mono text-muted-foreground mb-1" data-testid="linked-ci-number">
+                            {change.linkedCI.ciNumber}
+                          </p>
+                        )}
                         <p className="text-sm font-medium truncate">{change.linkedCI.name}</p>
                         <p className="text-xs text-muted-foreground capitalize">{change.linkedCI.type}</p>
                       </div>

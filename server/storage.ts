@@ -419,7 +419,29 @@ export class DatabaseStorage implements IStorage {
 
   // Configuration Item operations
   async createConfigurationItem(ci: InsertConfigurationItem): Promise<ConfigurationItem> {
-    const [newCI] = await db.insert(configurationItems).values(ci).returning();
+    // Auto-generate CI number if not provided
+    let ciNumber = ci.ciNumber;
+    if (!ciNumber) {
+      // Get the highest existing CI number
+      const lastCI = await db
+        .select({ ciNumber: configurationItems.ciNumber })
+        .from(configurationItems)
+        .where(sql`${configurationItems.ciNumber} ~ '^CI[0-9]+$'`)
+        .orderBy(sql`CAST(SUBSTRING(${configurationItems.ciNumber} FROM 3) AS INTEGER) DESC`)
+        .limit(1);
+      
+      if (lastCI.length > 0 && lastCI[0].ciNumber) {
+        const lastNumber = parseInt(lastCI[0].ciNumber.substring(2));
+        ciNumber = `CI${String(lastNumber + 1).padStart(5, '0')}`;
+      } else {
+        ciNumber = 'CI00001';
+      }
+    }
+
+    const [newCI] = await db.insert(configurationItems).values({
+      ...ci,
+      ciNumber,
+    }).returning();
     return newCI;
   }
 

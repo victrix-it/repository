@@ -79,6 +79,13 @@ export default function CMDBPage() {
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {ci.ciNumber && (
+                            <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded" data-testid={`ci-number-${ci.id}`}>
+                              {ci.ciNumber}
+                            </span>
+                          )}
+                        </div>
                         <CardTitle className="text-base mb-2 truncate" data-testid={`ci-name-${ci.id}`}>
                           {ci.name}
                         </CardTitle>
