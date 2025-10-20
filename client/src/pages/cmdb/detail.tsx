@@ -7,7 +7,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Server, Database, Network, HardDrive, Box } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { ConfigurationItem, User } from "@shared/schema";
+import type { ConfigurationItem, User, Customer } from "@shared/schema";
 
 const ciTypeIcons = {
   server: Server,
@@ -20,6 +20,7 @@ const ciTypeIcons = {
 
 interface CIWithRelations extends ConfigurationItem {
   owner?: User | null;
+  customer?: Customer | null;
 }
 
 export default function CIDetailPage() {
@@ -143,6 +144,16 @@ export default function CIDetailPage() {
                       {ci.owner.firstName} {ci.owner.lastName}
                     </span>
                   </div>
+                </div>
+              )}
+
+              {ci.customer && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Customer</p>
+                  <p className="text-sm font-medium" data-testid="ci-customer">{ci.customer.name}</p>
+                  {ci.customer.code && (
+                    <p className="text-xs text-muted-foreground">{ci.customer.code}</p>
+                  )}
                 </div>
               )}
 
