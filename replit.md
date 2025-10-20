@@ -6,6 +6,16 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **Enhanced Branding System** (October 20, 2025): Extended branding with footer customization and logo upload
+  - Added footer text field to branding page for customizable footer across all pages
+  - Created AppFooter component displaying footer text with multi-line support (\n for line breaks)
+  - Footer appears at bottom of all authenticated pages and landing page
+  - Implemented logo upload functionality with multer (2MB limit, image files only)
+  - Logo upload endpoint: POST /api/branding/logo (multipart/form-data)
+  - Logos stored in uploads/branding/ directory, served statically via /uploads
+  - Updated sidebar header to display uploaded logo (or company initial fallback) with system name and company name
+  - Fixed upsertUser bug: removed id field from conflict update to prevent duplicate key errors on OIDC login
+  - Test-verified: Footer displays correctly across all pages, sidebar header shows logo and branding info, settings persist
 - **Reporting Module** (October 20, 2025): Implemented comprehensive analytics and reporting system
   - Created 13 different report types organized in 6 sections: Status Distribution, Priority Analysis, CI Analysis, Customer Analysis, Team Performance, Problem Areas
   - Report types: ticket/change/problem status distributions, tickets by priority, tickets/changes/problems per CI, tickets/changes/problems per customer, top resolvers, top change implementors, most problematic CIs
@@ -14,7 +24,6 @@ This enterprise IT service management application integrates helpdesk ticket tra
   - Reports page uses recharts library for data visualizations (pie charts, bar charts, horizontal bar charts)
   - Added Reports navigation link in Administration section of sidebar (data-testid="nav-reports")
   - Graceful empty state handling with "No data available" messages when no data exists
-  - Fixed upsertUser bug: changed conflict target from users.id to users.email for proper OIDC authentication
   - Test-verified: All report cards displaying correctly, permission enforcement working, empty states handled gracefully
 - **CI Detail Page Enhancements** (October 20, 2025): Enhanced CMDB with relationship tracking and customer-based filtering
   - CI detail page now displays three sections showing related tickets, changes, and problems
