@@ -11,6 +11,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   Sidebar,
   SidebarContent,
@@ -21,11 +22,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { SystemSetting } from "@shared/schema";
 
 const mainItems = [
   {
@@ -77,6 +80,19 @@ export function AppSidebar() {
   const { user } = useAuth();
   const { hasPermission, hasAnyPermission } = usePermissions();
 
+  const { data: settings } = useQuery<SystemSetting[]>({
+    queryKey: ["/api/settings"],
+  });
+
+  const settingsMap = settings?.reduce((acc, s) => {
+    acc[s.key] = s.value || '';
+    return acc;
+  }, {} as Record<string, string>) || {};
+
+  const logoUrl = settingsMap['logo_url'];
+  const systemName = settingsMap['system_name'] || 'Helpdesk & CMDB';
+  const companyName = settingsMap['company_name'] || 'Your Company';
+
   const getUserInitials = () => {
     if (user?.firstName && user?.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
@@ -100,6 +116,27 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt={systemName} 
+              className="h-8 w-auto"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              data-testid="sidebar-logo"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold">
+              {companyName.charAt(0)}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate">{systemName}</p>
+            <p className="text-xs text-muted-foreground truncate">{companyName}</p>
+          </div>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide px-2 mb-2">
