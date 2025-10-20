@@ -165,6 +165,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reporting routes
+  app.get('/api/reports/tickets-per-ci', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTicketsPerCI();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching tickets per CI:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/changes-per-ci', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getChangesPerCI();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching changes per CI:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/problems-per-ci', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getProblemsPerCI();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching problems per CI:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/tickets-per-customer', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTicketsPerCustomer();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching tickets per customer:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/changes-per-customer', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getChangesPerCustomer();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching changes per customer:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/problems-per-customer', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getProblemsPerCustomer();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching problems per customer:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/top-resolvers', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTopResolvers();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching top resolvers:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/top-change-implementors', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTopChangeImplementors();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching top change implementors:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/ticket-status-distribution', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTicketStatusDistribution();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching ticket status distribution:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/change-status-distribution', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getChangeStatusDistribution();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching change status distribution:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/problem-status-distribution', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getProblemStatusDistribution();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching problem status distribution:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/tickets-by-priority', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getTicketsByPriority();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching tickets by priority:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
+  app.get('/api/reports/most-problematic-cis', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
+    try {
+      const data = await storage.getMostProblematicCIs();
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching most problematic CIs:", error);
+      res.status(500).json({ message: "Failed to fetch report" });
+    }
+  });
+
   // Ticket routes
   app.get('/api/tickets', isAuthenticated, optionalPermissionContext(), async (req: any, res) => {
     try {
