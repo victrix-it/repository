@@ -516,39 +516,50 @@ export default function CIDetailPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-owner">Owner</Label>
-                  <Select value={editFormData.ownerId || "none"} onValueChange={(value) => setEditFormData({ ...editFormData, ownerId: value === "none" ? "" : value })}>
-                    <SelectTrigger data-testid="select-edit-owner">
-                      <SelectValue placeholder="None" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {users?.map((user) => (
+              <div className="grid gap-2">
+                <Label htmlFor="edit-customer">Customer</Label>
+                <Select 
+                  value={editFormData.customerId || "none"} 
+                  onValueChange={(value) => setEditFormData({ 
+                    ...editFormData, 
+                    customerId: value === "none" ? "" : value,
+                    ownerId: "" 
+                  })}
+                >
+                  <SelectTrigger data-testid="select-edit-customer">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {customers?.map((customer) => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="edit-owner">Owner</Label>
+                <Select 
+                  value={editFormData.ownerId || "none"} 
+                  onValueChange={(value) => setEditFormData({ ...editFormData, ownerId: value === "none" ? "" : value })}
+                >
+                  <SelectTrigger data-testid="select-edit-owner">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {users
+                      ?.filter(user => !editFormData.customerId || user.customerId === editFormData.customerId)
+                      .map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {user.firstName} {user.lastName}
                         </SelectItem>
                       ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-customer">Customer</Label>
-                  <Select value={editFormData.customerId || "none"} onValueChange={(value) => setEditFormData({ ...editFormData, customerId: value === "none" ? "" : value })}>
-                    <SelectTrigger data-testid="select-edit-customer">
-                      <SelectValue placeholder="None" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {customers?.map((customer) => (
-                        <SelectItem key={customer.id} value={customer.id}>
-                          {customer.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid gap-2">

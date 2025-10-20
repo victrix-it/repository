@@ -287,6 +287,37 @@ export default function NewCIPage() {
 
               <FormField
                 control={form.control}
+                name="customerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Customer (Optional)</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("ownerId", "");
+                      }} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger data-testid="select-customer">
+                          <SelectValue placeholder="No customer assigned" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {customers?.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="supportDetails"
                 render={({ field }) => (
                   <FormItem>
@@ -308,26 +339,39 @@ export default function NewCIPage() {
                 <FormField
                   control={form.control}
                   name="ownerId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Owner User (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-owner">
-                            <SelectValue placeholder="No user owner" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {users?.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.firstName} {user.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const selectedCustomerId = form.watch("customerId");
+                    const filteredUsers = users?.filter(user => 
+                      !selectedCustomerId || user.customerId === selectedCustomerId
+                    ) || [];
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>Owner User (Optional)</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-owner">
+                              <SelectValue placeholder="No user owner" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {filteredUsers.length > 0 ? (
+                              filteredUsers.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                  {user.firstName} {user.lastName}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="none" disabled>
+                                {selectedCustomerId ? "No users for this customer" : "Select a customer first"}
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
@@ -355,31 +399,6 @@ export default function NewCIPage() {
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="customerId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Customer (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-customer">
-                          <SelectValue placeholder="No customer assigned" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {customers?.map((customer) => (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {customer.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <div className="flex gap-3">
                 <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit">
