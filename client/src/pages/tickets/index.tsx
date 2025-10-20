@@ -11,21 +11,34 @@ import { PriorityBadge } from "@/components/priority-badge";
 import { UserAvatar } from "@/components/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
-import type { Ticket, User } from "@shared/schema";
+import type { Ticket, User, Customer, Team } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
 interface TicketWithRelations extends Ticket {
   createdBy?: User;
   assignedTo?: User | null;
+  customer?: Customer | null;
+  assignedToTeam?: Team | null;
 }
 
 export default function TicketsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [tagFilter, setTagFilter] = useState<string>("");
+  const [customerFilter, setCustomerFilter] = useState<string>("");
+  const [slaFilter, setSlaFilter] = useState<string>("");
+  const [teamFilter, setTeamFilter] = useState<string>("");
 
   const { data: tickets, isLoading } = useQuery<TicketWithRelations[]>({
     queryKey: ["/api/tickets"],
+  });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  const { data: teams } = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
   });
 
   // Get unique categories and tags for filtering
@@ -37,7 +50,10 @@ export default function TicketsPage() {
       ticket.ticketNumber.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = !categoryFilter || ticket.category === categoryFilter;
     const matchesTag = !tagFilter || (ticket.tags && ticket.tags.includes(tagFilter));
-    return matchesSearch && matchesCategory && matchesTag;
+    const matchesCustomer = !customerFilter || ticket.customerId === customerFilter;
+    const matchesSla = !slaFilter || ticket.slaStatus === slaFilter;
+    const matchesTeam = !teamFilter || ticket.assignedToTeamId === teamFilter;
+    return matchesSearch && matchesCategory && matchesTag && matchesCustomer && matchesSla && matchesTeam;
   });
 
   if (isLoading) {
@@ -100,11 +116,53 @@ export default function TicketsPage() {
             </SelectContent>
           </Select>
 
-          {(categoryFilter || tagFilter) && (
+          <Select value={customerFilter} onValueChange={setCustomerFilter}>
+            <SelectTrigger className="w-48" data-testid="select-customer-filter">
+              <SelectValue placeholder="All Customers" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value=" ">All Customers</SelectItem>
+              {customers?.map(customer => (
+                <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={slaFilter} onValueChange={setSlaFilter}>
+            <SelectTrigger className="w-48" data-testid="select-sla-filter">
+              <SelectValue placeholder="All SLA Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value=" ">All SLA Status</SelectItem>
+              <SelectItem value="within_sla">Within SLA</SelectItem>
+              <SelectItem value="at_risk">At Risk</SelectItem>
+              <SelectItem value="breached">Breached</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={teamFilter} onValueChange={setTeamFilter}>
+            <SelectTrigger className="w-48" data-testid="select-team-filter">
+              <SelectValue placeholder="All Teams" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value=" ">All Teams</SelectItem>
+              {teams?.map(team => (
+                <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {(categoryFilter || tagFilter || customerFilter || slaFilter || teamFilter) && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => { setCategoryFilter(""); setTagFilter(""); }}
+              onClick={() => { 
+                setCategoryFilter(""); 
+                setTagFilter(""); 
+                setCustomerFilter("");
+                setSlaFilter("");
+                setTeamFilter("");
+              }}
               data-testid="button-clear-filters"
             >
               Clear Filters
@@ -129,6 +187,20 @@ export default function TicketsPage() {
                       {ticket.category && (
                         <Badge variant="outline" className="text-xs" data-testid={`ticket-category-${ticket.id}`}>
                           {ticket.category}
+                        </Badge>
+                      )}
+                      {ticket.customer && (
+                        <Badge variant="secondary" className="text-xs" data-testid={`ticket-customer-${ticket.id}`}>
+                          {ticket.customer.name}
+                        </Badge>
+                      )}
+                      {ticket.slaStatus && ticket.slaStatus !== 'within_sla' && (
+                        <Badge 
+                          variant={ticket.slaStatus === 'breached' ? 'destructive' : 'default'}
+                          className="text-xs" 
+                          data-testid={`ticket-sla-${ticket.id}`}
+                        >
+                          {ticket.slaStatus === 'at_risk' ? 'SLA At Risk' : 'SLA Breached'}
                         </Badge>
                       )}
                     </div>

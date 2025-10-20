@@ -316,7 +316,13 @@ export class DatabaseStorage implements IStorage {
         const [assignedTo] = ticket.assignedToId
           ? await db.select().from(users).where(eq(users.id, ticket.assignedToId))
           : [null];
-        return { ...ticket, createdBy, assignedTo };
+        const [customer] = ticket.customerId
+          ? await db.select().from(customers).where(eq(customers.id, ticket.customerId))
+          : [null];
+        const [assignedToTeam] = ticket.assignedToTeamId
+          ? await db.select().from(teams).where(eq(teams.id, ticket.assignedToTeamId))
+          : [null];
+        return { ...ticket, createdBy, assignedTo, customer, assignedToTeam };
       })
     );
   }
