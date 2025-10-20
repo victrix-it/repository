@@ -75,10 +75,7 @@ export default function UsersPage() {
 
   const createUserMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('/api/users', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest('POST', '/api/users', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
@@ -107,7 +104,22 @@ export default function UsersPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createUserMutation.mutate(formData);
+    
+    if (!formData.roleId) {
+      toast({
+        title: "Error",
+        description: "Please select a role for the user",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const submitData = {
+      ...formData,
+      customerId: formData.customerId || undefined,
+    };
+    
+    createUserMutation.mutate(submitData);
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -237,10 +249,9 @@ export default function UsersPage() {
                     <Label htmlFor="customerId">Company (Optional)</Label>
                     <Select value={formData.customerId} onValueChange={(value) => setFormData({ ...formData, customerId: value })}>
                       <SelectTrigger data-testid="select-customer">
-                        <SelectValue placeholder="Select a company" />
+                        <SelectValue placeholder="None (no company assigned)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
                         {customers?.map((customer) => (
                           <SelectItem key={customer.id} value={customer.id}>
                             {customer.name}
