@@ -23,6 +23,8 @@ export const ciTypeEnum = pgEnum('ci_type', ['server', 'application', 'database'
 export const ciStatusEnum = pgEnum('ci_status', ['active', 'inactive', 'maintenance', 'decommissioned']);
 export const kbTypeEnum = pgEnum('kb_type', ['sop', 'known_issue']);
 export const userRoleEnum = pgEnum('user_role', ['user', 'support', 'admin']);
+export const problemStatusEnum = pgEnum('problem_status', ['open', 'investigating', 'known_error', 'resolved', 'closed']);
+export const slaStatusEnum = pgEnum('sla_status', ['within_sla', 'at_risk', 'breached']);
 
 // Session storage table (required for Replit Auth)
 export const sessions = pgTable(
@@ -79,6 +81,9 @@ export const customers = pgTable("customers", {
   contactEmail: varchar("contact_email", { length: 255 }),
   contactPhone: varchar("contact_phone", { length: 50 }),
   isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+  // SLA Configuration (in minutes)
+  responseTimeSla: integer("response_time_sla"), // Minutes to first response
+  resolutionTimeSla: integer("resolution_time_sla"), // Minutes to resolution
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -231,7 +236,14 @@ export const tickets = pgTable("tickets", {
   resolutionNotes: text("resolution_notes"),
   createdById: varchar("created_by_id").references(() => users.id).notNull(),
   linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id),
+  linkedProblemId: varchar("linked_problem_id"), // References problems table
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer support
   emailMessageId: varchar("email_message_id"), // Reference to email if created from email
+  // SLA Tracking
+  responseDueAt: timestamp("response_due_at"), // When first response is due
+  resolutionDueAt: timestamp("resolution_due_at"), // When resolution is due
+  slaStatus: slaStatusEnum("sla_status").default('within_sla'), // Current SLA status
+  firstResponseAt: timestamp("first_response_at"), // When first response was made
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   resolvedAt: timestamp("resolved_at"),
@@ -273,6 +285,28 @@ export const knowledgeBase = pgTable("knowledge_base", {
   views: integer("views").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Problems (for problem management - ITIL)
+export const problems = pgTable("problems", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  problemNumber: varchar("problem_number", { length: 20 }).unique().notNull(), // e.g., PRB-00001
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  status: problemStatusEnum("status").default('open').notNull(),
+  priority: ticketPriorityEnum("priority").default('medium').notNull(), // Reuse ticket priority enum
+  rootCause: text("root_cause"), // Root cause analysis
+  workaround: text("workaround"), // Temporary workaround
+  solution: text("solution"), // Permanent solution
+  impactAssessment: text("impact_assessment"), // Impact and affected services
+  assignedToId: varchar("assigned_to_id").references(() => users.id),
+  assignedToTeamId: varchar("assigned_to_team_id").references(() => teams.id),
+  linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id), // Affected CI
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer support
+  createdById: varchar("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  resolvedAt: timestamp("resolved_at"),
 });
 
 // Comments (for both tickets and change requests)
@@ -391,6 +425,27 @@ export const knowledgeBaseRelations = relations(knowledgeBase, ({ one, many }) =
   attachments: many(attachments),
 }));
 
+export const problemsRelations = relations(problems, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [problems.createdById],
+    references: [users.id],
+    relationName: 'createdBy',
+  }),
+  assignedTo: one(users, {
+    fields: [problems.assignedToId],
+    references: [users.id],
+    relationName: 'assignedTo',
+  }),
+  linkedCI: one(configurationItems, {
+    fields: [problems.linkedCiId],
+    references: [configurationItems.id],
+  }),
+  customer: one(customers, {
+    fields: [problems.customerId],
+    references: [customers.id],
+  }),
+}));
+
 export const commentsRelations = relations(comments, ({ one }) => ({
   createdBy: one(users, {
     fields: [comments.createdById],
@@ -465,6 +520,15 @@ export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit(
   views: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertProblemSchema = createInsertSchema(problems).omit({
+  id: true,
+  problemNumber: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+  resolvedAt: true,
 });
 
 export const insertCommentSchema = createInsertSchema(comments).omit({
@@ -602,6 +666,9 @@ export type ChangeRequest = typeof changeRequests.$inferSelect;
 
 export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
 export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
+
+export type InsertProblem = z.infer<typeof insertProblemSchema>;
+export type Problem = typeof problems.$inferSelect;
 
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Comment = typeof comments.$inferSelect;
