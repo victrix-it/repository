@@ -24,48 +24,57 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const mainItems = [
   {
     title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
+    permission: null as any,
   },
   {
     title: "Incidents",
     url: "/tickets",
     icon: Ticket,
+    permission: null as any,
   },
   {
     title: "Problems",
     url: "/problems",
     icon: AlertCircle,
+    permission: null as any,
   },
   {
     title: "Changes",
     url: "/changes",
     icon: GitBranch,
+    permission: null as any,
   },
   {
     title: "CMDB",
     url: "/cmdb",
     icon: Server,
+    permission: 'canViewCMDB' as const,
   },
   {
     title: "Knowledge Base",
     url: "/knowledge",
     icon: BookOpen,
+    permission: null as any,
   },
   {
     title: "Email Inbox",
     url: "/emails",
     icon: Mail,
+    permission: null as any,
   },
 ];
 
 export function AppSidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
+  const { hasPermission, hasAnyPermission } = usePermissions();
 
   const getUserInitials = () => {
     if (user?.firstName && user?.lastName) {
@@ -77,6 +86,17 @@ export function AppSidebar() {
     return "U";
   };
 
+  const visibleItems = mainItems.filter(item => {
+    if (item.permission === null) return true;
+    return hasPermission(item.permission);
+  });
+
+  const showAdminSection = hasAnyPermission(
+    'canManageUsers',
+    'canManageRoles',
+    'canRunReports'
+  );
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -86,7 +106,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {visibleItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url} data-testid={`nav-${item.title.toLowerCase().replace(' ', '-')}`}>
                     <Link href={item.url}>
@@ -100,7 +120,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {user?.role === 'admin' && (
+        {showAdminSection && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide px-2 mb-2">
               Administration
@@ -134,7 +154,7 @@ export function AppSidebar() {
                 : user?.email || 'User'}
             </p>
             <p className="text-xs text-muted-foreground truncate capitalize" data-testid="user-role">
-              {user?.role || 'user'}
+              {user?.roleDetails?.name || 'User'}
             </p>
           </div>
         </div>

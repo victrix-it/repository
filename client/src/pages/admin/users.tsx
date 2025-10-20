@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface User {
   id: string;
@@ -51,6 +52,7 @@ interface Customer {
 
 export default function UsersPage() {
   const { toast } = useToast();
+  const { hasPermission } = usePermissions();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -183,16 +185,18 @@ export default function UsersPage() {
           <p className="text-muted-foreground">Manage system users and their roles</p>
         </div>
         <div className="flex gap-2">
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-create-user">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Create User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <form onSubmit={handleSubmit}>
-                <DialogHeader>
+          {hasPermission('canManageUsers') && (
+            <>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-create-user">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Create User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={handleSubmit}>
+                    <DialogHeader>
                   <DialogTitle>Create New User</DialogTitle>
                   <DialogDescription>
                     Add a new user to the system
@@ -261,20 +265,22 @@ export default function UsersPage() {
                     </Select>
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={createUserMutation.isPending} data-testid="button-submit">
-                    {createUserMutation.isPending ? "Creating..." : "Create User"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <Link href="/admin/user-csv-import">
-            <Button variant="outline" data-testid="button-import-users">
-              <Upload className="h-4 w-4 mr-2" />
-              Import Users
-            </Button>
-          </Link>
+                  <DialogFooter>
+                    <Button type="submit" disabled={createUserMutation.isPending} data-testid="button-submit">
+                      {createUserMutation.isPending ? "Creating..." : "Create User"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+                </DialogContent>
+              </Dialog>
+              <Link href="/admin/user-csv-import">
+                <Button variant="outline" data-testid="button-import-users">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Users
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
