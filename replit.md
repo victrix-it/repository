@@ -4,6 +4,19 @@
 
 This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, and email integration. It targets IT support teams with a productivity-focused workflow and a professional, information-dense interface. The system's design is inspired by Linear for efficient workflows, Notion for knowledge management, and Carbon Design for enterprise data management, emphasizing clarity, minimal clicks, and rapid resolution. A key ambition is to support multi-customer environments, allowing for customer-specific data isolation and management.
 
+## Recent Changes
+
+- **CI Number Auto-Generation** (October 20, 2025): Implemented automatic sequential CI numbering system
+  - Format: CI00001, CI00002, etc. (5-digit zero-padded)
+  - Auto-generated in createConfigurationItem storage function when ciNumber is not provided
+  - Displayed prominently in CMDB list page, CI detail page header, and when CIs are linked to tickets/changes
+  - Sequential numbering based on highest existing CI number using PostgreSQL regex pattern matching
+  - Test-verified: Creates sequential CI numbers (CI00001, CI00002, etc.) and displays correctly across all views
+- Implemented complete SLA templates management system with admin UI, CRUD operations, and default "Victrix Standard SLA" template
+- Created PriorityMatrixGuide component displaying Impact × Urgency matrix to help users determine correct priority
+- Updated all creation forms (tickets, changes, problems) to use impact/urgency fields instead of direct priority selection
+- Fixed upsertUser bug that caused login failures by handling conflicts on primary key (id) instead of just email
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
