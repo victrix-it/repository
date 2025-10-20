@@ -1359,6 +1359,218 @@ export class DatabaseStorage implements IStorage {
       kbArticles: kbArticles.count,
     };
   }
+
+  // Reporting methods
+  async getTicketsPerCI(): Promise<any[]> {
+    const results = await db
+      .select({
+        ciId: tickets.linkedCiId,
+        ciName: configurationItems.name,
+        ciNumber: configurationItems.ciNumber,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .leftJoin(configurationItems, eq(tickets.linkedCiId, configurationItems.id))
+      .where(sql`${tickets.linkedCiId} IS NOT NULL`)
+      .groupBy(tickets.linkedCiId, configurationItems.name, configurationItems.ciNumber)
+      .orderBy(sql`count(*) DESC`)
+      .limit(20);
+    
+    return results;
+  }
+
+  async getChangesPerCI(): Promise<any[]> {
+    const results = await db
+      .select({
+        ciId: changeRequests.linkedCiId,
+        ciName: configurationItems.name,
+        ciNumber: configurationItems.ciNumber,
+        count: sql<number>`count(*)`,
+      })
+      .from(changeRequests)
+      .leftJoin(configurationItems, eq(changeRequests.linkedCiId, configurationItems.id))
+      .where(sql`${changeRequests.linkedCiId} IS NOT NULL`)
+      .groupBy(changeRequests.linkedCiId, configurationItems.name, configurationItems.ciNumber)
+      .orderBy(sql`count(*) DESC`)
+      .limit(20);
+    
+    return results;
+  }
+
+  async getProblemsPerCI(): Promise<any[]> {
+    const results = await db
+      .select({
+        ciId: problems.linkedCiId,
+        ciName: configurationItems.name,
+        ciNumber: configurationItems.ciNumber,
+        count: sql<number>`count(*)`,
+      })
+      .from(problems)
+      .leftJoin(configurationItems, eq(problems.linkedCiId, configurationItems.id))
+      .where(sql`${problems.linkedCiId} IS NOT NULL`)
+      .groupBy(problems.linkedCiId, configurationItems.name, configurationItems.ciNumber)
+      .orderBy(sql`count(*) DESC`)
+      .limit(20);
+    
+    return results;
+  }
+
+  async getTicketsPerCustomer(): Promise<any[]> {
+    const results = await db
+      .select({
+        customerId: tickets.customerId,
+        customerName: customers.name,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .leftJoin(customers, eq(tickets.customerId, customers.id))
+      .where(sql`${tickets.customerId} IS NOT NULL`)
+      .groupBy(tickets.customerId, customers.name)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getChangesPerCustomer(): Promise<any[]> {
+    const results = await db
+      .select({
+        customerId: changeRequests.customerId,
+        customerName: customers.name,
+        count: sql<number>`count(*)`,
+      })
+      .from(changeRequests)
+      .leftJoin(customers, eq(changeRequests.customerId, customers.id))
+      .where(sql`${changeRequests.customerId} IS NOT NULL`)
+      .groupBy(changeRequests.customerId, customers.name)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getProblemsPerCustomer(): Promise<any[]> {
+    const results = await db
+      .select({
+        customerId: problems.customerId,
+        customerName: customers.name,
+        count: sql<number>`count(*)`,
+      })
+      .from(problems)
+      .leftJoin(customers, eq(problems.customerId, customers.id))
+      .where(sql`${problems.customerId} IS NOT NULL`)
+      .groupBy(problems.customerId, customers.name)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getTopResolvers(): Promise<any[]> {
+    const results = await db
+      .select({
+        userId: tickets.assignedToId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .leftJoin(users, eq(tickets.assignedToId, users.id))
+      .where(sql`${tickets.status} = 'closed' AND ${tickets.assignedToId} IS NOT NULL`)
+      .groupBy(tickets.assignedToId, users.firstName, users.lastName)
+      .orderBy(sql`count(*) DESC`)
+      .limit(10);
+    
+    return results;
+  }
+
+  async getTopChangeImplementors(): Promise<any[]> {
+    const results = await db
+      .select({
+        userId: changeRequests.implementedById,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        count: sql<number>`count(*)`,
+      })
+      .from(changeRequests)
+      .leftJoin(users, eq(changeRequests.implementedById, users.id))
+      .where(sql`${changeRequests.status} = 'completed' AND ${changeRequests.implementedById} IS NOT NULL`)
+      .groupBy(changeRequests.implementedById, users.firstName, users.lastName)
+      .orderBy(sql`count(*) DESC`)
+      .limit(10);
+    
+    return results;
+  }
+
+  async getTicketStatusDistribution(): Promise<any[]> {
+    const results = await db
+      .select({
+        status: tickets.status,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .groupBy(tickets.status)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getChangeStatusDistribution(): Promise<any[]> {
+    const results = await db
+      .select({
+        status: changeRequests.status,
+        count: sql<number>`count(*)`,
+      })
+      .from(changeRequests)
+      .groupBy(changeRequests.status)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getProblemStatusDistribution(): Promise<any[]> {
+    const results = await db
+      .select({
+        status: problems.status,
+        count: sql<number>`count(*)`,
+      })
+      .from(problems)
+      .groupBy(problems.status)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getTicketsByPriority(): Promise<any[]> {
+    const results = await db
+      .select({
+        priority: tickets.priority,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .groupBy(tickets.priority)
+      .orderBy(sql`count(*) DESC`);
+    
+    return results;
+  }
+
+  async getMostProblematicCIs(): Promise<any[]> {
+    const results = await db
+      .select({
+        ciId: tickets.linkedCiId,
+        ciName: configurationItems.name,
+        ciNumber: configurationItems.ciNumber,
+        ticketCount: sql<number>`count(DISTINCT ${tickets.id})`,
+        problemCount: sql<number>`count(DISTINCT ${problems.id})`,
+      })
+      .from(configurationItems)
+      .leftJoin(tickets, eq(configurationItems.id, tickets.linkedCiId))
+      .leftJoin(problems, eq(configurationItems.id, problems.linkedCiId))
+      .groupBy(configurationItems.id, configurationItems.name, configurationItems.ciNumber)
+      .having(sql`count(DISTINCT ${tickets.id}) > 0 OR count(DISTINCT ${problems.id}) > 0`)
+      .orderBy(sql`count(DISTINCT ${tickets.id}) + count(DISTINCT ${problems.id}) DESC`)
+      .limit(10);
+    
+    return results;
+  }
 }
+
 
 export const storage = new DatabaseStorage();
