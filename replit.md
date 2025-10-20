@@ -6,6 +6,16 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **CI Detail Page Enhancements** (October 20, 2025): Enhanced CMDB with relationship tracking and customer-based filtering
+  - CI detail page now displays three sections showing related tickets, changes, and problems
+  - Added API routes: GET /api/configuration-items/:id/tickets, /changes, /problems
+  - Each section shows clickable cards with item numbers, titles, and status badges, or empty state messages
+  - Storage methods getTicketsByCI, getChangeRequestsByCI, getProblemsByCI filter by linkedCiId field
+  - Owner dropdown in CI forms now filters users by selected customer (customerId)
+  - Customer field repositioned before owner field in both new and edit forms
+  - Owner selection automatically cleared when customer changes
+  - Shows "No users for this customer" when no matching users exist
+  - Test-verified: Related items display correctly, filtering works, and owner selection respects customer boundaries
 - **Customer-SLA Template Integration** (October 20, 2025): Updated customer management to use predefined SLA templates
   - Replaced manual SLA time fields (responseTimeSla, resolutionTimeSla) with SLA template dropdown selector
   - Customer forms now select from existing SLA templates defined in Admin > SLA Templates
