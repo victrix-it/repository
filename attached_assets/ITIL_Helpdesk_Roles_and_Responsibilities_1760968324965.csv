@@ -1,0 +1,16 @@
+Role,Responsibilities
+End User / Customer,Initiates or reports incidents and service requests; provides information for problems and approvals for changes where required.
+Service Desk Analyst (L1),"First point of contact for users; logs, categorizes, prioritizes, and resolves incidents or requests where possible; escalates unresolved issues."
+Technical Support (L2),Provides advanced troubleshooting and resolution for incidents; supports L1 analysts; assists in root cause analysis.
+Engineering / DevOps (L3),Handles complex issues and underlying problems; implements permanent fixes; supports change implementation.
+Problem Manager,Oversees the problem management process; ensures root cause analysis and creation of known error records; coordinates with technical teams.
+Change Manager / CAB,"Reviews, approves, and schedules changes; ensures risk and impact assessments are performed; leads change advisory board meetings."
+Service Delivery Manager / ITSM Lead,"Accountable for SLA compliance, service performance, reporting, and customer satisfaction; manages escalations and service reviews."
+Configuration Manager,Maintains accuracy of the CMDB; manages configuration item relationships and dependencies; supports change and incident processes.
+Knowledge Manager,"Creates, reviews, and publishes knowledge articles; ensures lessons learned are documented and shared; improves knowledge reuse."
+Security Officer,Ensures security and compliance requirements are met; reviews incidents and changes for security risks; provides guidance on remediation.
+Vendor / 3rd Party Support,Provides external technical assistance for supported systems or services; assists with escalations and patching.
+Helpdesk Supervisor,"Oversees daily operations; manages workload, ticket queues, and escalations; ensures analysts follow procedures."
+Tenant Administrator,Manages helpdesk operations and reporting for their own tenant or organization; limited to scoped visibility and approvals.
+System Administrator,"Maintains system configuration, integrations, and user access; ensures uptime and performance of the helpdesk platform."
+Service Owner,"Accountable for the overall delivery and performance of a specific service; ensures documentation, SLAs, and support readiness."

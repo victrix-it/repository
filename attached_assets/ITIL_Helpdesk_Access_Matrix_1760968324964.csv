@@ -1,0 +1,9 @@
+Role,Create Ticket,Update Ticket,Close Ticket,View All Tickets,Approve Changes,Manage Knowledgebase,Run Reports
+End User,Yes,Own tickets only,No,No,No,No,No
+L1 Analyst,Yes,Yes,Yes,Yes (within queue),No,Yes (contribute),Yes (basic)
+L2 Engineer,Yes,Yes,Yes,Yes (all),No,Yes,Yes
+Problem Manager,Yes,Yes,Yes,Yes,No,Yes,Yes
+Change Manager,Yes,Yes,Yes,Yes,Yes,Yes,Yes
+ITSM Lead,Yes,Yes,Yes,Yes,Yes,Yes,Yes
+Knowledge Manager,No,No,No,Yes,No,Yes,Yes
+Tenant Admin,Yes,Yes (tenant only),Yes,Yes (tenant only),No,Yes (tenant only),Yes (tenant only)
