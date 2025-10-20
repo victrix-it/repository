@@ -6,6 +6,16 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **Reporting Module** (October 20, 2025): Implemented comprehensive analytics and reporting system
+  - Created 13 different report types organized in 6 sections: Status Distribution, Priority Analysis, CI Analysis, Customer Analysis, Team Performance, Problem Areas
+  - Report types: ticket/change/problem status distributions, tickets by priority, tickets/changes/problems per CI, tickets/changes/problems per customer, top resolvers, top change implementors, most problematic CIs
+  - Added 12 storage methods for data aggregation: getTicketStatusDistribution, getChangeStatusDistribution, getProblemStatusDistribution, getTicketsByPriority, getTicketsPerCI, getChangesPerCI, getProblemsPerCI, getTicketsPerCustomer, getChangesPerCustomer, getProblemsPerCustomer, getTopResolvers, getTopChangeImplementors, getMostProblematicCIs
+  - Created 13 protected API routes under /api/reports/* with canRunReports permission requirement
+  - Reports page uses recharts library for data visualizations (pie charts, bar charts, horizontal bar charts)
+  - Added Reports navigation link in Administration section of sidebar (data-testid="nav-reports")
+  - Graceful empty state handling with "No data available" messages when no data exists
+  - Fixed upsertUser bug: changed conflict target from users.id to users.email for proper OIDC authentication
+  - Test-verified: All report cards displaying correctly, permission enforcement working, empty states handled gracefully
 - **CI Detail Page Enhancements** (October 20, 2025): Enhanced CMDB with relationship tracking and customer-based filtering
   - CI detail page now displays three sections showing related tickets, changes, and problems
   - Added API routes: GET /api/configuration-items/:id/tickets, /changes, /problems
