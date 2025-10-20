@@ -240,9 +240,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // Check if user exists
+    const existingUser = await db.select().from(users).where(eq(users.email, userData.email)).limit(1);
+    
+    // If user doesn't exist, find default role
+    let roleId = userData.roleId;
+    if (!existingUser.length && !roleId) {
+      // Find "End User" role as default, or fallback to first role
+      const [defaultRole] = await db
+        .select()
+        .from(roles)
+        .where(eq(roles.name, 'End User'))
+        .limit(1);
+      
+      if (defaultRole) {
+        roleId = defaultRole.id;
+      } else {
+        // If "End User" doesn't exist, use the first available role
+        const [firstRole] = await db.select().from(roles).limit(1);
+        if (firstRole) {
+          roleId = firstRole.id;
+        }
+      }
+    }
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({ ...userData, roleId })
       .onConflictDoUpdate({
         target: users.email,
         set: {
