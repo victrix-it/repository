@@ -6,6 +6,13 @@ This enterprise IT service management application integrates helpdesk ticket tra
 
 ## Recent Changes
 
+- **Customer-SLA Template Integration** (October 20, 2025): Updated customer management to use predefined SLA templates
+  - Replaced manual SLA time fields (responseTimeSla, resolutionTimeSla) with SLA template dropdown selector
+  - Customer forms now select from existing SLA templates defined in Admin > SLA Templates
+  - Customer cards display assigned SLA template name (e.g., "SLA: Victrix Standard SLA")
+  - Edit form pre-selects customer's current SLA template
+  - Customers table uses slaTemplateId foreign key to reference SLA templates
+  - Test-verified: SLA template selection, creation, editing, and display working correctly
 - **RBAC System Implementation** (October 20, 2025): Complete role-based access control with 12 granular permissions
   - Created comprehensive permission system: canCreateTickets, canUpdateOwnTickets, canUpdateAllTickets, canCloseTickets, canViewAllTickets, canApproveChanges, canManageKnowledgebase, canRunReports, canManageUsers, canManageRoles, canManageCMDB, canViewCMDB, isTenantScoped
   - Backend middleware (requirePermission) for permission enforcement on all protected routes

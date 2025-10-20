@@ -7,10 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertCustomerSchema, type InsertCustomer, type Customer } from "@shared/schema";
+import { insertCustomerSchema, type InsertCustomer, type Customer, type SlaTemplate } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Building2, Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,10 @@ export default function CustomersPage() {
     queryKey: ['/api/customers'],
   });
 
+  const { data: slaTemplates = [] } = useQuery<SlaTemplate[]>({
+    queryKey: ['/api/sla-templates'],
+  });
+
   const createForm = useForm<InsertCustomer>({
     resolver: zodResolver(insertCustomerSchema),
     defaultValues: {
@@ -37,8 +42,7 @@ export default function CustomersPage() {
       contactEmail: undefined,
       contactPhone: undefined,
       isActive: "true",
-      responseTimeSla: undefined,
-      resolutionTimeSla: undefined,
+      slaTemplateId: undefined,
     },
   });
 
@@ -248,48 +252,31 @@ export default function CustomersPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={createForm.control}
-                    name="responseTimeSla"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Response SLA (minutes)</FormLabel>
+                <FormField
+                  control={createForm.control}
+                  name="slaTemplateId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SLA Template</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || undefined}>
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number"
-                            value={field.value ?? ""} 
-                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                            placeholder="60" 
-                            data-testid="input-response-sla" 
-                          />
+                          <SelectTrigger data-testid="select-sla-template">
+                            <SelectValue placeholder="Select an SLA template" />
+                          </SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={createForm.control}
-                    name="resolutionTimeSla"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Resolution SLA (minutes)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number"
-                            value={field.value ?? ""} 
-                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                            placeholder="240" 
-                            data-testid="input-resolution-sla" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                        <SelectContent>
+                          {slaTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                              {template.isDefault === 'true' && ' (Default)'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -348,8 +335,7 @@ export default function CustomersPage() {
                               contactEmail: customer.contactEmail || undefined,
                               contactPhone: customer.contactPhone || undefined,
                               isActive: customer.isActive,
-                              responseTimeSla: customer.responseTimeSla || undefined,
-                              resolutionTimeSla: customer.resolutionTimeSla || undefined,
+                              slaTemplateId: customer.slaTemplateId || undefined,
                             });
                           }}
                           data-testid={`button-edit-${customer.id}`}
@@ -451,46 +437,31 @@ export default function CustomersPage() {
                               />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={editForm.control}
-                                name="responseTimeSla"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Response SLA (minutes)</FormLabel>
+                            <FormField
+                              control={editForm.control}
+                              name="slaTemplateId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>SLA Template</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value || undefined}>
                                     <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        type="number"
-                                        value={field.value ?? ""} 
-                                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                                        data-testid="input-edit-response-sla" 
-                                      />
+                                      <SelectTrigger data-testid="select-edit-sla-template">
+                                        <SelectValue placeholder="Select an SLA template" />
+                                      </SelectTrigger>
                                     </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={editForm.control}
-                                name="resolutionTimeSla"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Resolution SLA (minutes)</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        type="number"
-                                        value={field.value ?? ""} 
-                                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                                        data-testid="input-edit-resolution-sla" 
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
+                                    <SelectContent>
+                                      {slaTemplates.map((template) => (
+                                        <SelectItem key={template.id} value={template.id}>
+                                          {template.name}
+                                          {template.isDefault === 'true' && ' (Default)'}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
                             <DialogFooter>
                               <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
@@ -541,6 +512,12 @@ export default function CustomersPage() {
               <CardContent className="space-y-2">
                 {customer.description && (
                   <p className="text-sm text-muted-foreground">{customer.description}</p>
+                )}
+                {customer.slaTemplateId && (
+                  <div className="text-sm">
+                    <span className="font-medium">SLA: </span>
+                    {slaTemplates.find(t => t.id === customer.slaTemplateId)?.name || 'Unknown'}
+                  </div>
                 )}
                 {customer.contactName && (
                   <div className="text-sm">
