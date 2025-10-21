@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
-import type { User, Customer } from "@shared/schema";
+import type { User, Customer, CiType } from "@shared/schema";
 
 type Team = {
   id: string;
@@ -23,7 +23,7 @@ type Team = {
 
 const ciFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(["server", "application", "database", "network", "storage", "other"]),
+  typeId: z.string().min(1, "Type is required"),
   description: z.string().optional(),
   status: z.enum(["active", "inactive", "maintenance", "decommissioned"]),
   ipAddress: z.string().optional(),
@@ -55,11 +55,15 @@ export default function NewCIPage() {
     queryKey: ["/api/customers"],
   });
 
+  const { data: ciTypes } = useQuery<CiType[]>({
+    queryKey: ["/api/ci-types/active"],
+  });
+
   const form = useForm<CIFormData>({
     resolver: zodResolver(ciFormSchema),
     defaultValues: {
       name: "",
-      type: "server",
+      typeId: "",
       description: "",
       status: "active",
       ipAddress: "",
@@ -141,7 +145,7 @@ export default function NewCIPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="type"
+                  name="typeId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Type</FormLabel>
@@ -152,12 +156,11 @@ export default function NewCIPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="server">Server</SelectItem>
-                          <SelectItem value="application">Application</SelectItem>
-                          <SelectItem value="database">Database</SelectItem>
-                          <SelectItem value="network">Network Device</SelectItem>
-                          <SelectItem value="storage">Storage</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          {ciTypes?.map((ciType) => (
+                            <SelectItem key={ciType.id} value={ciType.id}>
+                              {ciType.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

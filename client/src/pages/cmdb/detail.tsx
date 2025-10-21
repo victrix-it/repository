@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { ConfigurationItem, User, Customer, Team } from "@shared/schema";
+import type { ConfigurationItem, User, Customer, Team, CiType } from "@shared/schema";
 
 const ciTypeIcons = {
   server: Server,
@@ -53,7 +53,7 @@ export default function CIDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: "",
-    type: "",
+    typeId: "",
     status: "",
     description: "",
     manufacturer: "",
@@ -81,6 +81,10 @@ export default function CIDetailPage() {
 
   const { data: teams } = useQuery<Team[]>({
     queryKey: ['/api/teams'],
+  });
+
+  const { data: ciTypes } = useQuery<CiType[]>({
+    queryKey: ['/api/ci-types/active'],
   });
 
   const { data: relatedTickets } = useQuery<any[]>({
@@ -124,7 +128,7 @@ export default function CIDetailPage() {
     if (!ci) return;
     setEditFormData({
       name: ci.name,
-      type: ci.type,
+      typeId: ci.typeId,
       status: ci.status,
       description: ci.description || "",
       manufacturer: ci.manufacturer || "",
@@ -443,17 +447,16 @@ export default function CIDetailPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-type">Type *</Label>
-                  <Select value={editFormData.type} onValueChange={(value) => setEditFormData({ ...editFormData, type: value })}>
+                  <Select value={editFormData.typeId} onValueChange={(value) => setEditFormData({ ...editFormData, typeId: value })}>
                     <SelectTrigger data-testid="select-edit-type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="server">Server</SelectItem>
-                      <SelectItem value="application">Application</SelectItem>
-                      <SelectItem value="database">Database</SelectItem>
-                      <SelectItem value="network">Network</SelectItem>
-                      <SelectItem value="storage">Storage</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {ciTypes?.map((ciType) => (
+                        <SelectItem key={ciType.id} value={ciType.id}>
+                          {ciType.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
