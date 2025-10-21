@@ -294,12 +294,24 @@ export const discoveredDevices = pgTable("discovered_devices", {
   discoveredAt: timestamp("discovered_at").defaultNow().notNull(),
 });
 
+// CI Types - Custom configuration item types
+export const ciTypes = pgTable("ci_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  icon: varchar("icon", { length: 50 }), // Icon name from lucide-react
+  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+  isDefault: varchar("is_default", { length: 10 }).default('false').notNull(), // Default types cannot be deleted
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Configuration Items (CMDB)
 export const configurationItems = pgTable("configuration_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   ciNumber: varchar("ci_number", { length: 20 }).unique(), // e.g., CI000001
   name: varchar("name", { length: 255 }).notNull(), // Hostname
-  type: ciTypeEnum("type").notNull(),
+  typeId: varchar("type_id").references(() => ciTypes.id).notNull(),
   description: text("description"),
   status: ciStatusEnum("status").default('active').notNull(),
   ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6
@@ -494,7 +506,15 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
   }),
 }));
 
+export const ciTypesRelations = relations(ciTypes, ({ many }) => ({
+  configurationItems: many(configurationItems),
+}));
+
 export const configurationItemsRelations = relations(configurationItems, ({ one, many }) => ({
+  ciType: one(ciTypes, {
+    fields: [configurationItems.typeId],
+    references: [ciTypes.id],
+  }),
   owner: one(users, {
     fields: [configurationItems.ownerId],
     references: [users.id],
@@ -840,3 +860,11 @@ export type Role = typeof roles.$inferSelect;
 
 export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
 export type UserRole = typeof userRoles.$inferSelect;
+
+export const insertCiTypeSchema = createInsertSchema(ciTypes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertCiType = z.infer<typeof insertCiTypeSchema>;
+export type CiType = typeof ciTypes.$inferSelect;
