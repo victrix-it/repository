@@ -326,6 +326,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // License routes
+  app.get('/api/licenses/status', async (req, res) => {
+    try {
+      const license = await storage.getActiveLicense();
+      if (!license) {
+        return res.json({ active: false, message: 'No active license' });
+      }
+
+      const now = new Date();
+      const expirationDate = new Date(license.expirationDate);
+      const isExpired = now > expirationDate;
+
+      res.json({
+        active: !isExpired,
+        companyName: license.companyName,
+        expirationDate: license.expirationDate,
+        maxUsers: license.maxUsers,
+        isExpired,
+      });
+    } catch (error) {
+      console.error("Error fetching license status:", error);
+      res.status(500).json({ message: "Failed to fetch license status" });
+    }
+  });
+
+  app.post('/api/licenses/activate', async (req, res) => {
+    try {
+      const { licenseKey, companyName, contactEmail, expirationDate, maxUsers } = req.body;
+      
+      if (!licenseKey || !companyName || !contactEmail || !expirationDate || !maxUsers) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if license already exists
+      const allLicenses = await storage.getAllLicenses();
+      const existingLicense = allLicenses.find(l => l.licenseKey === licenseKey);
+
+      if (existingLicense) {
+        // Activate existing license
+        const activated = await storage.activateLicense(licenseKey);
+        return res.json(activated);
+      }
+
+      // Create new license
+      const newLicense = await storage.createLicense({
+        licenseKey,
+        companyName,
+        contactEmail,
+        expirationDate: new Date(expirationDate),
+        maxUsers,
+        isActive: 'true',
+      });
+
+      // Deactivate all other licenses
+      await storage.activateLicense(licenseKey);
+
+      res.json(newLicense);
+    } catch (error: any) {
+      console.error("Error activating license:", error);
+      res.status(500).json({ message: error.message || "Failed to activate license" });
+    }
+  });
+
+  app.get('/api/licenses', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const licenses = await storage.getAllLicenses();
+      res.json(licenses);
+    } catch (error) {
+      console.error("Error fetching licenses:", error);
+      res.status(500).json({ message: "Failed to fetch licenses" });
+    }
+  });
+
+  app.post('/api/licenses/:id/deactivate', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      await storage.deactivateLicense(req.params.id);
+      res.json({ message: 'License deactivated successfully' });
+    } catch (error) {
+      console.error("Error deactivating license:", error);
+      res.status(500).json({ message: "Failed to deactivate license" });
+    }
+  });
+
+  // Password change route
+  app.post('/api/auth/change-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { currentPassword, newPassword } = req.body;
+
+      if (!newPassword) {
+        return res.status(400).json({ message: "New password is required" });
+      }
+
+      // Validate password policy
+      const { validatePassword } = await import('./password-policy');
+      const validation = validatePassword(newPassword);
+      if (!validation.valid) {
+        return res.status(400).json({ message: validation.errors.join(', ') });
+      }
+
+      // Get user and verify current password if not using OIDC
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Hash new password
+      const bcrypt = await import('bcryptjs');
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password and clear mustChangePassword flag
+      await storage.updateUser(userId, {
+        passwordHash: hashedPassword,
+        mustChangePassword: 'false',
+      });
+
+      res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
   // Ticket routes
   app.get('/api/tickets', isAuthenticated, optionalPermissionContext(), async (req: any, res) => {
     try {
