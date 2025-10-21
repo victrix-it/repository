@@ -10,6 +10,7 @@ import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
 import { importCIsFromCsv, generateCsvTemplate } from "./csvImport";
 import { importUsersFromCsv, generateUserCsvTemplate } from "./userCsvImport";
 import multer from "multer";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -22,7 +23,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const logoStorage = multer.diskStorage({
     destination: (_req, _file, cb) => {
       const uploadDir = 'uploads/branding';
-      const fs = require('fs');
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -1200,7 +1200,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error uploading logo:", error);
       // Clean up file on error
       if (req.file) {
-        const fs = require('fs');
         fs.unlinkSync(req.file.path);
       }
       res.status(400).json({ message: error.message || "Failed to upload logo" });
