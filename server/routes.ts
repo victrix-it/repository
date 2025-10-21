@@ -326,6 +326,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CI Types routes
+  app.get('/api/ci-types', isAuthenticated, async (req, res) => {
+    try {
+      const ciTypes = await storage.getAllCiTypes();
+      res.json(ciTypes);
+    } catch (error) {
+      console.error("Error fetching CI types:", error);
+      res.status(500).json({ message: "Failed to fetch CI types" });
+    }
+  });
+
+  app.get('/api/ci-types/active', isAuthenticated, async (req, res) => {
+    try {
+      const ciTypes = await storage.getActiveCiTypes();
+      res.json(ciTypes);
+    } catch (error) {
+      console.error("Error fetching active CI types:", error);
+      res.status(500).json({ message: "Failed to fetch active CI types" });
+    }
+  });
+
+  app.post('/api/ci-types', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
+    try {
+      const ciType = await storage.createCiType(req.body);
+      res.status(201).json(ciType);
+    } catch (error) {
+      console.error("Error creating CI type:", error);
+      res.status(500).json({ message: "Failed to create CI type" });
+    }
+  });
+
+  app.patch('/api/ci-types/:id', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
+    try {
+      const updated = await storage.updateCiType(req.params.id, req.body);
+      if (!updated) {
+        return res.status(404).json({ message: "CI type not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating CI type:", error);
+      res.status(500).json({ message: "Failed to update CI type" });
+    }
+  });
+
+  app.delete('/api/ci-types/:id', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
+    try {
+      // Check if CI type is default
+      const ciType = await storage.getCiType(req.params.id);
+      if (ciType?.isDefault === 'true') {
+        return res.status(400).json({ message: "Cannot delete default CI type" });
+      }
+
+      await storage.deleteCiType(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting CI type:", error);
+      res.status(500).json({ message: "Failed to delete CI type" });
+    }
+  });
+
   // License routes
   app.get('/api/licenses/status', async (req, res) => {
     try {
