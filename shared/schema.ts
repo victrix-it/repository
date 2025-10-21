@@ -146,15 +146,13 @@ export const systemSettings = pgTable("system_settings", {
 export const licenses = pgTable("licenses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   licenseKey: varchar("license_key", { length: 255 }).unique().notNull(),
-  issuedTo: varchar("issued_to", { length: 255 }), // Company/organization name
+  companyName: varchar("company_name", { length: 255 }).notNull(),
+  contactEmail: varchar("contact_email", { length: 255 }).notNull(),
   issuedDate: timestamp("issued_date").defaultNow().notNull(),
-  expirationDate: timestamp("expiration_date"), // null = never expires
-  maxUsers: integer("max_users"), // null = unlimited
-  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
-  features: jsonb("features"), // Feature flags for different editions
-  notes: text("notes"),
+  expirationDate: timestamp("expiration_date").notNull(),
+  maxUsers: integer("max_users").notNull(),
+  isActive: varchar("is_active", { length: 10 }).default('false').notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // SLA Templates

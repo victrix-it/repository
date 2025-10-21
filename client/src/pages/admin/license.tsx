@@ -27,10 +27,7 @@ export default function LicensePage() {
 
   const activateMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/licenses/activate', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('POST', '/api/licenses/activate', data);
     },
     onSuccess: () => {
       toast({
