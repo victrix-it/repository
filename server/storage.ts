@@ -21,6 +21,8 @@ import {
   contacts,
   problems,
   roles,
+  licenses,
+  slaTemplates,
   type User,
   type UpsertUser,
   type Ticket,
@@ -67,7 +69,8 @@ import {
   type InsertSlaTemplate,
   type Role,
   type InsertRole,
-  slaTemplates,
+  type License,
+  type InsertLicense,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -234,6 +237,13 @@ export interface IStorage {
   
   // Dashboard stats
   getDashboardStats(): Promise<any>;
+
+  // License operations
+  createLicense(license: InsertLicense): Promise<License>;
+  getActiveLicense(): Promise<License | undefined>;
+  getAllLicenses(): Promise<License[]>;
+  activateLicense(licenseKey: string): Promise<License>;
+  deactivateLicense(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1576,6 +1586,53 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
     
     return results;
+  }
+
+  // License operations
+  async createLicense(license: InsertLicense): Promise<License> {
+    const [newLicense] = await db
+      .insert(licenses)
+      .values(license)
+      .returning();
+    return newLicense;
+  }
+
+  async getActiveLicense(): Promise<License | undefined> {
+    const [activeLicense] = await db
+      .select()
+      .from(licenses)
+      .where(eq(licenses.isActive, 'true'))
+      .orderBy(desc(licenses.createdAt))
+      .limit(1);
+    return activeLicense;
+  }
+
+  async getAllLicenses(): Promise<License[]> {
+    return await db.select().from(licenses).orderBy(desc(licenses.createdAt));
+  }
+
+  async activateLicense(licenseKey: string): Promise<License> {
+    // Deactivate all existing licenses
+    await db
+      .update(licenses)
+      .set({ isActive: 'false' })
+      .where(eq(licenses.isActive, 'true'));
+
+    // Activate the new license
+    const [activatedLicense] = await db
+      .update(licenses)
+      .set({ isActive: 'true' })
+      .where(eq(licenses.licenseKey, licenseKey))
+      .returning();
+
+    return activatedLicense;
+  }
+
+  async deactivateLicense(id: string): Promise<void> {
+    await db
+      .update(licenses)
+      .set({ isActive: 'false' })
+      .where(eq(licenses.id, id));
   }
 }
 

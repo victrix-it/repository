@@ -80,6 +80,7 @@ export const users = pgTable("users", {
   ldapDn: varchar("ldap_dn"), // Distinguished Name from LDAP
   samlNameId: varchar("saml_name_id"), // NameID from SAML
   status: varchar("status", { length: 20 }).default('active').notNull(), // active, disabled
+  mustChangePassword: varchar("must_change_password", { length: 10 }).default('false').notNull(), // Force password change on next login
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -138,6 +139,21 @@ export const systemSettings = pgTable("system_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   key: varchar("key", { length: 100 }).unique().notNull(),
   value: text("value"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// License table for system licensing
+export const licenses = pgTable("licenses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  licenseKey: varchar("license_key", { length: 255 }).unique().notNull(),
+  issuedTo: varchar("issued_to", { length: 255 }), // Company/organization name
+  issuedDate: timestamp("issued_date").defaultNow().notNull(),
+  expirationDate: timestamp("expiration_date"), // null = never expires
+  maxUsers: integer("max_users"), // null = unlimited
+  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+  features: jsonb("features"), // Feature flags for different editions
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -687,6 +703,12 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit
   updatedAt: true,
 });
 
+export const insertLicenseSchema = createInsertSchema(licenses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertSlaTemplateSchema = createInsertSchema(slaTemplates).omit({
   id: true,
   createdAt: true,
@@ -763,6 +785,9 @@ export type ResolutionCategory = typeof resolutionCategories.$inferSelect;
 
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 export type SystemSetting = typeof systemSettings.$inferSelect;
+
+export type InsertLicense = z.infer<typeof insertLicenseSchema>;
+export type License = typeof licenses.$inferSelect;
 
 export type InsertSlaTemplate = z.infer<typeof insertSlaTemplateSchema>;
 export type SlaTemplate = typeof slaTemplates.$inferSelect;
