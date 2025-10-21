@@ -3,6 +3,7 @@ import {
   tickets,
   changeRequests,
   configurationItems,
+  ciTypes,
   knowledgeBase,
   comments,
   emailMessages,
@@ -31,6 +32,8 @@ import {
   type InsertChangeRequest,
   type ConfigurationItem,
   type InsertConfigurationItem,
+  type CiType,
+  type InsertCiType,
   type KnowledgeBase,
   type InsertKnowledgeBase,
   type Comment,
@@ -99,6 +102,14 @@ export interface IStorage {
   getChangeRequestsByCI(ciId: string): Promise<any[]>;
   updateChangeStatus(id: string, status: string): Promise<void>;
   
+  // CI Types operations
+  createCiType(ciType: InsertCiType): Promise<CiType>;
+  getCiType(id: string): Promise<CiType | undefined>;
+  getAllCiTypes(): Promise<CiType[]>;
+  getActiveCiTypes(): Promise<CiType[]>;
+  updateCiType(id: string, ciType: Partial<InsertCiType>): Promise<CiType | undefined>;
+  deleteCiType(id: string): Promise<void>;
+
   // Configuration Item operations
   createConfigurationItem(ci: InsertConfigurationItem): Promise<ConfigurationItem>;
   getConfigurationItem(id: string): Promise<any>;
@@ -1586,6 +1597,51 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
     
     return results;
+  }
+
+  // CI Types operations
+  async createCiType(ciType: InsertCiType): Promise<CiType> {
+    const [newCiType] = await db
+      .insert(ciTypes)
+      .values(ciType)
+      .returning();
+    return newCiType;
+  }
+
+  async getCiType(id: string): Promise<CiType | undefined> {
+    const [ciType] = await db
+      .select()
+      .from(ciTypes)
+      .where(eq(ciTypes.id, id));
+    return ciType;
+  }
+
+  async getAllCiTypes(): Promise<CiType[]> {
+    return await db
+      .select()
+      .from(ciTypes)
+      .orderBy(ciTypes.name);
+  }
+
+  async getActiveCiTypes(): Promise<CiType[]> {
+    return await db
+      .select()
+      .from(ciTypes)
+      .where(eq(ciTypes.isActive, 'true'))
+      .orderBy(ciTypes.name);
+  }
+
+  async updateCiType(id: string, ciTypeData: Partial<InsertCiType>): Promise<CiType | undefined> {
+    const [updated] = await db
+      .update(ciTypes)
+      .set({ ...ciTypeData, updatedAt: new Date() })
+      .where(eq(ciTypes.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCiType(id: string): Promise<void> {
+    await db.delete(ciTypes).where(eq(ciTypes.id, id));
   }
 
   // License operations
