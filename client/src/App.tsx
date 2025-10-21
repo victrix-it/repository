@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppFooter } from "@/components/app-footer";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -89,31 +91,45 @@ function Router() {
 }
 
 function AppLayout() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
+  useEffect(() => {
+    if (user && user.mustChangePassword === 'true') {
+      setShowPasswordDialog(true);
+    }
+  }, [user]);
+
   if (!isLoading && isAuthenticated) {
     return (
-      <SidebarProvider style={style as React.CSSProperties}>
-        <div className="flex h-screen w-full">
-          <AppSidebar />
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
-            </header>
-            <main className="flex-1 overflow-auto flex flex-col">
-              <div className="flex-1">
-                <Router />
-              </div>
-              <AppFooter />
-            </main>
+      <>
+        <SidebarProvider style={style as React.CSSProperties}>
+          <div className="flex h-screen w-full">
+            <AppSidebar />
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+              </header>
+              <main className="flex-1 overflow-auto flex flex-col">
+                <div className="flex-1">
+                  <Router />
+                </div>
+                <AppFooter />
+              </main>
+            </div>
           </div>
-        </div>
-      </SidebarProvider>
+        </SidebarProvider>
+        <ChangePasswordDialog
+          open={showPasswordDialog}
+          onOpenChange={setShowPasswordDialog}
+          forcedChange={true}
+        />
+      </>
     );
   }
 
