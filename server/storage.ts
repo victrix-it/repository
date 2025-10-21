@@ -109,6 +109,7 @@ export interface IStorage {
   getActiveCiTypes(): Promise<CiType[]>;
   updateCiType(id: string, ciType: Partial<InsertCiType>): Promise<CiType | undefined>;
   deleteCiType(id: string): Promise<void>;
+  countCisByType(typeId: string): Promise<number>;
 
   // Configuration Item operations
   createConfigurationItem(ci: InsertConfigurationItem): Promise<ConfigurationItem>;
@@ -1642,6 +1643,14 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCiType(id: string): Promise<void> {
     await db.delete(ciTypes).where(eq(ciTypes.id, id));
+  }
+
+  async countCisByType(typeId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(configurationItems)
+      .where(eq(configurationItems.typeId, typeId));
+    return result[0]?.count || 0;
   }
 
   // License operations

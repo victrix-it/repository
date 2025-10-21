@@ -372,10 +372,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/ci-types/:id', isAuthenticated, requirePermission('canManageCMDB'), async (req, res) => {
     try {
-      // Check if CI type is default
-      const ciType = await storage.getCiType(req.params.id);
-      if (ciType?.isDefault === 'true') {
-        return res.status(400).json({ message: "Cannot delete default CI type" });
+      // Smart protection: Check if any configuration items reference this CI type
+      const referenceCount = await storage.countCisByType(req.params.id);
+      
+      if (referenceCount > 0) {
+        return res.status(400).json({ 
+          message: `Cannot delete CI type: ${referenceCount} configuration item${referenceCount > 1 ? 's' : ''} ${referenceCount > 1 ? 'are' : 'is'} using this type`
+        });
       }
 
       await storage.deleteCiType(req.params.id);
