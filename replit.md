@@ -63,8 +63,21 @@ Preferred communication style: Simple, everyday language.
 - **Knowledge Base**: Management of articles.
 - **Reporting**: 13 different report types for status distribution, priority analysis, CI analysis, customer analysis, team performance, and problem areas, with visualizations using recharts.
 - **SLA Management**: SLA template system for customers.
-- **License System**: Comprehensive license management with key activation, expiration, and user limits.
-- **Password Policy**: Enforced password policies including minimum length, character requirements, and forced password changes for new/default users.
+- **License System**: Time-limited access control with license key activation. Features include:
+  - Single active license per system
+  - Expiration date tracking and enforcement
+  - Maximum user limits
+  - Company and contact information tracking
+  - Admin UI for license activation and status viewing
+  - Server startup validation ensuring active license
+  - License key generation utility (scripts/generate-license.ts)
+- **Password Policy**: Strong password enforcement with:
+  - Minimum 8 characters required
+  - Must include uppercase, lowercase, number, and special character
+  - Frontend and backend validation
+  - Default admin account (admin@helpdesk.local / admin) created on first startup
+  - Forced password change on first login via mustChangePassword flag
+  - ChangePasswordDialog component for secure password updates
 - **Multi-Customer Support**: Data separation and user filtering based on customer ID.
 - **Network Discovery**: Features for discovering network assets.
 
