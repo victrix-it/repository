@@ -9,6 +9,7 @@ export interface UserPermissions {
   canViewAllTickets: boolean;
   canApproveChanges: boolean;
   canManageKnowledgebase: boolean;
+  canManageServiceCatalog: boolean;
   canRunReports: boolean;
   canManageUsers: boolean;
   canManageRoles: boolean;
