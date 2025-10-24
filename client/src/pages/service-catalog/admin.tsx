@@ -27,7 +27,13 @@ import { Plus, Pencil, Trash2, CheckCircle, XCircle, ShieldAlert } from "lucide-
 import { useState } from "react";
 
 const formSchema = insertServiceCatalogItemSchema.extend({
-  category: z.enum(["access", "software", "hardware", "other"]),
+  category: z.enum(["access_management", "hardware", "software", "network", "general"]),
+  cost: z.union([z.string(), z.number()]).transform((val) => {
+    if (typeof val === 'string') {
+      return val === '' ? undefined : parseInt(val, 10);
+    }
+    return val;
+  }).optional(),
 });
 
 export default function ServiceCatalogAdmin() {
@@ -53,7 +59,7 @@ export default function ServiceCatalogAdmin() {
     defaultValues: {
       name: "",
       description: "",
-      category: "other" as const,
+      category: "general" as const,
       icon: "",
       estimatedCompletionMinutes: 0,
       requiresApproval: "false",
@@ -66,7 +72,7 @@ export default function ServiceCatalogAdmin() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/service-catalog", "POST", data);
+      return await apiRequest("POST", "/api/service-catalog", data);
     },
     onSuccess: () => {
       toast({
@@ -89,7 +95,7 @@ export default function ServiceCatalogAdmin() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return await apiRequest(`/api/service-catalog/${id}`, "PATCH", data);
+      return await apiRequest("PATCH", `/api/service-catalog/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -113,7 +119,7 @@ export default function ServiceCatalogAdmin() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/service-catalog/${id}`, "DELETE");
+      return await apiRequest("DELETE", `/api/service-catalog/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -361,10 +367,11 @@ export default function ServiceCatalogAdmin() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="access">{t("serviceCatalog.categoryAccess", "Access Requests")}</SelectItem>
-                          <SelectItem value="software">{t("serviceCatalog.categorySoftware", "Software")}</SelectItem>
+                          <SelectItem value="access_management">{t("serviceCatalog.categoryAccess", "Access Management")}</SelectItem>
                           <SelectItem value="hardware">{t("serviceCatalog.categoryHardware", "Hardware")}</SelectItem>
-                          <SelectItem value="other">{t("serviceCatalog.categoryOther", "Other")}</SelectItem>
+                          <SelectItem value="software">{t("serviceCatalog.categorySoftware", "Software")}</SelectItem>
+                          <SelectItem value="network">{t("serviceCatalog.categoryNetwork", "Network")}</SelectItem>
+                          <SelectItem value="general">{t("serviceCatalog.categoryGeneral", "General")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

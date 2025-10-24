@@ -70,6 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           canViewAllTickets: userWithRole.roleDetails.canViewAllTickets === 'true',
           canApproveChanges: userWithRole.roleDetails.canApproveChanges === 'true',
           canManageKnowledgebase: userWithRole.roleDetails.canManageKnowledgebase === 'true',
+          canManageServiceCatalog: userWithRole.roleDetails.canManageServiceCatalog === 'true',
           canRunReports: userWithRole.roleDetails.canRunReports === 'true',
           canManageUsers: userWithRole.roleDetails.canManageUsers === 'true',
           canManageRoles: userWithRole.roleDetails.canManageRoles === 'true',
