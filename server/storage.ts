@@ -1452,6 +1452,16 @@ export class DatabaseStorage implements IStorage {
       .select({ count: sql<number>`count(*)` })
       .from(changeRequests)
       .where(eq(changeRequests.status, 'pending_approval'));
+    
+    const [pendingServiceRequests] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(serviceRequests)
+      .where(eq(serviceRequests.status, 'pending_approval'));
+
+    const [slaBreached] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(tickets)
+      .where(eq(tickets.slaStatus, 'breached'));
 
     const [totalCIs] = await db
       .select({ count: sql<number>`count(*)` })
@@ -1461,13 +1471,80 @@ export class DatabaseStorage implements IStorage {
       .select({ count: sql<number>`count(*)` })
       .from(knowledgeBase);
 
+    const ticketsByStatus = await db
+      .select({
+        status: tickets.status,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .groupBy(tickets.status);
+
+    const ticketsByPriority = await db
+      .select({
+        priority: tickets.priority,
+        count: sql<number>`count(*)`,
+      })
+      .from(tickets)
+      .groupBy(tickets.priority);
+
+    const recentTickets = await db
+      .select({
+        id: tickets.id,
+        ticketNumber: tickets.ticketNumber,
+        title: tickets.title,
+        status: tickets.status,
+        priority: tickets.priority,
+        createdAt: tickets.createdAt,
+      })
+      .from(tickets)
+      .orderBy(desc(tickets.createdAt))
+      .limit(5);
+
+    const recentChanges = await db
+      .select({
+        id: changeRequests.id,
+        changeNumber: changeRequests.changeNumber,
+        title: changeRequests.title,
+        status: changeRequests.status,
+        priority: changeRequests.priority,
+        createdAt: changeRequests.createdAt,
+      })
+      .from(changeRequests)
+      .orderBy(desc(changeRequests.createdAt))
+      .limit(5);
+
+    const recentServiceRequests = await db
+      .select({
+        id: serviceRequests.id,
+        requestNumber: serviceRequests.requestNumber,
+        status: serviceRequests.status,
+        priority: serviceRequests.priority,
+        createdAt: serviceRequests.createdAt,
+        serviceCatalogItemId: serviceRequests.serviceCatalogItemId,
+      })
+      .from(serviceRequests)
+      .orderBy(desc(serviceRequests.createdAt))
+      .limit(5);
+
     return {
-      openTickets: openTickets.count,
-      inProgressTickets: inProgressTickets.count,
-      criticalTickets: criticalTickets.count,
-      pendingChanges: pendingChanges.count,
-      totalCIs: totalCIs.count,
-      kbArticles: kbArticles.count,
+      stats: {
+        openTickets: openTickets.count,
+        inProgressTickets: inProgressTickets.count,
+        criticalTickets: criticalTickets.count,
+        pendingApprovals: (pendingChanges?.count || 0) + (pendingServiceRequests?.count || 0),
+        slaBreached: slaBreached.count,
+        totalCIs: totalCIs.count,
+        kbArticles: kbArticles.count,
+      },
+      charts: {
+        ticketsByStatus,
+        ticketsByPriority,
+      },
+      recentActivity: {
+        tickets: recentTickets,
+        changes: recentChanges,
+        serviceRequests: recentServiceRequests,
+      },
     };
   }
 
