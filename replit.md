@@ -43,6 +43,7 @@ Preferred communication style: Simple, everyday language.
 - **Query Strategy**: Custom fetch wrapper with React Query.
 
 ### Feature Specifications
+- **Dashboard**: Comprehensive analytics and overview page displaying key metrics (open tickets, in progress, pending approvals, SLA breaches), interactive charts (tickets by status/priority using recharts), recent activity feeds (latest tickets, changes, service requests), and quick access cards to CMDB and Knowledge Base. Default landing page after authentication.
 - **Helpdesk**: Ticket tracking with workflow, attachments, comments.
 - **Change Management**: ITIL-style change requests with approval workflows.
 - **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking.
