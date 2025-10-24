@@ -74,6 +74,12 @@ import {
   type InsertRole,
   type License,
   type InsertLicense,
+  serviceCatalogItems,
+  serviceRequests,
+  type ServiceCatalogItem,
+  type InsertServiceCatalogItem,
+  type ServiceRequest,
+  type InsertServiceRequest,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, isNull, sql } from "drizzle-orm";
@@ -262,6 +268,23 @@ export interface IStorage {
   getAllLicenses(): Promise<License[]>;
   activateLicense(licenseKey: string): Promise<License>;
   deactivateLicense(id: string): Promise<void>;
+
+  // Service Catalog operations
+  createServiceCatalogItem(item: InsertServiceCatalogItem, createdById: string): Promise<ServiceCatalogItem>;
+  getAllServiceCatalogItems(): Promise<any[]>;
+  getActiveServiceCatalogItems(): Promise<any[]>;
+  getServiceCatalogItem(id: string): Promise<any>;
+  updateServiceCatalogItem(id: string, item: Partial<InsertServiceCatalogItem>): Promise<ServiceCatalogItem>;
+  deleteServiceCatalogItem(id: string): Promise<void>;
+
+  // Service Request operations
+  createServiceRequest(request: InsertServiceRequest, requestedById: string): Promise<ServiceRequest>;
+  getAllServiceRequests(): Promise<any[]>;
+  getServiceRequest(id: string): Promise<any>;
+  updateServiceRequest(id: string, request: Partial<InsertServiceRequest>): Promise<ServiceRequest>;
+  approveServiceRequest(id: string, approvedById: string, notes: string): Promise<ServiceRequest>;
+  rejectServiceRequest(id: string, approvedById: string, notes: string): Promise<ServiceRequest>;
+  completeServiceRequest(id: string, notes: string): Promise<ServiceRequest>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1757,6 +1780,345 @@ export class DatabaseStorage implements IStorage {
       .update(licenses)
       .set({ isActive: 'false' })
       .where(eq(licenses.id, id));
+  }
+
+  // Service Catalog operations
+  async createServiceCatalogItem(item: InsertServiceCatalogItem, createdById: string): Promise<ServiceCatalogItem> {
+    const [newItem] = await db
+      .insert(serviceCatalogItems)
+      .values({ ...item, createdById })
+      .returning();
+    return newItem;
+  }
+
+  async getAllServiceCatalogItems(): Promise<any[]> {
+    const items = await db
+      .select({
+        id: serviceCatalogItems.id,
+        name: serviceCatalogItems.name,
+        description: serviceCatalogItems.description,
+        category: serviceCatalogItems.category,
+        icon: serviceCatalogItems.icon,
+        estimatedCompletionMinutes: serviceCatalogItems.estimatedCompletionMinutes,
+        requiresApproval: serviceCatalogItems.requiresApproval,
+        isActive: serviceCatalogItems.isActive,
+        cost: serviceCatalogItems.cost,
+        customerId: serviceCatalogItems.customerId,
+        formFields: serviceCatalogItems.formFields,
+        assignedToTeamId: serviceCatalogItems.assignedToTeamId,
+        createdById: serviceCatalogItems.createdById,
+        createdAt: serviceCatalogItems.createdAt,
+        updatedAt: serviceCatalogItems.updatedAt,
+        createdBy: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedToTeam: {
+          id: teams.id,
+          name: teams.name,
+        },
+        customer: {
+          id: customers.id,
+          name: customers.name,
+        },
+      })
+      .from(serviceCatalogItems)
+      .leftJoin(users, eq(serviceCatalogItems.createdById, users.id))
+      .leftJoin(teams, eq(serviceCatalogItems.assignedToTeamId, teams.id))
+      .leftJoin(customers, eq(serviceCatalogItems.customerId, customers.id))
+      .orderBy(desc(serviceCatalogItems.createdAt));
+    
+    return items;
+  }
+
+  async getActiveServiceCatalogItems(): Promise<any[]> {
+    const items = await db
+      .select({
+        id: serviceCatalogItems.id,
+        name: serviceCatalogItems.name,
+        description: serviceCatalogItems.description,
+        category: serviceCatalogItems.category,
+        icon: serviceCatalogItems.icon,
+        estimatedCompletionMinutes: serviceCatalogItems.estimatedCompletionMinutes,
+        requiresApproval: serviceCatalogItems.requiresApproval,
+        isActive: serviceCatalogItems.isActive,
+        cost: serviceCatalogItems.cost,
+        customerId: serviceCatalogItems.customerId,
+        formFields: serviceCatalogItems.formFields,
+        assignedToTeamId: serviceCatalogItems.assignedToTeamId,
+        createdById: serviceCatalogItems.createdById,
+        createdAt: serviceCatalogItems.createdAt,
+        updatedAt: serviceCatalogItems.updatedAt,
+        assignedToTeam: {
+          id: teams.id,
+          name: teams.name,
+        },
+        customer: {
+          id: customers.id,
+          name: customers.name,
+        },
+      })
+      .from(serviceCatalogItems)
+      .leftJoin(teams, eq(serviceCatalogItems.assignedToTeamId, teams.id))
+      .leftJoin(customers, eq(serviceCatalogItems.customerId, customers.id))
+      .where(eq(serviceCatalogItems.isActive, 'true'))
+      .orderBy(serviceCatalogItems.category, serviceCatalogItems.name);
+    
+    return items;
+  }
+
+  async getServiceCatalogItem(id: string): Promise<any> {
+    const [item] = await db
+      .select({
+        id: serviceCatalogItems.id,
+        name: serviceCatalogItems.name,
+        description: serviceCatalogItems.description,
+        category: serviceCatalogItems.category,
+        icon: serviceCatalogItems.icon,
+        estimatedCompletionMinutes: serviceCatalogItems.estimatedCompletionMinutes,
+        requiresApproval: serviceCatalogItems.requiresApproval,
+        isActive: serviceCatalogItems.isActive,
+        cost: serviceCatalogItems.cost,
+        customerId: serviceCatalogItems.customerId,
+        formFields: serviceCatalogItems.formFields,
+        assignedToTeamId: serviceCatalogItems.assignedToTeamId,
+        createdById: serviceCatalogItems.createdById,
+        createdAt: serviceCatalogItems.createdAt,
+        updatedAt: serviceCatalogItems.updatedAt,
+        createdBy: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedToTeam: {
+          id: teams.id,
+          name: teams.name,
+        },
+        customer: {
+          id: customers.id,
+          name: customers.name,
+        },
+      })
+      .from(serviceCatalogItems)
+      .leftJoin(users, eq(serviceCatalogItems.createdById, users.id))
+      .leftJoin(teams, eq(serviceCatalogItems.assignedToTeamId, teams.id))
+      .leftJoin(customers, eq(serviceCatalogItems.customerId, customers.id))
+      .where(eq(serviceCatalogItems.id, id))
+      .limit(1);
+    
+    return item;
+  }
+
+  async updateServiceCatalogItem(id: string, item: Partial<InsertServiceCatalogItem>): Promise<ServiceCatalogItem> {
+    const [updatedItem] = await db
+      .update(serviceCatalogItems)
+      .set({ ...item, updatedAt: new Date() })
+      .where(eq(serviceCatalogItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteServiceCatalogItem(id: string): Promise<void> {
+    await db.delete(serviceCatalogItems).where(eq(serviceCatalogItems.id, id));
+  }
+
+  // Service Request operations
+  async createServiceRequest(request: InsertServiceRequest, requestedById: string): Promise<ServiceRequest> {
+    // Generate request number (SR00001, SR00002, etc.)
+    const lastRequest = await db
+      .select()
+      .from(serviceRequests)
+      .orderBy(desc(serviceRequests.createdAt))
+      .limit(1);
+    
+    let requestNumber = 'SR00001';
+    if (lastRequest.length > 0 && lastRequest[0].requestNumber) {
+      const lastNumber = parseInt(lastRequest[0].requestNumber.substring(2));
+      requestNumber = `SR${String(lastNumber + 1).padStart(5, '0')}`;
+    }
+
+    const [newRequest] = await db
+      .insert(serviceRequests)
+      .values({ ...request, requestNumber, requestedById })
+      .returning();
+    return newRequest;
+  }
+
+  async getAllServiceRequests(): Promise<any[]> {
+    const requests = await db
+      .select({
+        id: serviceRequests.id,
+        requestNumber: serviceRequests.requestNumber,
+        serviceCatalogItemId: serviceRequests.serviceCatalogItemId,
+        requestedById: serviceRequests.requestedById,
+        assignedToId: serviceRequests.assignedToId,
+        assignedToTeamId: serviceRequests.assignedToTeamId,
+        status: serviceRequests.status,
+        priority: serviceRequests.priority,
+        customerId: serviceRequests.customerId,
+        formData: serviceRequests.formData,
+        approvalNotes: serviceRequests.approvalNotes,
+        completionNotes: serviceRequests.completionNotes,
+        approvedById: serviceRequests.approvedById,
+        approvedAt: serviceRequests.approvedAt,
+        completedAt: serviceRequests.completedAt,
+        createdAt: serviceRequests.createdAt,
+        updatedAt: serviceRequests.updatedAt,
+        serviceCatalogItem: {
+          id: serviceCatalogItems.id,
+          name: serviceCatalogItems.name,
+          description: serviceCatalogItems.description,
+          category: serviceCatalogItems.category,
+          icon: serviceCatalogItems.icon,
+          estimatedCompletionMinutes: serviceCatalogItems.estimatedCompletionMinutes,
+        },
+        requestedBy: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedTo: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedToTeam: {
+          id: teams.id,
+          name: teams.name,
+        },
+        customer: {
+          id: customers.id,
+          name: customers.name,
+        },
+      })
+      .from(serviceRequests)
+      .leftJoin(serviceCatalogItems, eq(serviceRequests.serviceCatalogItemId, serviceCatalogItems.id))
+      .leftJoin(users, eq(serviceRequests.requestedById, users.id))
+      .leftJoin(teams, eq(serviceRequests.assignedToTeamId, teams.id))
+      .leftJoin(customers, eq(serviceRequests.customerId, customers.id))
+      .orderBy(desc(serviceRequests.createdAt));
+    
+    return requests;
+  }
+
+  async getServiceRequest(id: string): Promise<any> {
+    const [request] = await db
+      .select({
+        id: serviceRequests.id,
+        requestNumber: serviceRequests.requestNumber,
+        serviceCatalogItemId: serviceRequests.serviceCatalogItemId,
+        requestedById: serviceRequests.requestedById,
+        assignedToId: serviceRequests.assignedToId,
+        assignedToTeamId: serviceRequests.assignedToTeamId,
+        status: serviceRequests.status,
+        priority: serviceRequests.priority,
+        customerId: serviceRequests.customerId,
+        formData: serviceRequests.formData,
+        approvalNotes: serviceRequests.approvalNotes,
+        completionNotes: serviceRequests.completionNotes,
+        approvedById: serviceRequests.approvedById,
+        approvedAt: serviceRequests.approvedAt,
+        completedAt: serviceRequests.completedAt,
+        createdAt: serviceRequests.createdAt,
+        updatedAt: serviceRequests.updatedAt,
+        serviceCatalogItem: {
+          id: serviceCatalogItems.id,
+          name: serviceCatalogItems.name,
+          description: serviceCatalogItems.description,
+          category: serviceCatalogItems.category,
+          icon: serviceCatalogItems.icon,
+          estimatedCompletionMinutes: serviceCatalogItems.estimatedCompletionMinutes,
+          requiresApproval: serviceCatalogItems.requiresApproval,
+          formFields: serviceCatalogItems.formFields,
+        },
+        requestedBy: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedTo: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        assignedToTeam: {
+          id: teams.id,
+          name: teams.name,
+        },
+        customer: {
+          id: customers.id,
+          name: customers.name,
+        },
+      })
+      .from(serviceRequests)
+      .leftJoin(serviceCatalogItems, eq(serviceRequests.serviceCatalogItemId, serviceCatalogItems.id))
+      .leftJoin(users, eq(serviceRequests.requestedById, users.id))
+      .leftJoin(teams, eq(serviceRequests.assignedToTeamId, teams.id))
+      .leftJoin(customers, eq(serviceRequests.customerId, customers.id))
+      .where(eq(serviceRequests.id, id))
+      .limit(1);
+    
+    return request;
+  }
+
+  async updateServiceRequest(id: string, request: Partial<InsertServiceRequest>): Promise<ServiceRequest> {
+    const [updatedRequest] = await db
+      .update(serviceRequests)
+      .set({ ...request, updatedAt: new Date() })
+      .where(eq(serviceRequests.id, id))
+      .returning();
+    return updatedRequest;
+  }
+
+  async approveServiceRequest(id: string, approvedById: string, notes: string): Promise<ServiceRequest> {
+    const [approvedRequest] = await db
+      .update(serviceRequests)
+      .set({
+        status: 'approved',
+        approvedById,
+        approvalNotes: notes,
+        approvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(serviceRequests.id, id))
+      .returning();
+    return approvedRequest;
+  }
+
+  async rejectServiceRequest(id: string, approvedById: string, notes: string): Promise<ServiceRequest> {
+    const [rejectedRequest] = await db
+      .update(serviceRequests)
+      .set({
+        status: 'rejected',
+        approvedById,
+        approvalNotes: notes,
+        approvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(serviceRequests.id, id))
+      .returning();
+    return rejectedRequest;
+  }
+
+  async completeServiceRequest(id: string, notes: string): Promise<ServiceRequest> {
+    const [completedRequest] = await db
+      .update(serviceRequests)
+      .set({
+        status: 'completed',
+        completionNotes: notes,
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(serviceRequests.id, id))
+      .returning();
+    return completedRequest;
   }
 }
 
