@@ -1,7 +1,9 @@
 # Helpdesk & CMDB System
 
 ## Overview
-This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, email integration, and Service Catalog for request fulfillment. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management. Global administrators can enable or disable specific modules to customize their installation.
+This enterprise IT service management application integrates helpdesk incident tracking (ITIL terminology), ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, email integration, and Service Catalog for request fulfillment. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management. Global administrators can enable or disable specific modules to customize their installation.
+
+**Note**: The application uses ITIL-standard terminology of "Incidents" in the UI across all 6 supported languages (English, French, German, Spanish, Dutch, Italian), though the database schema and API routes still use "tickets" for backward compatibility.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -43,8 +45,8 @@ Preferred communication style: Simple, everyday language.
 - **Query Strategy**: Custom fetch wrapper with React Query.
 
 ### Feature Specifications
-- **Dashboard**: Comprehensive analytics and overview page displaying key metrics (open tickets, in progress, pending approvals, SLA breaches), interactive charts (tickets by status/priority using recharts), recent activity feeds (latest tickets, changes, service requests), and quick access cards to CMDB and Knowledge Base. Default landing page after authentication.
-- **Helpdesk**: Ticket tracking with workflow, attachments, comments.
+- **Dashboard**: Comprehensive analytics and overview page displaying key metrics (open incidents, in progress, pending approvals, SLA breaches), interactive charts (incidents by status/priority using recharts), recent activity feeds (latest incidents, changes, service requests), and quick access cards to CMDB and Knowledge Base. Default landing page after authentication. Fully translated across all 6 languages.
+- **Helpdesk/Incident Management**: Incident tracking with workflow, attachments, comments. UI displays "Incidents" terminology aligned with ITIL standards.
 - **Change Management**: ITIL-style change requests with approval workflows.
 - **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking.
 - **Knowledge Base**: Article management.
