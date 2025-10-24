@@ -28,47 +28,55 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTranslation } from 'react-i18next';
 import type { SystemSetting } from "@shared/schema";
 
-const mainItems = [
+const getMainItems = (t: any) => [
   {
-    title: "Dashboard",
+    title: t('nav.dashboard'),
+    titleKey: "dashboard",
     url: "/",
     icon: LayoutDashboard,
     permission: null as any,
   },
   {
-    title: "Incidents",
+    title: t('nav.tickets'),
+    titleKey: "incidents",
     url: "/tickets",
     icon: Ticket,
     permission: null as any,
   },
   {
-    title: "Problems",
+    title: t('nav.problems'),
+    titleKey: "problems",
     url: "/problems",
     icon: AlertCircle,
     permission: null as any,
   },
   {
-    title: "Changes",
+    title: t('nav.changes'),
+    titleKey: "changes",
     url: "/changes",
     icon: GitBranch,
     permission: null as any,
   },
   {
-    title: "CMDB",
+    title: t('nav.cmdb'),
+    titleKey: "cmdb",
     url: "/cmdb",
     icon: Server,
     permission: 'canViewCMDB' as const,
   },
   {
-    title: "Knowledge Base",
+    title: t('nav.knowledge'),
+    titleKey: "knowledge-base",
     url: "/knowledge",
     icon: BookOpen,
     permission: null as any,
   },
   {
     title: "Email Inbox",
+    titleKey: "email-inbox",
     url: "/emails",
     icon: Mail,
     permission: null as any,
@@ -79,6 +87,7 @@ export function AppSidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const { hasPermission, hasAnyPermission } = usePermissions();
+  const { t } = useTranslation();
 
   const { data: settings } = useQuery<SystemSetting[]>({
     queryKey: ["/api/settings"],
@@ -103,6 +112,7 @@ export function AppSidebar() {
     return "U";
   };
 
+  const mainItems = getMainItems(t);
   const visibleItems = mainItems.filter(item => {
     if (item.permission === null) return true;
     return hasPermission(item.permission);
@@ -140,13 +150,13 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide px-2 mb-2">
-            Helpdesk
+            {systemName}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url} data-testid={`nav-${item.title.toLowerCase().replace(' ', '-')}`}>
+                <SidebarMenuItem key={item.titleKey}>
+                  <SidebarMenuButton asChild isActive={location === item.url} data-testid={`nav-${item.titleKey}`}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -161,7 +171,7 @@ export function AppSidebar() {
         {showAdminSection && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wide px-2 mb-2">
-              Administration
+              {t('nav.admin')}
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -170,7 +180,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild isActive={location === '/reports'} data-testid="nav-reports">
                       <Link href="/reports">
                         <BarChart3 className="h-4 w-4" />
-                        <span>Reports</span>
+                        <span>{t('nav.reports')}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -179,7 +189,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={location.startsWith('/admin')} data-testid="nav-admin">
                     <Link href="/admin">
                       <Settings className="h-4 w-4" />
-                      <span>Admin</span>
+                      <span>{t('nav.settings')}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -214,7 +224,7 @@ export function AppSidebar() {
           data-testid="button-logout"
         >
           <LogOut className="h-4 w-4 mr-2" />
-          Logout
+          {t('nav.logout')}
         </Button>
       </SidebarFooter>
     </Sidebar>

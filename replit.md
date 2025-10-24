@@ -55,6 +55,7 @@ Preferred communication style: Simple, everyday language.
 - **Color Scheme**: Custom dark mode, professional blue primary, status-based color coding (success, warning, error, info).
 - **Typography & Layout**: New York style variant of shadcn/ui, custom border radius values, information-dense layouts, minimal clicks.
 - **Branding**: Customizable footer text and logo upload functionality.
+- **Multi-Language Support**: Full internationalization (i18n) support with language toggle for English, French, Dutch, and German. Uses i18next and react-i18next with browser language detection and localStorage persistence.
 
 ### Feature Specifications
 - **Helpdesk**: Ticket tracking with workflow, categories, tags, attachments, and comments.
@@ -108,6 +109,8 @@ Preferred communication style: Simple, everyday language.
 - **@replit/vite-plugin-cartographer**: Development tooling.
 - **tsx**: TypeScript execution.
 - **multer**: For handling multipart/form-data, used for file uploads (e.g., logos).
+- **i18next & react-i18next**: Internationalization framework for multi-language support.
+- **i18next-browser-languagedetector**: Automatic browser language detection.
 
 ### Network Discovery Tools
 - **ssh2**: SSH client.
