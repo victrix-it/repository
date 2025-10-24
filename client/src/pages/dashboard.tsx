@@ -426,7 +426,7 @@ export default function Dashboard() {
           </Card>
         </Link>
 
-        <Link href="/knowledge-base">
+        <Link href="/knowledge">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-quick-access-kb">
             <CardHeader>
               <CardTitle>Knowledge Base</CardTitle>
