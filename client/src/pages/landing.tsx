@@ -16,11 +16,11 @@ export default function Landing() {
   const { toast } = useToast();
 
   // Fetch settings for customizable content
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [] } = useQuery<any[]>({
     queryKey: ["/api/settings"],
   });
 
-  const settingsMap = settings.reduce((acc: any, setting: any) => {
+  const settingsMap = (settings || []).reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
   }, {});

@@ -19,6 +19,9 @@ interface BrandingFormData {
   primaryColor: string;
   tagline: string;
   footerText: string;
+  landingTitle: string;
+  landingSubtitle: string;
+  landingWarningTitle: string;
 }
 
 export default function BrandingPage() {
@@ -43,6 +46,9 @@ export default function BrandingPage() {
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
       footerText: settingsMap['footer_text'] || '',
+      landingTitle: settingsMap['landing_title'] || 'Enterprise Helpdesk Solution',
+      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.',
+      landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
     },
     values: {
       systemName: settingsMap['system_name'] || 'Helpdesk & CMDB',
@@ -51,6 +57,9 @@ export default function BrandingPage() {
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
       footerText: settingsMap['footer_text'] || '',
+      landingTitle: settingsMap['landing_title'] || 'Enterprise Helpdesk Solution',
+      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.',
+      landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
     },
   });
 
@@ -98,6 +107,9 @@ export default function BrandingPage() {
         { key: 'primary_color', value: data.primaryColor },
         { key: 'tagline', value: data.tagline },
         { key: 'footer_text', value: data.footerText },
+        { key: 'landing_title', value: data.landingTitle },
+        { key: 'landing_subtitle', value: data.landingSubtitle },
+        { key: 'landing_warning_title', value: data.landingWarningTitle },
       ];
 
       for (const setting of settingsToSave) {
@@ -288,6 +300,71 @@ export default function BrandingPage() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="border-t pt-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Landing Page Customization</h3>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Customize the text and content displayed on the login page
+                    </p>
+
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="landingTitle"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Landing Page Title</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enterprise Helpdesk Solution" {...field} data-testid="input-landing-title" />
+                            </FormControl>
+                            <FormDescription>
+                              The main heading displayed on the login page
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="landingSubtitle"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Landing Page Subtitle</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base." 
+                                {...field} 
+                                data-testid="input-landing-subtitle"
+                                rows={3}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              The descriptive text below the title
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="landingWarningTitle"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Warning Banner Title</FormLabel>
+                            <FormControl>
+                              <Input placeholder="AUTHORIZED ACCESS ONLY" {...field} data-testid="input-landing-warning" />
+                            </FormControl>
+                            <FormDescription>
+                              The title of the authorization warning banner
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <div className="flex gap-3">
                     <Button type="submit" disabled={saveMutation.isPending} data-testid="button-save">
