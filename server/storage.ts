@@ -85,6 +85,8 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   createUser(userData: Partial<User>): Promise<User>;
   updateUser(id: string, userData: Partial<User>): Promise<User | undefined>;
+  deactivateUser(id: string): Promise<User | undefined>;
+  activateUser(id: string): Promise<User | undefined>;
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
 
@@ -324,6 +326,25 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // ISO 27001 Control A.5.18 - Access rights management
+  async deactivateUser(id: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ status: 'disabled', updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async activateUser(id: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ status: 'active', updatedAt: new Date() })
       .where(eq(users.id, id))
       .returning();
     return user;

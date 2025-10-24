@@ -12,22 +12,39 @@ import {
   endUserSession,
 } from "./auditLog";
 
-// Middleware to check if user is authenticated
+// Middleware to check if user is authenticated and active
 // ISO 27001 Control A.5.17 - Authentication Information
+// ISO 27001 Control A.5.18 - Access rights management
 export function isAuthenticated(req: any, res: any, next: any) {
-  if (req.isAuthenticated()) {
-    return next();
+  if (!req.isAuthenticated()) {
+    // Log unauthorized access attempt
+    createAuditLog({
+      eventType: 'unauthorized_access_attempt',
+      success: false,
+      reason: 'Attempted to access protected resource without authentication',
+      req,
+    });
+    return res.status(401).json({ message: "Unauthorized" });
   }
   
-  // Log unauthorized access attempt
-  createAuditLog({
-    eventType: 'unauthorized_access_attempt',
-    success: false,
-    reason: 'Attempted to access protected resource without authentication',
-    req,
-  });
+  // Check if user account is deactivated
+  const user = req.user as any;
+  if (user && user.status === 'disabled') {
+    createAuditLog({
+      eventType: 'unauthorized_access_attempt',
+      userId: user.id,
+      username: user.email,
+      success: false,
+      reason: 'Deactivated user attempted to access protected resource',
+      req,
+    });
+    
+    // Force logout for deactivated users
+    req.logout(() => {});
+    return res.status(403).json({ message: "Account has been deactivated. Please contact your administrator." });
+  }
   
-  res.status(401).json({ message: "Unauthorized" });
+  next();
 }
 
 // Register multi-auth routes

@@ -9,6 +9,7 @@ import { registerAlertWebhookRoutes, generateWebhookId, generateApiKey } from ".
 import { runNetworkDiscovery, importDeviceToCMDB } from "./networkDiscovery";
 import { importCIsFromCsv, generateCsvTemplate } from "./csvImport";
 import { importUsersFromCsv, generateUserCsvTemplate } from "./userCsvImport";
+import { createAuditLog } from "./auditLog";
 import multer from "multer";
 import fs from "fs";
 
@@ -121,6 +122,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting user:", error);
       res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // ISO 27001 Control A.5.18 - User account deactivation/activation
+  app.post('/api/users/:id/deactivate', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
+    try {
+      const targetUserId = req.params.id;
+      const targetUser = await storage.getUser(targetUserId);
+      
+      if (!targetUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const deactivatedUser = await storage.deactivateUser(targetUserId);
+      
+      // Audit log - user deactivated
+      await createAuditLog({
+        eventType: 'user_deactivated',
+        userId: req.user.claims.sub,
+        username: req.user.claims.email,
+        success: true,
+        reason: `Deactivated user: ${targetUser.email}`,
+        metadata: {
+          targetUserId: targetUserId,
+          targetUserEmail: targetUser.email,
+        },
+        req,
+      });
+      
+      res.json(deactivatedUser);
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      res.status(500).json({ message: "Failed to deactivate user" });
+    }
+  });
+
+  app.post('/api/users/:id/activate', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
+    try {
+      const targetUserId = req.params.id;
+      const targetUser = await storage.getUser(targetUserId);
+      
+      if (!targetUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      const activatedUser = await storage.activateUser(targetUserId);
+      
+      // Audit log - user activated
+      await createAuditLog({
+        eventType: 'user_activated',
+        userId: req.user.claims.sub,
+        username: req.user.claims.email,
+        success: true,
+        reason: `Activated user: ${targetUser.email}`,
+        metadata: {
+          targetUserId: targetUserId,
+          targetUserEmail: targetUser.email,
+        },
+        req,
+      });
+      
+      res.json(activatedUser);
+    } catch (error) {
+      console.error("Error activating user:", error);
+      res.status(500).json({ message: "Failed to activate user" });
     }
   });
 
