@@ -584,6 +584,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ITIL Service Catalog routes
+  app.get('/api/service-catalog', isAuthenticated, async (req, res) => {
+    try {
+      const items = await storage.getActiveServiceCatalogItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching service catalog items:", error);
+      res.status(500).json({ message: "Failed to fetch service catalog items" });
+    }
+  });
+
+  app.get('/api/service-catalog/all', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const items = await storage.getAllServiceCatalogItems();
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching all service catalog items:", error);
+      res.status(500).json({ message: "Failed to fetch service catalog items" });
+    }
+  });
+
+  app.get('/api/service-catalog/:id', isAuthenticated, async (req, res) => {
+    try {
+      const item = await storage.getServiceCatalogItem(req.params.id);
+      if (!item) {
+        return res.status(404).json({ message: "Service catalog item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      console.error("Error fetching service catalog item:", error);
+      res.status(500).json({ message: "Failed to fetch service catalog item" });
+    }
+  });
+
+  app.post('/api/service-catalog', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
+    try {
+      const createdById = req.user.claims.sub;
+      const item = await storage.createServiceCatalogItem(req.body, createdById);
+      res.json(item);
+    } catch (error) {
+      console.error("Error creating service catalog item:", error);
+      res.status(500).json({ message: "Failed to create service catalog item" });
+    }
+  });
+
+  app.patch('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const item = await storage.updateServiceCatalogItem(req.params.id, req.body);
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating service catalog item:", error);
+      res.status(500).json({ message: "Failed to update service catalog item" });
+    }
+  });
+
+  app.delete('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      await storage.deleteServiceCatalogItem(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting service catalog item:", error);
+      res.status(500).json({ message: "Failed to delete service catalog item" });
+    }
+  });
+
+  // Service Request routes
+  app.get('/api/service-requests', isAuthenticated, async (req, res) => {
+    try {
+      const requests = await storage.getAllServiceRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching service requests:", error);
+      res.status(500).json({ message: "Failed to fetch service requests" });
+    }
+  });
+
+  app.get('/api/service-requests/:id', isAuthenticated, async (req, res) => {
+    try {
+      const request = await storage.getServiceRequest(req.params.id);
+      if (!request) {
+        return res.status(404).json({ message: "Service request not found" });
+      }
+      res.json(request);
+    } catch (error) {
+      console.error("Error fetching service request:", error);
+      res.status(500).json({ message: "Failed to fetch service request" });
+    }
+  });
+
+  app.post('/api/service-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const requestedById = req.user.claims.sub;
+      const request = await storage.createServiceRequest(req.body, requestedById);
+      res.json(request);
+    } catch (error) {
+      console.error("Error creating service request:", error);
+      res.status(500).json({ message: "Failed to create service request" });
+    }
+  });
+
+  app.patch('/api/service-requests/:id', isAuthenticated, async (req, res) => {
+    try {
+      const request = await storage.updateServiceRequest(req.params.id, req.body);
+      res.json(request);
+    } catch (error) {
+      console.error("Error updating service request:", error);
+      res.status(500).json({ message: "Failed to update service request" });
+    }
+  });
+
+  app.post('/api/service-requests/:id/approve', isAuthenticated, requirePermission('canApproveChanges'), async (req: any, res) => {
+    try {
+      const approvedById = req.user.claims.sub;
+      const { notes } = req.body;
+      const request = await storage.approveServiceRequest(req.params.id, approvedById, notes || '');
+      res.json(request);
+    } catch (error) {
+      console.error("Error approving service request:", error);
+      res.status(500).json({ message: "Failed to approve service request" });
+    }
+  });
+
+  app.post('/api/service-requests/:id/reject', isAuthenticated, requirePermission('canApproveChanges'), async (req: any, res) => {
+    try {
+      const approvedById = req.user.claims.sub;
+      const { notes } = req.body;
+      const request = await storage.rejectServiceRequest(req.params.id, approvedById, notes || '');
+      res.json(request);
+    } catch (error) {
+      console.error("Error rejecting service request:", error);
+      res.status(500).json({ message: "Failed to reject service request" });
+    }
+  });
+
+  app.post('/api/service-requests/:id/complete', isAuthenticated, async (req, res) => {
+    try {
+      const { notes } = req.body;
+      const request = await storage.completeServiceRequest(req.params.id, notes || '');
+      res.json(request);
+    } catch (error) {
+      console.error("Error completing service request:", error);
+      res.status(500).json({ message: "Failed to complete service request" });
+    }
+  });
+
   // Password change route
   // ISO 27001 Control A.5.17 - Authentication Information
   app.post('/api/auth/change-password', isAuthenticated, async (req: any, res) => {
