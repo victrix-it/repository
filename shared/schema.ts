@@ -45,6 +45,7 @@ export const roles = pgTable("roles", {
   canViewAllTickets: varchar("can_view_all_tickets", { length: 10 }).default('false').notNull(),
   canApproveChanges: varchar("can_approve_changes", { length: 10 }).default('false').notNull(),
   canManageKnowledgebase: varchar("can_manage_knowledgebase", { length: 10 }).default('false').notNull(),
+  canManageServiceCatalog: varchar("can_manage_service_catalog", { length: 10 }).default('false').notNull(),
   canRunReports: varchar("can_run_reports", { length: 10 }).default('false').notNull(),
   canManageUsers: varchar("can_manage_users", { length: 10 }).default('false').notNull(),
   canManageRoles: varchar("can_manage_roles", { length: 10 }).default('false').notNull(),
