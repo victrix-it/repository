@@ -89,6 +89,10 @@ export interface IStorage {
   activateUser(id: string): Promise<User | undefined>;
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
+  
+  // ISO 27001 Audit Log operations
+  getAuditLogs(filters?: { userId?: string; eventType?: string; limit?: number; offset?: number }): Promise<any[]>;
+  getAuditLogsCount(filters?: { userId?: string; eventType?: string }): Promise<number>;
 
   // Ticket operations
   createTicket(ticket: InsertTicket, createdById: string): Promise<Ticket>;
@@ -352,6 +356,40 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: string): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
+  }
+
+  // ISO 27001 Audit Log operations
+  async getAuditLogs(filters?: { userId?: string; eventType?: string; limit?: number; offset?: number }): Promise<any[]> {
+    const limit = filters?.limit || 100;
+    const offset = filters?.offset || 0;
+    
+    let query = db.select().from(sql`audit_logs`).limit(limit).offset(offset).orderBy(sql`created_at DESC`);
+    
+    if (filters?.userId) {
+      query = query.where(sql`user_id = ${filters.userId}`);
+    }
+    
+    if (filters?.eventType) {
+      query = query.where(sql`event_type = ${filters.eventType}`);
+    }
+    
+    const logs = await query;
+    return logs;
+  }
+
+  async getAuditLogsCount(filters?: { userId?: string; eventType?: string }): Promise<number> {
+    let query = db.select({ count: sql<number>`count(*)` }).from(sql`audit_logs`);
+    
+    if (filters?.userId) {
+      query = query.where(sql`user_id = ${filters.userId}`);
+    }
+    
+    if (filters?.eventType) {
+      query = query.where(sql`event_type = ${filters.eventType}`);
+    }
+    
+    const result = await query;
+    return result[0]?.count || 0;
   }
 
   // Ticket operations

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, GitBranch, Server, BookOpen, Mail, BarChart3 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Ticket, GitBranch, Server, BookOpen, Mail, BarChart3, AlertTriangle } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -13,12 +14,27 @@ export default function Landing() {
           <p className="text-xl text-muted-foreground mb-8">
             Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.
           </p>
+          
+          {/* ISO 27001 Control A.5.16 - Authorization Warning Banner */}
+          <Alert className="mb-6 text-left border-yellow-600 bg-yellow-50 dark:bg-yellow-950/30" data-testid="alert-authorization-warning">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-sm text-yellow-900 dark:text-yellow-200">
+              <strong className="font-semibold">AUTHORIZED ACCESS ONLY</strong>
+              <div className="mt-2 space-y-1">
+                <p>• This system is for authorized users only</p>
+                <p>• All activity is monitored and recorded</p>
+                <p>• Unauthorized access attempts will be logged and may be prosecuted</p>
+                <p>• By logging in, you acknowledge that you have read and understand this warning</p>
+              </div>
+            </AlertDescription>
+          </Alert>
+          
           <Button
             size="lg"
             onClick={() => window.location.href = '/api/login'}
             data-testid="button-login"
           >
-            Login to Continue
+            I Acknowledge - Login to Continue
           </Button>
         </div>
 

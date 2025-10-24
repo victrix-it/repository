@@ -246,6 +246,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ISO 27001 Audit Log routes (admin-only)
+  app.get('/api/audit-logs', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const { userId, eventType, limit, offset } = req.query;
+      
+      const filters: any = {};
+      if (userId) filters.userId = userId as string;
+      if (eventType) filters.eventType = eventType as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+      
+      const logs = await storage.getAuditLogs(filters);
+      const total = await storage.getAuditLogsCount(filters);
+      
+      res.json({ logs, total });
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
   // User CSV Import routes
   app.get('/api/users/csv/template', isAuthenticated, (req, res) => {
     try {
