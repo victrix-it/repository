@@ -7,8 +7,10 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppFooter } from "@/components/app-footer";
 import { ChangePasswordDialog } from "@/components/change-password-dialog";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
+import '@/i18n';
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
@@ -116,6 +118,7 @@ function AppLayout() {
             <div className="flex flex-col flex-1 overflow-hidden">
               <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background">
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <LanguageToggle />
               </header>
               <main className="flex-1 overflow-auto flex flex-col">
                 <div className="flex-1">
