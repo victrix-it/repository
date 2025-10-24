@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus, Building2, Clock, Key, Box } from "lucide-react";
+import { Users, Shield, ListChecks, Settings, Palette, Webhook, Network, FileSpreadsheet, UserPlus, Building2, Clock, Key, Box, ToggleLeft } from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -155,6 +155,27 @@ export default function AdminPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 Define custom configuration item types for your organization
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/modules">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-modules">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <ToggleLeft className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Module Management</CardTitle>
+                  <CardDescription>Enable/disable features</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Control which modules are available in your helpdesk system
               </p>
             </CardContent>
           </Card>

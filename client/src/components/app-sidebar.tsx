@@ -29,8 +29,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useModules } from "@/hooks/useModules";
 import { useTranslation } from 'react-i18next';
 import type { SystemSetting } from "@shared/schema";
+import type { ModuleKey } from "@shared/modules";
 
 const getMainItems = (t: any) => [
   {
@@ -39,6 +41,7 @@ const getMainItems = (t: any) => [
     url: "/",
     icon: LayoutDashboard,
     permission: null as any,
+    module: null as ModuleKey | null,
   },
   {
     title: t('nav.tickets'),
@@ -46,6 +49,7 @@ const getMainItems = (t: any) => [
     url: "/tickets",
     icon: Ticket,
     permission: null as any,
+    module: 'incidents' as ModuleKey,
   },
   {
     title: t('nav.problems'),
@@ -53,6 +57,7 @@ const getMainItems = (t: any) => [
     url: "/problems",
     icon: AlertCircle,
     permission: null as any,
+    module: 'problems' as ModuleKey,
   },
   {
     title: t('nav.changes'),
@@ -60,6 +65,7 @@ const getMainItems = (t: any) => [
     url: "/changes",
     icon: GitBranch,
     permission: null as any,
+    module: 'changes' as ModuleKey,
   },
   {
     title: t('nav.cmdb'),
@@ -67,6 +73,7 @@ const getMainItems = (t: any) => [
     url: "/cmdb",
     icon: Server,
     permission: 'canViewCMDB' as const,
+    module: 'cmdb' as ModuleKey,
   },
   {
     title: t('nav.knowledge'),
@@ -74,6 +81,7 @@ const getMainItems = (t: any) => [
     url: "/knowledge",
     icon: BookOpen,
     permission: null as any,
+    module: 'knowledge' as ModuleKey,
   },
   {
     title: t('nav.serviceCatalog'),
@@ -81,6 +89,7 @@ const getMainItems = (t: any) => [
     url: "/service-catalog",
     icon: ShoppingCart,
     permission: null as any,
+    module: 'service_catalog' as ModuleKey,
   },
   {
     title: "Email Inbox",
@@ -88,6 +97,7 @@ const getMainItems = (t: any) => [
     url: "/emails",
     icon: Mail,
     permission: null as any,
+    module: 'email_inbox' as ModuleKey,
   },
 ];
 
@@ -95,6 +105,7 @@ export function AppSidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const { hasPermission, hasAnyPermission } = usePermissions();
+  const { isModuleEnabled } = useModules();
   const { t } = useTranslation();
 
   const { data: settings } = useQuery<SystemSetting[]>({
@@ -122,8 +133,17 @@ export function AppSidebar() {
 
   const mainItems = getMainItems(t);
   const visibleItems = mainItems.filter(item => {
-    if (item.permission === null) return true;
-    return hasPermission(item.permission);
+    // Check permission
+    if (item.permission !== null && !hasPermission(item.permission)) {
+      return false;
+    }
+    
+    // Check if module is enabled (null means always show, like dashboard)
+    if (item.module !== null && !isModuleEnabled(item.module)) {
+      return false;
+    }
+    
+    return true;
   });
 
   const showAdminSection = hasAnyPermission(
