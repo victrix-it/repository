@@ -28,6 +28,8 @@ export const problemPriorityEnum = pgEnum('problem_priority', ['p1', 'p2', 'p3',
 export const slaStatusEnum = pgEnum('sla_status', ['within_sla', 'at_risk', 'breached']);
 export const impactEnum = pgEnum('impact', ['high', 'medium', 'low']);
 export const urgencyEnum = pgEnum('urgency', ['critical', 'high', 'medium', 'low']);
+export const serviceCategoryEnum = pgEnum('service_category', ['access_management', 'hardware', 'software', 'network', 'general']);
+export const serviceRequestStatusEnum = pgEnum('service_request_status', ['submitted', 'pending_approval', 'approved', 'rejected', 'in_progress', 'completed', 'cancelled']);
 
 // Roles table - for custom role-based access control
 export const roles = pgTable("roles", {
@@ -543,6 +545,46 @@ export const userSessions = pgTable("user_sessions", {
   isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
 });
 
+// ITIL Service Catalog - Service Catalog Items (pre-defined services)
+export const serviceCatalogItems = pgTable("service_catalog_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  category: serviceCategoryEnum("category").notNull(),
+  icon: varchar("icon", { length: 100 }), // lucide-react icon name
+  estimatedCompletionMinutes: integer("estimated_completion_minutes"), // SLA estimate
+  requiresApproval: varchar("requires_approval", { length: 10 }).default('false').notNull(),
+  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+  cost: integer("cost"), // Optional cost tracking (in cents)
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer specific services
+  formFields: jsonb("form_fields"), // Custom form fields definition (JSON array)
+  assignedToTeamId: varchar("assigned_to_team_id").references(() => teams.id), // Default team assignment
+  createdById: varchar("created_by_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ITIL Service Catalog - Service Requests (actual service request instances)
+export const serviceRequests = pgTable("service_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestNumber: varchar("request_number", { length: 20 }).unique().notNull(), // Auto-generated: SR00001, SR00002
+  serviceCatalogItemId: varchar("service_catalog_item_id").references(() => serviceCatalogItems.id).notNull(),
+  requestedById: varchar("requested_by_id").references(() => users.id).notNull(),
+  assignedToId: varchar("assigned_to_id").references(() => users.id),
+  assignedToTeamId: varchar("assigned_to_team_id").references(() => teams.id),
+  status: serviceRequestStatusEnum("status").default('submitted').notNull(),
+  priority: ticketPriorityEnum("priority").default('p3').notNull(),
+  customerId: varchar("customer_id").references(() => customers.id),
+  formData: jsonb("form_data"), // User-submitted form data (JSON object)
+  approvalNotes: text("approval_notes"), // Notes from approver
+  completionNotes: text("completion_notes"), // Notes from fulfiller
+  approvedById: varchar("approved_by_id").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   ticketsCreated: many(tickets, { relationName: 'createdBy' }),
@@ -699,6 +741,52 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
   }),
 }));
 
+export const serviceCatalogItemsRelations = relations(serviceCatalogItems, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [serviceCatalogItems.createdById],
+    references: [users.id],
+  }),
+  assignedToTeam: one(teams, {
+    fields: [serviceCatalogItems.assignedToTeamId],
+    references: [teams.id],
+  }),
+  customer: one(customers, {
+    fields: [serviceCatalogItems.customerId],
+    references: [customers.id],
+  }),
+  serviceRequests: many(serviceRequests),
+}));
+
+export const serviceRequestsRelations = relations(serviceRequests, ({ one }) => ({
+  serviceCatalogItem: one(serviceCatalogItems, {
+    fields: [serviceRequests.serviceCatalogItemId],
+    references: [serviceCatalogItems.id],
+  }),
+  requestedBy: one(users, {
+    fields: [serviceRequests.requestedById],
+    references: [users.id],
+    relationName: 'requestedBy',
+  }),
+  assignedTo: one(users, {
+    fields: [serviceRequests.assignedToId],
+    references: [users.id],
+    relationName: 'assignedTo',
+  }),
+  approvedBy: one(users, {
+    fields: [serviceRequests.approvedById],
+    references: [users.id],
+    relationName: 'approvedBy',
+  }),
+  assignedToTeam: one(teams, {
+    fields: [serviceRequests.assignedToTeamId],
+    references: [teams.id],
+  }),
+  customer: one(customers, {
+    fields: [serviceRequests.customerId],
+    references: [customers.id],
+  }),
+}));
+
 // Insert schemas and types
 export const insertConfigurationItemSchema = createInsertSchema(configurationItems).omit({
   id: true,
@@ -852,6 +940,24 @@ export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
   createdAt: true,
 });
 
+export const insertServiceCatalogItemSchema = createInsertSchema(serviceCatalogItems).omit({
+  id: true,
+  createdById: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertServiceRequestSchema = createInsertSchema(serviceRequests).omit({
+  id: true,
+  requestNumber: true,
+  requestedById: true,
+  approvedById: true,
+  approvedAt: true,
+  completedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -965,3 +1071,10 @@ export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
 });
 export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
 export type UserSession = typeof userSessions.$inferSelect;
+
+// Service Catalog Types
+export type InsertServiceCatalogItem = z.infer<typeof insertServiceCatalogItemSchema>;
+export type ServiceCatalogItem = typeof serviceCatalogItems.$inferSelect;
+
+export type InsertServiceRequest = z.infer<typeof insertServiceRequestSchema>;
+export type ServiceRequest = typeof serviceRequests.$inferSelect;
