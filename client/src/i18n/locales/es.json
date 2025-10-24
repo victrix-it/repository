@@ -48,6 +48,8 @@
     "cmdb": "CMDB",
     "problems": "Problemas",
     "knowledge": "Base de conocimiento",
+    "serviceCatalog": "Catálogo de servicios",
+    "emailInbox": "Bandeja de entrada",
     "contacts": "Contactos",
     "reports": "Informes",
     "admin": "Administración",

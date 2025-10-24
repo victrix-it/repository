@@ -92,7 +92,7 @@ const getMainItems = (t: any) => [
     module: 'service_catalog' as ModuleKey,
   },
   {
-    title: "Email Inbox",
+    title: t('nav.emailInbox'),
     titleKey: "email-inbox",
     url: "/emails",
     icon: Mail,
