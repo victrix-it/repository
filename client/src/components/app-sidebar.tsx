@@ -44,7 +44,7 @@ const getMainItems = (t: any) => [
     module: null as ModuleKey | null,
   },
   {
-    title: t('nav.tickets'),
+    title: t('nav.incidents'),
     titleKey: "incidents",
     url: "/tickets",
     icon: Ticket,
