@@ -105,9 +105,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/users/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+  app.patch('/api/users/:id', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
     try {
-      const user = await storage.updateUser(req.params.id, req.body);
+      const targetUserId = req.params.id;
+      const updateData = req.body;
+      
+      // Get user before update for audit logging
+      const originalUser = await storage.getUser(targetUserId);
+      
+      const user = await storage.updateUser(targetUserId, updateData);
+      
+      // ISO 27001 Control A.5.18 - Audit log role assignment changes
+      if (updateData.roleId && originalUser && updateData.roleId !== originalUser.roleId) {
+        await createAuditLog({
+          eventType: 'role_assigned',
+          userId: req.user.claims.sub,
+          username: req.user.claims.email,
+          success: true,
+          reason: `Role assignment changed for user: ${user?.email}`,
+          metadata: {
+            targetUserId: targetUserId,
+            targetUserEmail: user?.email,
+            oldRoleId: originalUser.roleId,
+            newRoleId: updateData.roleId,
+          },
+          req,
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error updating user:", error);
@@ -539,6 +564,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Password change route
+  // ISO 27001 Control A.5.17 - Authentication Information
   app.post('/api/auth/change-password', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -552,6 +578,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { validatePassword } = await import('./password-policy');
       const validation = validatePassword(newPassword);
       if (!validation.valid) {
+        // Audit log - password change failed (policy violation)
+        await createAuditLog({
+          eventType: 'password_change',
+          userId: userId,
+          username: req.user.claims.email,
+          success: false,
+          reason: `Password policy violation: ${validation.errors.join(', ')}`,
+          req,
+        });
         return res.status(400).json({ message: validation.errors.join(', ') });
       }
 
@@ -571,9 +606,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mustChangePassword: 'false',
       });
 
+      // Audit log - password change successful
+      await createAuditLog({
+        eventType: 'password_change',
+        userId: userId,
+        username: user.email || req.user.claims.email,
+        success: true,
+        reason: 'User successfully changed password',
+        req,
+      });
+
       res.json({ message: 'Password changed successfully' });
     } catch (error) {
       console.error("Error changing password:", error);
+      
+      // Audit log - password change failed (system error)
+      await createAuditLog({
+        eventType: 'password_change',
+        userId: req.user?.claims?.sub,
+        username: req.user?.claims?.email || 'unknown',
+        success: false,
+        reason: `Password change failed: ${error}`,
+        req,
+      });
+      
       res.status(500).json({ message: "Failed to change password" });
     }
   });
