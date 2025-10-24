@@ -17,12 +17,13 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertServiceCatalogItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Pencil, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle, XCircle, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 
 const formSchema = insertServiceCatalogItemSchema.extend({
@@ -32,9 +33,12 @@ const formSchema = insertServiceCatalogItemSchema.extend({
 export default function ServiceCatalogAdmin() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { hasPermission } = usePermissions();
   const [editItem, setEditItem] = useState<any>(null);
   const [deleteItem, setDeleteItem] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  const canManage = hasPermission('canManageServiceCatalog');
 
   const { data: catalogItems = [], isLoading } = useQuery({
     queryKey: ["/api/service-catalog/all"],
@@ -159,6 +163,28 @@ export default function ServiceCatalogAdmin() {
     form.reset();
     setDialogOpen(true);
   };
+
+  if (!canManage) {
+    return (
+      <div className="h-full overflow-auto">
+        <div className="container mx-auto p-6 max-w-7xl">
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 gap-4">
+              <ShieldAlert className="w-12 h-12 text-muted-foreground" />
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2" data-testid="text-permission-denied">
+                  {t("common.permissionDenied", "Permission Denied")}
+                </h2>
+                <p className="text-muted-foreground" data-testid="text-permission-message">
+                  {t("serviceCatalog.requiresPermission", "You need the Service Catalog Admin role to manage catalog items.")}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto">
