@@ -240,7 +240,7 @@ export function AppSidebar() {
                 : user?.email || 'User'}
             </p>
             <p className="text-xs text-muted-foreground truncate capitalize" data-testid="user-role">
-              {user?.roleDetails?.name || 'User'}
+              {user?.role || 'User'}
             </p>
           </div>
         </div>

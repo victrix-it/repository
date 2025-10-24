@@ -26,11 +26,8 @@ export default function ModulesPage() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      return await apiRequest<SystemSetting>(`/api/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key, value }),
-      });
+      const res = await apiRequest("POST", `/api/settings`, { key, value });
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });

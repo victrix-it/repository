@@ -1,7 +1,7 @@
 # Helpdesk & CMDB System
 
 ## Overview
-This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, email integration, and Service Catalog for request fulfillment. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management.
+This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, email integration, and Service Catalog for request fulfillment. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management. Global administrators can enable or disable specific modules to customize their installation.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -54,6 +54,7 @@ Preferred communication style: Simple, everyday language.
 - **Password Policy**: Strong enforcement (min 8 chars, mixed case, number, special), forced change on first login.
 - **Multi-Customer Support**: Data separation and user filtering.
 - **Network Discovery**: Features for asset discovery.
+- **Module Management**: Global admin feature toggle system allowing selective enabling/disabling of modules (Incidents, Problems, Changes, CMDB, Knowledge Base, Service Catalog, Email Inbox, Reports, Network Discovery). Organized into Core, ITIL, and Advanced categories with default enabled/disabled states. Navigation dynamically filters based on enabled modules.
 
 ## External Dependencies
 
