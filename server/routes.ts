@@ -595,7 +595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/service-catalog/all', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+  app.get('/api/service-catalog/all', isAuthenticated, requirePermission('canManageServiceCatalog'), async (req, res) => {
     try {
       const items = await storage.getAllServiceCatalogItems();
       res.json(items);
@@ -618,7 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/service-catalog', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
+  app.post('/api/service-catalog', isAuthenticated, requirePermission('canManageServiceCatalog'), async (req: any, res) => {
     try {
       const createdById = req.user.claims.sub;
       const item = await storage.createServiceCatalogItem(req.body, createdById);
@@ -629,7 +629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+  app.patch('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageServiceCatalog'), async (req, res) => {
     try {
       const item = await storage.updateServiceCatalogItem(req.params.id, req.body);
       res.json(item);
@@ -639,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+  app.delete('/api/service-catalog/:id', isAuthenticated, requirePermission('canManageServiceCatalog'), async (req, res) => {
     try {
       await storage.deleteServiceCatalogItem(req.params.id);
       res.status(204).send();
