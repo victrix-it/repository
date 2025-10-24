@@ -55,7 +55,7 @@ Preferred communication style: Simple, everyday language.
 - **Color Scheme**: Custom dark mode, professional blue primary, status-based color coding (success, warning, error, info).
 - **Typography & Layout**: New York style variant of shadcn/ui, custom border radius values, information-dense layouts, minimal clicks.
 - **Branding**: Customizable footer text and logo upload functionality.
-- **Multi-Language Support**: Full internationalization (i18n) support with language toggle for English, French, Dutch, and German. Uses i18next and react-i18next with browser language detection and localStorage persistence.
+- **Multi-Language Support**: Full internationalization (i18n) support with language toggle for English, French, Dutch, German, Spanish, and Italian. Uses i18next and react-i18next with browser language detection and localStorage persistence.
 
 ### Feature Specifications
 - **Helpdesk**: Ticket tracking with workflow, categories, tags, attachments, and comments.

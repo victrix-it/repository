@@ -13,6 +13,8 @@ const languages = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
 ];
 
 export function LanguageToggle() {
