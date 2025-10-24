@@ -1,7 +1,7 @@
 # Helpdesk & CMDB System
 
 ## Overview
-This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, and email integration. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management.
+This enterprise IT service management application integrates helpdesk ticket tracking, ITIL-style change management, a Configuration Management Database (CMDB), a knowledge base, email integration, and Service Catalog for request fulfillment. It aims to provide IT support teams with a productivity-focused workflow and a professional, information-dense interface, inspired by Linear, Notion, and Carbon Design. A key ambition is to support multi-customer environments with data isolation. The system also includes comprehensive ISO 27001:2022 compliance features for information security management.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -24,8 +24,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Architecture
 - **ORM**: Drizzle ORM with Neon serverless PostgreSQL driver.
-- **Schema Design**: Includes Users (role-based access), Tickets, Change Requests, Configuration Items (CMDB), Knowledge Base articles, Comments, Emails, Attachments, Teams, Resolution Categories, System Settings, and SLA templates. Supports multi-customer data separation.
-- **Database Features**: PostgreSQL enums, UUIDs, timestamps, foreign keys, JSONB fields.
+- **Schema Design**: Includes Users (role-based access), Tickets, Change Requests, Configuration Items (CMDB), Knowledge Base articles, Service Catalog Items, Service Requests, Comments, Emails, Attachments, Teams, Resolution Categories, System Settings, and SLA templates. Supports multi-customer data separation.
+- **Database Features**: PostgreSQL enums, UUIDs, timestamps, foreign keys, JSONB fields for custom form data.
 - **Migration Strategy**: Drizzle Kit.
 
 ### Authentication & Authorization
@@ -47,6 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **Change Management**: ITIL-style change requests with approval workflows.
 - **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking.
 - **Knowledge Base**: Article management.
+- **Service Catalog**: ITIL Request Fulfillment process with browsable catalog, custom form fields (JSONB), approval workflows, auto-generated request numbers (SR00001+), category-based organization (access, software, hardware, other), and full lifecycle management (submitted → pending_approval → approved/rejected → in_progress → completed/cancelled).
 - **Reporting**: 13 report types with recharts visualizations.
 - **SLA Management**: Template system.
 - **License System**: Time-limited access, user limits, admin UI.
