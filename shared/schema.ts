@@ -475,6 +475,74 @@ export const contacts = pgTable("contacts", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// ISO 27001 Compliance - Audit Logs
+export const auditEventTypeEnum = pgEnum('audit_event_type', [
+  'login_success',
+  'login_failure',
+  'logout',
+  'password_change',
+  'user_created',
+  'user_updated',
+  'user_deactivated',
+  'user_activated',
+  'role_assigned',
+  'role_removed',
+  'permission_changed',
+  'access_granted',
+  'access_revoked',
+  'session_terminated',
+  'unauthorized_access_attempt'
+]);
+
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: auditEventTypeEnum("event_type").notNull(),
+  userId: varchar("user_id").references(() => users.id), // Null for failed logins
+  username: varchar("username", { length: 255 }), // Store username even if user doesn't exist
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  success: varchar("success", { length: 10 }).notNull(),
+  reason: text("reason"),
+  metadata: jsonb("metadata"), // Additional context (e.g., changed fields, target user)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ISO 27001 Compliance - Failed Login Tracking (for account lockout)
+export const failedLoginAttempts = pgTable("failed_login_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: varchar("username", { length: 255 }).notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  attemptCount: integer("attempt_count").default(1).notNull(),
+  lockedUntil: timestamp("locked_until"), // When the account lockout expires
+  lastAttemptAt: timestamp("last_attempt_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ISO 27001 Compliance - Access Reviews (track access rights reviews)
+export const accessReviews = pgTable("access_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  reviewedById: varchar("reviewed_by_id").references(() => users.id).notNull(),
+  reviewType: varchar("review_type", { length: 50 }).notNull(), // 'regular', 'privileged', 'termination'
+  findings: text("findings"), // Any issues or recommendations
+  accessApproved: varchar("access_approved", { length: 10 }).notNull(), // 'true' or 'false'
+  nextReviewDate: timestamp("next_review_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ISO 27001 Compliance - User Sessions (track active sessions for monitoring)
+export const userSessions = pgTable("user_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  sessionId: varchar("session_id", { length: 255 }).unique().notNull(), // Reference to sessions table sid
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  loginAt: timestamp("login_at").defaultNow().notNull(),
+  lastActivityAt: timestamp("last_activity_at").defaultNow().notNull(),
+  logoutAt: timestamp("logout_at"),
+  isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   ticketsCreated: many(tickets, { relationName: 'createdBy' }),
@@ -724,7 +792,6 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings).omit
 export const insertLicenseSchema = createInsertSchema(licenses).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export const insertSlaTemplateSchema = createInsertSchema(slaTemplates).omit({
@@ -868,3 +935,33 @@ export const insertCiTypeSchema = createInsertSchema(ciTypes).omit({
 });
 export type InsertCiType = z.infer<typeof insertCiTypeSchema>;
 export type CiType = typeof ciTypes.$inferSelect;
+
+// ISO 27001 Compliance Insert Schemas
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
+
+export const insertFailedLoginAttemptSchema = createInsertSchema(failedLoginAttempts).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertFailedLoginAttempt = z.infer<typeof insertFailedLoginAttemptSchema>;
+export type FailedLoginAttempt = typeof failedLoginAttempts.$inferSelect;
+
+export const insertAccessReviewSchema = createInsertSchema(accessReviews).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAccessReview = z.infer<typeof insertAccessReviewSchema>;
+export type AccessReview = typeof accessReviews.$inferSelect;
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  loginAt: true,
+  lastActivityAt: true,
+});
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
