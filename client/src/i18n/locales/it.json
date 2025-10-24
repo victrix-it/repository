@@ -39,7 +39,12 @@
     "deselectAll": "Deseleziona tutto",
     "noResults": "Nessun risultato trovato",
     "required": "Questo campo è obbligatorio",
-    "optional": "Facoltativo"
+    "optional": "Facoltativo",
+    "open": "Aperto",
+    "in_progress": "In corso",
+    "resolved": "Risolto",
+    "closed": "Chiuso",
+    "pending_approval": "In attesa di approvazione"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -62,7 +67,26 @@
     "recentTickets": "Ticket recenti",
     "pendingChanges": "Modifiche in sospeso",
     "criticalItems": "Elementi di configurazione critici",
-    "overview": "Panoramica"
+    "overview": "Panoramica",
+    "openTickets": "Ticket aperti",
+    "inProgress": "In corso",
+    "pendingApprovals": "In attesa di approvazione",
+    "slaBreached": "SLA violato",
+    "ticketsByStatus": "Ticket per stato",
+    "ticketsByPriority": "Ticket per priorità",
+    "recentChanges": "Modifiche recenti",
+    "recentRequests": "Richieste di servizio recenti",
+    "configurationItems": "Elementi di configurazione",
+    "knowledgeBase": "Base di conoscenza",
+    "newTicket": "Nuovo ticket",
+    "browseCatalog": "Sfoglia catalogo",
+    "quickAccess": "Accesso rapido",
+    "noDataAvailable": "Nessun dato disponibile",
+    "noRecentTickets": "Nessun ticket recente",
+    "noRecentChanges": "Nessuna modifica recente",
+    "noRecentRequests": "Nessuna richiesta recente",
+    "publishedArticles": "Articoli pubblicati",
+    "totalItems": "Totale elementi"
   },
   "tickets": {
     "title": "Ticket",

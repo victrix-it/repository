@@ -39,7 +39,12 @@
     "deselectAll": "Alles deselecteren",
     "noResults": "Geen resultaten gevonden",
     "required": "Dit veld is verplicht",
-    "optional": "Optioneel"
+    "optional": "Optioneel",
+    "open": "Open",
+    "in_progress": "In behandeling",
+    "resolved": "Opgelost",
+    "closed": "Gesloten",
+    "pending_approval": "Wacht op goedkeuring"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -62,7 +67,26 @@
     "recentTickets": "Recente tickets",
     "pendingChanges": "Lopende wijzigingen",
     "criticalItems": "Kritieke configuratie-items",
-    "overview": "Overzicht"
+    "overview": "Overzicht",
+    "openTickets": "Open tickets",
+    "inProgress": "In behandeling",
+    "pendingApprovals": "Wacht op goedkeuring",
+    "slaBreached": "SLA overschreden",
+    "ticketsByStatus": "Tickets per status",
+    "ticketsByPriority": "Tickets per prioriteit",
+    "recentChanges": "Recente wijzigingen",
+    "recentRequests": "Recente serviceaanvragen",
+    "configurationItems": "Configuratie-items",
+    "knowledgeBase": "Kennisbank",
+    "newTicket": "Nieuw ticket",
+    "browseCatalog": "Catalogus bekijken",
+    "quickAccess": "Snelle toegang",
+    "noDataAvailable": "Geen gegevens beschikbaar",
+    "noRecentTickets": "Geen recente tickets",
+    "noRecentChanges": "Geen recente wijzigingen",
+    "noRecentRequests": "Geen recente aanvragen",
+    "publishedArticles": "Gepubliceerde artikelen",
+    "totalItems": "Totaal aantal items"
   },
   "tickets": {
     "title": "Tickets",

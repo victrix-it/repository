@@ -39,7 +39,12 @@
     "deselectAll": "Deselect All",
     "noResults": "No results found",
     "required": "This field is required",
-    "optional": "Optional"
+    "optional": "Optional",
+    "open": "Open",
+    "in_progress": "In Progress",
+    "resolved": "Resolved",
+    "closed": "Closed",
+    "pending_approval": "Pending Approval"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -62,7 +67,26 @@
     "recentTickets": "Recent Tickets",
     "pendingChanges": "Pending Changes",
     "criticalItems": "Critical Configuration Items",
-    "overview": "Overview"
+    "overview": "Overview",
+    "openTickets": "Open Tickets",
+    "inProgress": "In Progress",
+    "pendingApprovals": "Pending Approvals",
+    "slaBreached": "SLA Breached",
+    "ticketsByStatus": "Tickets by Status",
+    "ticketsByPriority": "Tickets by Priority",
+    "recentChanges": "Recent Changes",
+    "recentRequests": "Recent Service Requests",
+    "configurationItems": "Configuration Items",
+    "knowledgeBase": "Knowledge Base",
+    "newTicket": "New Ticket",
+    "browseCatalog": "Browse Catalog",
+    "quickAccess": "Quick Access",
+    "noDataAvailable": "No data available",
+    "noRecentTickets": "No recent tickets",
+    "noRecentChanges": "No recent changes",
+    "noRecentRequests": "No recent service requests",
+    "publishedArticles": "Published articles",
+    "totalItems": "Total items"
   },
   "tickets": {
     "title": "Tickets",

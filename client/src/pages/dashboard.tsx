@@ -130,22 +130,22 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold" data-testid="text-dashboard-title">
-            {t("nav.dashboard")}
+            {t("dashboard.title")}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Welcome to your IT service management dashboard
+            {t("dashboard.welcome")}
           </p>
         </div>
         <div className="flex gap-2">
           <Link href="/tickets/new">
             <Button data-testid="button-new-ticket">
               <Plus className="w-4 h-4 mr-2" />
-              New Ticket
+              {t("dashboard.newTicket")}
             </Button>
           </Link>
           <Link href="/service-catalog">
             <Button variant="secondary" data-testid="button-browse-catalog">
-              Browse Catalog
+              {t("dashboard.browseCatalog")}
             </Button>
           </Link>
         </div>
@@ -154,53 +154,41 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card data-testid="card-stat-open-tickets" className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Open Tickets</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.openTickets")}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.openTickets || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting assignment or action
-            </p>
           </CardContent>
         </Card>
 
         <Card data-testid="card-stat-in-progress" className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.inProgress")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.inProgressTickets || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently being worked on
-            </p>
           </CardContent>
         </Card>
 
         <Card data-testid="card-stat-pending-approvals" className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.pendingApprovals")}</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats?.pendingApprovals || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Changes & requests awaiting approval
-            </p>
           </CardContent>
         </Card>
 
         <Card data-testid="card-stat-sla-breached" className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SLA Breached</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.slaBreached")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{stats?.slaBreached || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Requires immediate attention
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -208,8 +196,7 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card data-testid="card-tickets-by-status">
           <CardHeader>
-            <CardTitle>Tickets by Status</CardTitle>
-            <CardDescription>Distribution of all tickets</CardDescription>
+            <CardTitle>{t("dashboard.ticketsByStatus")}</CardTitle>
           </CardHeader>
           <CardContent>
             {charts?.ticketsByStatus && charts.ticketsByStatus.length > 0 ? (
@@ -233,7 +220,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                No ticket data available
+                {t("dashboard.noDataAvailable")}
               </div>
             )}
           </CardContent>
@@ -241,8 +228,7 @@ export default function Dashboard() {
 
         <Card data-testid="card-tickets-by-priority">
           <CardHeader>
-            <CardTitle>Tickets by Priority</CardTitle>
-            <CardDescription>Priority distribution</CardDescription>
+            <CardTitle>{t("dashboard.ticketsByPriority")}</CardTitle>
           </CardHeader>
           <CardContent>
             {charts?.ticketsByPriority && charts.ticketsByPriority.length > 0 ? (
@@ -267,7 +253,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                No priority data available
+                {t("dashboard.noDataAvailable")}
               </div>
             )}
           </CardContent>
@@ -279,9 +265,8 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Recent Tickets
+              {t("dashboard.recentTickets")}
             </CardTitle>
-            <CardDescription>Latest 5 tickets</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {activity?.tickets && activity.tickets.length > 0 ? (
@@ -314,7 +299,7 @@ export default function Dashboard() {
               ))
             ) : (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No recent tickets
+                {t("dashboard.noRecentTickets")}
               </p>
             )}
           </CardContent>
@@ -324,9 +309,8 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Recent Changes
+              {t("dashboard.recentChanges")}
             </CardTitle>
-            <CardDescription>Latest 5 change requests</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {activity?.changes && activity.changes.length > 0 ? (
@@ -359,7 +343,7 @@ export default function Dashboard() {
               ))
             ) : (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No recent changes
+                {t("dashboard.noRecentChanges")}
               </p>
             )}
           </CardContent>
@@ -369,9 +353,8 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Recent Requests
+              {t("dashboard.recentRequests")}
             </CardTitle>
-            <CardDescription>Latest 5 service requests</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {activity?.serviceRequests && activity.serviceRequests.length > 0 ? (
@@ -403,7 +386,7 @@ export default function Dashboard() {
               ))
             ) : (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No recent requests
+                {t("dashboard.noRecentRequests")}
               </p>
             )}
           </CardContent>
@@ -414,13 +397,12 @@ export default function Dashboard() {
         <Link href="/cmdb">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-quick-access-cmdb">
             <CardHeader>
-              <CardTitle>Configuration Items</CardTitle>
-              <CardDescription>Manage your CMDB</CardDescription>
+              <CardTitle>{t("dashboard.configurationItems")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats?.totalCIs || 0}</div>
               <p className="text-sm text-muted-foreground mt-2">
-                Total CIs in the database
+                {t("dashboard.totalItems")}
               </p>
             </CardContent>
           </Card>
@@ -429,13 +411,12 @@ export default function Dashboard() {
         <Link href="/knowledge">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-quick-access-kb">
             <CardHeader>
-              <CardTitle>Knowledge Base</CardTitle>
-              <CardDescription>Browse articles and SOPs</CardDescription>
+              <CardTitle>{t("dashboard.knowledgeBase")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats?.kbArticles || 0}</div>
               <p className="text-sm text-muted-foreground mt-2">
-                Published articles
+                {t("dashboard.publishedArticles")}
               </p>
             </CardContent>
           </Card>
