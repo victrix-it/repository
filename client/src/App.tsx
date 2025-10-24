@@ -45,6 +45,10 @@ import SlaTemplatesPage from "@/pages/admin/sla-templates/index";
 import LicensePage from "@/pages/admin/license";
 import CiTypesPage from "@/pages/admin/ci-types";
 import ReportsPage from "@/pages/reports";
+import ServiceCatalog from "@/pages/service-catalog/catalog";
+import ServiceRequestForm from "@/pages/service-catalog/request-form";
+import ServiceRequests from "@/pages/service-catalog/requests";
+import ServiceCatalogAdmin from "@/pages/service-catalog/admin";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -72,6 +76,10 @@ function Router() {
           <Route path="/problems/new" component={NewProblemPage} />
           <Route path="/emails" component={EmailsPage} />
           <Route path="/reports" component={ReportsPage} />
+          <Route path="/service-catalog" component={ServiceCatalog} />
+          <Route path="/service-catalog/request/:id" component={ServiceRequestForm} />
+          <Route path="/service-catalog/requests" component={ServiceRequests} />
+          <Route path="/service-catalog/admin" component={ServiceCatalogAdmin} />
           <Route path="/admin" component={AdminPage} />
           <Route path="/admin/branding" component={BrandingPage} />
           <Route path="/admin/auth-settings" component={AuthSettingsPage} />

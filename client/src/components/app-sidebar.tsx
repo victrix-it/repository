@@ -9,6 +9,7 @@ import {
   LogOut,
   AlertCircle,
   BarChart3,
+  ShoppingCart,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -72,6 +73,13 @@ const getMainItems = (t: any) => [
     titleKey: "knowledge-base",
     url: "/knowledge",
     icon: BookOpen,
+    permission: null as any,
+  },
+  {
+    title: t('nav.serviceCatalog'),
+    titleKey: "service-catalog",
+    url: "/service-catalog",
+    icon: ShoppingCart,
     permission: null as any,
   },
   {
