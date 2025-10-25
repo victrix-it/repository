@@ -149,7 +149,8 @@ export function AppSidebar() {
   const showAdminSection = hasAnyPermission(
     'canManageUsers',
     'canManageRoles',
-    'canRunReports'
+    'canRunReports',
+    'canManageServiceCatalog'
   );
 
   return (
@@ -203,12 +204,22 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {hasPermission('canRunReports') && (
+                {hasPermission('canRunReports') && isModuleEnabled('reports') && (
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={location === '/reports'} data-testid="nav-reports">
                       <Link href="/reports">
                         <BarChart3 className="h-4 w-4" />
                         <span>{t('nav.reports')}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {hasPermission('canManageServiceCatalog') && isModuleEnabled('service_catalog') && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location === '/service-catalog/admin'} data-testid="nav-service-catalog-admin">
+                      <Link href="/service-catalog/admin">
+                        <ShoppingCart className="h-4 w-4" />
+                        <span>{t('nav.serviceCatalogAdmin', 'Catalog Admin')}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
