@@ -58,9 +58,9 @@ export default function TicketsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <Skeleton className="h-8 w-48 mb-6" />
-        <div className="space-y-4">
+      <div className="p-4 md:p-8">
+        <Skeleton className="h-8 w-48 mb-4 md:mb-6" />
+        <div className="space-y-3 md:space-y-4">
           {[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       </div>
@@ -68,20 +68,21 @@ export default function TicketsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <h1 className="text-3xl font-semibold" data-testid="page-title">Incidents</h1>
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-4 md:mb-6 gap-3 flex-wrap">
+        <h1 className="text-2xl md:text-3xl font-semibold" data-testid="page-title">Incidents</h1>
         <Link href="/tickets/new">
-          <Button data-testid="button-create-ticket">
+          <Button data-testid="button-create-ticket" size="sm" className="md:h-9">
             <Plus className="h-4 w-4 mr-2" />
-            New Incident
+            <span className="hidden sm:inline">New Incident</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </Link>
       </div>
 
-      <div className="mb-6 space-y-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="mb-4 md:mb-6 space-y-3 md:space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Search incidents..."
             value={search}
@@ -91,9 +92,9 @@ export default function TicketsPage() {
           />
         </div>
         
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-48" data-testid="select-category-filter">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-category-filter">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
@@ -105,7 +106,7 @@ export default function TicketsPage() {
           </Select>
 
           <Select value={tagFilter} onValueChange={setTagFilter}>
-            <SelectTrigger className="w-48" data-testid="select-tag-filter">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-tag-filter">
               <SelectValue placeholder="All Tags" />
             </SelectTrigger>
             <SelectContent>
@@ -117,7 +118,7 @@ export default function TicketsPage() {
           </Select>
 
           <Select value={customerFilter} onValueChange={setCustomerFilter}>
-            <SelectTrigger className="w-48" data-testid="select-customer-filter">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-customer-filter">
               <SelectValue placeholder="All Customers" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +130,7 @@ export default function TicketsPage() {
           </Select>
 
           <Select value={slaFilter} onValueChange={setSlaFilter}>
-            <SelectTrigger className="w-48" data-testid="select-sla-filter">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-sla-filter">
               <SelectValue placeholder="All SLA Status" />
             </SelectTrigger>
             <SelectContent>
@@ -141,7 +142,7 @@ export default function TicketsPage() {
           </Select>
 
           <Select value={teamFilter} onValueChange={setTeamFilter}>
-            <SelectTrigger className="w-48" data-testid="select-team-filter">
+            <SelectTrigger className="w-full sm:w-48" data-testid="select-team-filter">
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
             <SelectContent>
@@ -171,12 +172,12 @@ export default function TicketsPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2 md:space-y-3">
         {filteredTickets && filteredTickets.length > 0 ? (
           filteredTickets.map((ticket) => (
             <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
-              <Card className="p-4 hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
-                <div className="flex items-start gap-4">
+              <Card className="p-3 md:p-4 hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
+                <div className="flex items-start gap-3 md:gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="font-mono text-sm text-muted-foreground" data-testid={`ticket-number-${ticket.id}`}>
