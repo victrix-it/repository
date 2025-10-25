@@ -59,13 +59,13 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="space-y-6">
+      <div className="p-4 md:p-8">
+        <div className="space-y-4 md:space-y-6">
           <div className="flex items-center justify-between">
             <div className="h-8 w-48 bg-muted animate-pulse rounded" />
             <div className="h-10 w-40 bg-muted animate-pulse rounded" />
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
             ))}
@@ -126,32 +126,34 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-8 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold" data-testid="text-dashboard-title">
+          <h1 className="text-2xl md:text-3xl font-semibold" data-testid="text-dashboard-title">
             {t("dashboard.title")}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
             {t("dashboard.welcome")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Link href="/tickets/new">
-            <Button data-testid="button-new-ticket">
+            <Button data-testid="button-new-ticket" size="sm" className="md:h-9">
               <Plus className="w-4 h-4 mr-2" />
-              {t("dashboard.newTicket")}
+              <span className="hidden sm:inline">{t("dashboard.newTicket")}</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </Link>
           <Link href="/service-catalog">
-            <Button variant="secondary" data-testid="button-browse-catalog">
-              {t("dashboard.browseCatalog")}
+            <Button variant="secondary" data-testid="button-browse-catalog" size="sm" className="md:h-9">
+              <span className="hidden sm:inline">{t("dashboard.browseCatalog")}</span>
+              <span className="sm:hidden">Catalog</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
         <Card data-testid="card-stat-open-tickets" className="hover-elevate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t("dashboard.openTickets")}</CardTitle>
@@ -193,7 +195,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card data-testid="card-tickets-by-status">
           <CardHeader>
             <CardTitle>{t("dashboard.ticketsByStatus")}</CardTitle>
@@ -260,7 +262,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-3">
         <Card data-testid="card-recent-tickets">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -393,7 +395,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Link href="/cmdb">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-quick-access-cmdb">
             <CardHeader>
