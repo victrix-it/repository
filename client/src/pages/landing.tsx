@@ -66,29 +66,29 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="text-center mb-8">
+      <div className="container mx-auto px-4 py-8 md:py-16">
+        <div className="max-w-4xl mx-auto mb-8 md:mb-16">
+          <div className="text-center mb-6 md:mb-8">
             {logoUrl && (
               <img 
                 src={logoUrl} 
                 alt="Logo" 
-                className="h-16 mx-auto mb-4"
+                className="h-12 md:h-16 mx-auto mb-3 md:mb-4"
                 data-testid="img-logo"
               />
             )}
-            <h1 className="text-4xl font-semibold text-foreground mb-4" data-testid="text-page-title">
+            <h1 className="text-2xl md:text-4xl font-semibold text-foreground mb-3 md:mb-4 px-2" data-testid="text-page-title">
               {pageTitle}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8" data-testid="text-page-subtitle">
+            <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 px-2" data-testid="text-page-subtitle">
               {pageSubtitle}
             </p>
           </div>
           
           {/* ISO 27001 Control A.5.16 - Authorization Warning Banner */}
-          <Alert className="mb-6 text-left border-yellow-600 bg-yellow-50 dark:bg-yellow-950/30" data-testid="alert-authorization-warning">
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-sm text-yellow-900 dark:text-yellow-200">
+          <Alert className="mb-4 md:mb-6 text-left border-yellow-600 bg-yellow-50 dark:bg-yellow-950/30" data-testid="alert-authorization-warning">
+            <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0" />
+            <AlertDescription className="text-xs md:text-sm text-yellow-900 dark:text-yellow-200">
               <strong className="font-semibold">{warningTitle}</strong>
               <div className="mt-2 space-y-1">
                 <p>• This system is for authorized users only</p>
@@ -145,7 +145,7 @@ export default function Landing() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
           <Card>
             <CardHeader>
               <Ticket className="h-8 w-8 text-primary mb-2" />

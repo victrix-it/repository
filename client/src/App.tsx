@@ -126,8 +126,8 @@ function AppLayout() {
           <div className="flex h-screen w-full">
             <AppSidebar />
             <div className="flex flex-col flex-1 overflow-hidden">
-              <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background">
-                <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <header className="flex items-center justify-between p-3 md:p-2 border-b sticky top-0 z-50 bg-background gap-2">
+                <SidebarTrigger data-testid="button-sidebar-toggle" className="min-h-10 min-w-10" />
                 <LanguageToggle />
               </header>
               <main className="flex-1 overflow-auto flex flex-col">
