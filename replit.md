@@ -31,12 +31,14 @@ Preferred communication style: Simple, everyday language.
 - **Migration Strategy**: Drizzle Kit.
 
 ### Authentication & Authorization
-- **Provider**: Replit Auth with OIDC.
-- **Flow**: Redirect to landing page, `/api/login` for OIDC, session creation from OIDC claims.
-- **User Management**: Auto-created from OIDC claims, assigned "End User" role.
-- **Session Security**: HTTP-only, secure cookies (7-day TTL).
+- **Providers**: Multi-authentication support including Replit OIDC, local username/password, LDAP, and SAML.
+- **Local Authentication**: Enabled via system_settings (auth_local_enabled), provides username/password login for users with authProvider='local'.
+- **Landing Page**: Custom login page with email/password form, ISO 27001 A.9.4.1 compliant warning banner, and customizable branding.
+- **Flow**: Landing page at `/` with login form → `/api/auth/local/login` for local auth or `/api/login` for OIDC → session creation → redirect to dashboard.
+- **User Management**: Auto-created from OIDC claims or manually created for local auth, assigned default "End User" role.
+- **Session Security**: HTTP-only, secure cookies (7-day TTL), PostgreSQL session store.
 - **RBAC System**: 12 granular permissions with ITIL-based roles, enforced via `requirePermission` middleware (backend) and `usePermissions` hooks (frontend).
-- **ISO 27001 Controls**: Implements A.5.16 (Identity Management), A.5.17 (Authentication Information with strong password policy and MFA support), A.5.18 (Access Rights Management), A.8.15 (Comprehensive Audit Logging), A.8.16 (Monitoring Activities with session tracking and account lockout), A.9.4.1 (Information Access Restriction with warning banner).
+- **ISO 27001 Controls**: Implements A.5.16 (Identity Management), A.5.17 (Authentication Information with strong password policy and MFA support), A.5.18 (Access Rights Management), A.8.15 (Comprehensive Audit Logging), A.8.16 (Monitoring Activities with session tracking and account lockout), A.9.4.1 (Information Access Restriction with customizable warning banner).
 
 ### Key Architectural Patterns
 - **Separation of Concerns**: `/client`, `/server`, `/shared` directories.
@@ -45,12 +47,14 @@ Preferred communication style: Simple, everyday language.
 - **Query Strategy**: Custom fetch wrapper with React Query.
 
 ### Feature Specifications
+- **Landing Page**: Customizable pre-login page with login form, warning banner, and branding. Settings stored in system_settings table (landing_title, landing_subtitle, landing_warning_title, logo_url). Supports both local authentication and OIDC.
+- **Branding & Customization**: Admin interface at `/admin/branding` allows customization of system name, company name, logo, primary color, tagline, footer text, and landing page content (title, subtitle, warning message).
 - **Dashboard**: Comprehensive analytics and overview page displaying key metrics (open incidents, in progress, pending approvals, SLA breaches), interactive charts (incidents by status/priority using recharts), recent activity feeds (latest incidents, changes, service requests), and quick access cards to CMDB and Knowledge Base. Default landing page after authentication. Fully translated across all 6 languages.
 - **Helpdesk/Incident Management**: Incident tracking with workflow, attachments, comments. UI displays "Incidents" terminology aligned with ITIL standards.
 - **Change Management**: ITIL-style change requests with approval workflows.
 - **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking.
 - **Knowledge Base**: Article management.
-- **Service Catalog**: ITIL Request Fulfillment process with browsable catalog, custom form fields (JSONB), approval workflows, auto-generated request numbers (SR00001+), category-based organization (access, software, hardware, other), and full lifecycle management (submitted → pending_approval → approved/rejected → in_progress → completed/cancelled).
+- **Service Catalog**: ITIL Request Fulfillment process with browsable catalog, custom form fields (JSONB), approval workflows, auto-generated request numbers (SR00001+), category-based organization (access, software, hardware, network, general), and full lifecycle management (submitted → pending_approval → approved/rejected → in_progress → completed/cancelled).
 - **Reporting**: 13 report types with recharts visualizations.
 - **SLA Management**: Template system.
 - **License System**: Time-limited access, user limits, admin UI.
