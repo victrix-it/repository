@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { registerMultiAuthRoutes } from "./multiAuth";
 import { getUserWithRole, requirePermission, optionalPermissionContext, getTenantFilter } from "./permissions";
 import { insertTicketSchema, insertChangeRequestSchema, insertConfigurationItemSchema, insertKnowledgeBaseSchema, insertCommentSchema, insertEmailMessageSchema, insertTeamSchema, insertCustomerSchema, insertTeamMemberSchema, insertResolutionCategorySchema, insertSystemSettingSchema, insertAlertIntegrationSchema, insertAlertFilterRuleSchema, insertAlertFieldMappingSchema, insertDiscoveryCredentialSchema, insertDiscoveryJobSchema, insertContactSchema, insertProblemSchema, insertSlaTemplateSchema } from "@shared/schema";
 import { registerAttachmentRoutes } from "./attachmentRoutes";
@@ -16,6 +17,9 @@ import fs from "fs";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+  
+  // Multi-auth routes (local, LDAP, SAML)
+  await registerMultiAuthRoutes(app);
 
   // Multer configuration for CSV uploads
   const csvUpload = multer({ storage: multer.memoryStorage() });

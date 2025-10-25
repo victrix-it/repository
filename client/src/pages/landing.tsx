@@ -30,11 +30,18 @@ export default function Landing() {
     setIsLoading(true);
 
     try {
-      const response = await apiRequest("POST", "/api/auth/local/login", {
-        email,
-        password,
+      const response = await fetch("/api/auth/local/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Login failed" }));
+        throw new Error(errorData.message || "Invalid email or password");
+      }
+
       const data = await response.json();
       
       if (data.user) {
