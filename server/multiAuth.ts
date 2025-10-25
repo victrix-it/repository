@@ -127,7 +127,14 @@ export async function registerMultiAuthRoutes(app: Express) {
           await createUserSession({ userId: user.id, sessionId, ipAddress, userAgent });
         }
         
-        res.json({ user: { id: user.id, email: user.email, role: user.role } });
+        // Explicitly save session before responding
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error('[auth] Session save error:', saveErr);
+            return res.status(500).json({ message: 'Registration successful but session save failed' });
+          }
+          res.json({ user: { id: user.id, email: user.email, role: user.role } });
+        });
       });
     } catch (error: any) {
       console.error('[auth] Local registration error:', error);
@@ -205,7 +212,14 @@ export async function registerMultiAuthRoutes(app: Express) {
           req,
         });
         
-        res.json({ user });
+        // Explicitly save session before responding
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error('[auth] Session save error:', saveErr);
+            return res.status(500).json({ message: 'Login successful but session save failed' });
+          }
+          res.json({ user });
+        });
       });
     })(req, res, next);
   });

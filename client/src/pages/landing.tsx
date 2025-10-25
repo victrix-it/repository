@@ -45,7 +45,8 @@ export default function Landing() {
       const data = await response.json();
       
       if (data.user) {
-        window.location.href = "/";
+        // Force page reload to ensure authentication state is updated
+        window.location.reload();
       }
     } catch (error: any) {
       toast({
