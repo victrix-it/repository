@@ -17,6 +17,7 @@ Preferred communication style: Simple, everyday language.
 - **UI Framework**: shadcn/ui components (Radix UI primitives), styled with Tailwind CSS.
 - **Design System**: Custom dark mode, professional blue primary color, status-based color coding, New York style variant of shadcn/ui, custom border radius.
 - **Internationalization**: Full i18n support (English, French, Dutch, German, Spanish, Italian) using i18next.
+- **Mobile UX**: Fully responsive design with mobile-first approach. Breakpoint at 768px (useIsMobile hook). Responsive padding (p-4 md:p-8), text sizing (text-2xl md:text-3xl), grid layouts (grid-cols-2 lg:grid-cols-4), and full-width filters on mobile (w-full sm:w-48). All touch targets meet accessibility standards (min 44x44px).
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript on Node.js.
@@ -33,10 +34,10 @@ Preferred communication style: Simple, everyday language.
 ### Authentication & Authorization
 - **Providers**: Multi-authentication support including Replit OIDC, local username/password, LDAP, and SAML.
 - **Local Authentication**: Enabled via system_settings (auth_local_enabled), provides username/password login for users with authProvider='local'.
-- **Landing Page**: Custom login page with email/password form, ISO 27001 A.9.4.1 compliant warning banner, and customizable branding.
-- **Flow**: Landing page at `/` with login form → `/api/auth/local/login` for local auth or `/api/login` for OIDC → session creation → redirect to dashboard.
+- **Landing Page**: Custom login page with email/password form, ISO 27001 A.9.4.1 compliant warning banner, and customizable branding. Fully mobile-responsive with optimized touch targets and layout.
+- **Flow**: Landing page at `/` with login form → `/api/auth/local/login` for local auth or `/api/login` for OIDC → session creation → page reload to dashboard.
 - **User Management**: Auto-created from OIDC claims or manually created for local auth, assigned default "End User" role.
-- **Session Security**: HTTP-only, secure cookies (7-day TTL), PostgreSQL session store.
+- **Session Security**: HTTP-only, secure cookies (7-day TTL, sameSite: 'lax'), PostgreSQL session store with explicit session.save() before response to ensure persistence.
 - **RBAC System**: 12 granular permissions with ITIL-based roles, enforced via `requirePermission` middleware (backend) and `usePermissions` hooks (frontend).
 - **ISO 27001 Controls**: Implements A.5.16 (Identity Management), A.5.17 (Authentication Information with strong password policy and MFA support), A.5.18 (Access Rights Management), A.8.15 (Comprehensive Audit Logging), A.8.16 (Monitoring Activities with session tracking and account lockout), A.9.4.1 (Information Access Restriction with customizable warning banner).
 

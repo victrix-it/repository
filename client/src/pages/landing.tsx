@@ -46,7 +46,10 @@ export default function Landing() {
       
       if (data.user) {
         // Force page reload to ensure authentication state is updated
-        window.location.reload();
+        // Small delay to ensure cookie is set before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
     } catch (error: any) {
       toast({
