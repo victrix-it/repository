@@ -181,6 +181,27 @@ export default function AdminPage() {
           </Card>
         </Link>
 
+        <Link href="/admin/license-generator">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer border-amber-500" data-testid="card-license-generator">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-amber-500/10">
+                  <Shield className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-amber-900 dark:text-amber-100">License Generator</CardTitle>
+                  <CardDescription className="text-amber-800 dark:text-amber-200">Victrix IT Ltd Only</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-amber-900 dark:text-amber-100">
+                Generate cryptographically signed licenses for self-hosted customers
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/admin/ci-types">
           <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-ci-types">
             <CardHeader>

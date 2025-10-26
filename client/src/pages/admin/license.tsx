@@ -12,10 +12,6 @@ import { format } from 'date-fns';
 export default function LicensePage() {
   const { toast } = useToast();
   const [licenseKey, setLicenseKey] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [expirationDate, setExpirationDate] = useState('');
-  const [maxUsers, setMaxUsers] = useState('');
 
   const { data: licenseStatus, isLoading: statusLoading } = useQuery({
     queryKey: ['/api/licenses/status'],
@@ -37,10 +33,6 @@ export default function LicensePage() {
       queryClient.invalidateQueries({ queryKey: ['/api/licenses/status'] });
       queryClient.invalidateQueries({ queryKey: ['/api/licenses'] });
       setLicenseKey('');
-      setCompanyName('');
-      setContactEmail('');
-      setExpirationDate('');
-      setMaxUsers('');
     },
     onError: (error: any) => {
       toast({
@@ -53,12 +45,9 @@ export default function LicensePage() {
 
   const handleActivate = (e: React.FormEvent) => {
     e.preventDefault();
+    // Only send the license key - the rest is verified from the signature
     activateMutation.mutate({
       licenseKey,
-      companyName,
-      contactEmail,
-      expirationDate,
-      maxUsers: parseInt(maxUsers),
     });
   };
 
@@ -156,57 +145,12 @@ export default function LicensePage() {
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value)}
                 placeholder="XXXX-XXXX-XXXX-XXXX"
+                className="font-mono"
                 required
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name *</Label>
-              <Input
-                id="companyName"
-                data-testid="input-company-name"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Acme Corporation"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactEmail">Contact Email *</Label>
-              <Input
-                id="contactEmail"
-                data-testid="input-contact-email"
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="admin@company.com"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expirationDate">Expiration Date *</Label>
-                <Input
-                  id="expirationDate"
-                  data-testid="input-expiration-date"
-                  type="date"
-                  value={expirationDate}
-                  onChange={(e) => setExpirationDate(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxUsers">Maximum Users *</Label>
-                <Input
-                  id="maxUsers"
-                  data-testid="input-max-users"
-                  type="number"
-                  value={maxUsers}
-                  onChange={(e) => setMaxUsers(e.target.value)}
-                  placeholder="50"
-                  min="1"
-                  required
-                />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter the complete license key provided by Victrix IT Ltd. The system will automatically verify and extract license information.
+              </p>
             </div>
           </CardContent>
           <CardFooter>

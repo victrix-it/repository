@@ -570,11 +570,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/licenses/activate', async (req, res) => {
     try {
-      const { licenseKey, companyName, contactEmail, expirationDate, maxUsers } = req.body;
+      const { licenseKey } = req.body;
       
-      if (!licenseKey || !companyName || !contactEmail || !expirationDate || !maxUsers) {
-        return res.status(400).json({ message: "Missing required fields" });
+      if (!licenseKey) {
+        return res.status(400).json({ message: "License key is required" });
       }
+
+      // Verify the license key cryptographically
+      const { verifyLicenseKey } = await import('./licenseGenerator');
+      const verification = verifyLicenseKey(licenseKey);
+      
+      if (!verification.valid) {
+        return res.status(400).json({ 
+          message: verification.error || "Invalid license key signature"
+        });
+      }
+
+      const licenseData = verification.data!;
 
       // Check if license already exists
       const allLicenses = await storage.getAllLicenses();
@@ -586,13 +598,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(activated);
       }
 
-      // Create new license
+      // Create new license from verified data
       const newLicense = await storage.createLicense({
         licenseKey,
-        companyName,
-        contactEmail,
-        expirationDate: new Date(expirationDate),
-        maxUsers,
+        companyName: licenseData.companyName,
+        contactEmail: licenseData.contactEmail,
+        expirationDate: new Date(licenseData.expirationDate),
+        maxUsers: licenseData.maxUsers,
         isActive: 'true',
       });
 
@@ -623,6 +635,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deactivating license:", error);
       res.status(500).json({ message: "Failed to deactivate license" });
+    }
+  });
+
+  // License Generator routes (Victrix IT Ltd internal use only)
+  app.post('/api/admin/generate-license', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const { companyName, contactEmail, expirationDate, maxUsers, privateKey } = req.body;
+      
+      if (!companyName || !contactEmail || !expirationDate || !maxUsers || !privateKey) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const { generateLicenseKey } = await import('./licenseGenerator');
+      const licenseData = {
+        companyName,
+        contactEmail,
+        expirationDate: new Date(expirationDate).toISOString(),
+        maxUsers: parseInt(maxUsers),
+      };
+
+      const licenseKey = generateLicenseKey(licenseData, privateKey);
+      
+      res.json({
+        licenseKey,
+        licenseData,
+      });
+    } catch (error: any) {
+      console.error("Error generating license:", error);
+      res.status(500).json({ message: error.message || "Failed to generate license" });
+    }
+  });
+
+  app.post('/api/admin/generate-keypair', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
+    try {
+      const { generateKeyPair } = await import('./licenseGenerator');
+      const keys = generateKeyPair();
+      
+      res.json(keys);
+    } catch (error: any) {
+      console.error("Error generating key pair:", error);
+      res.status(500).json({ message: error.message || "Failed to generate key pair" });
     }
   });
 

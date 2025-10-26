@@ -44,6 +44,7 @@ import RolesPage from "@/pages/admin/roles";
 import ResolutionCategoriesPage from "@/pages/admin/resolution-categories";
 import SlaTemplatesPage from "@/pages/admin/sla-templates/index";
 import LicensePage from "@/pages/admin/license";
+import LicenseGeneratorPage from "@/pages/admin/license-generator";
 import CiTypesPage from "@/pages/admin/ci-types";
 import ModulesPage from "@/pages/admin/modules";
 import ReportsPage from "@/pages/reports";
@@ -97,6 +98,7 @@ function Router() {
           <Route path="/admin/resolution-categories" component={ResolutionCategoriesPage} />
           <Route path="/admin/sla-templates" component={SlaTemplatesPage} />
           <Route path="/admin/license" component={LicensePage} />
+          <Route path="/admin/license-generator" component={LicenseGeneratorPage} />
           <Route path="/admin/ci-types" component={CiTypesPage} />
           <Route path="/admin/modules" component={ModulesPage} />
         </>
