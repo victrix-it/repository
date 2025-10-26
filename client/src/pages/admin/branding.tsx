@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Palette, Upload, X } from "lucide-react";
@@ -22,6 +23,7 @@ interface BrandingFormData {
   landingTitle: string;
   landingSubtitle: string;
   landingWarningTitle: string;
+  deploymentMode: string;
 }
 
 export default function BrandingPage() {
@@ -49,6 +51,7 @@ export default function BrandingPage() {
       landingTitle: settingsMap['landing_title'] || 'Enterprise Servicedesk Solution',
       landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with incident tracking, change management, CMDB, and knowledge base.',
       landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
+      deploymentMode: settingsMap['deployment_mode'] || 'self_hosted',
     },
     values: {
       systemName: settingsMap['system_name'] || 'Servicedesk & CMDB',
@@ -60,6 +63,7 @@ export default function BrandingPage() {
       landingTitle: settingsMap['landing_title'] || 'Enterprise Servicedesk Solution',
       landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with incident tracking, change management, CMDB, and knowledge base.',
       landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
+      deploymentMode: settingsMap['deployment_mode'] || 'self_hosted',
     },
   });
 
@@ -110,6 +114,7 @@ export default function BrandingPage() {
         { key: 'landing_title', value: data.landingTitle },
         { key: 'landing_subtitle', value: data.landingSubtitle },
         { key: 'landing_warning_title', value: data.landingWarningTitle },
+        { key: 'deployment_mode', value: data.deploymentMode },
       ];
 
       for (const setting of settingsToSave) {
@@ -191,6 +196,32 @@ export default function BrandingPage() {
                         </FormControl>
                         <FormDescription>
                           Your organization's name
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="deploymentMode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Deployment Mode</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-deployment-mode">
+                              <SelectValue placeholder="Select deployment mode" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="self_hosted" data-testid="option-self-hosted">Self-Hosted</SelectItem>
+                            <SelectItem value="saas" data-testid="option-saas">SaaS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          <strong>Self-Hosted:</strong> Network Discovery runs on your server.<br />
+                          <strong>SaaS:</strong> Generate scripts that customers run locally to scan their networks.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
