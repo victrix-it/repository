@@ -93,6 +93,117 @@ async function getUserCount(): Promise<number> {
 }
 
 /**
+ * Ensure default roles exist in the system
+ */
+export async function ensureDefaultRolesExist(): Promise<void> {
+  const defaultRoles = [
+    {
+      name: 'System Administrator',
+      description: 'Full system access with all permissions',
+      canCreateTickets: 'true',
+      canUpdateOwnTickets: 'true',
+      canUpdateAllTickets: 'true',
+      canCloseTickets: 'true',
+      canViewAllTickets: 'true',
+      canApproveChanges: 'true',
+      canManageKnowledgebase: 'true',
+      canManageServiceCatalog: 'true',
+      canRunReports: 'true',
+      canManageUsers: 'true',
+      canManageRoles: 'true',
+      canManageCMDB: 'true',
+      canViewCMDB: 'true',
+      isTenantScoped: 'false',
+    },
+    {
+      name: 'Support Agent',
+      description: 'Support team member with access to manage tickets and changes',
+      canCreateTickets: 'true',
+      canUpdateOwnTickets: 'true',
+      canUpdateAllTickets: 'true',
+      canCloseTickets: 'true',
+      canViewAllTickets: 'true',
+      canApproveChanges: 'false',
+      canManageKnowledgebase: 'true',
+      canManageServiceCatalog: 'false',
+      canRunReports: 'true',
+      canManageUsers: 'false',
+      canManageRoles: 'false',
+      canManageCMDB: 'true',
+      canViewCMDB: 'true',
+      isTenantScoped: 'false',
+    },
+    {
+      name: 'Change Manager',
+      description: 'Change management specialist with approval authority',
+      canCreateTickets: 'true',
+      canUpdateOwnTickets: 'true',
+      canUpdateAllTickets: 'true',
+      canCloseTickets: 'false',
+      canViewAllTickets: 'true',
+      canApproveChanges: 'true',
+      canManageKnowledgebase: 'true',
+      canManageServiceCatalog: 'false',
+      canRunReports: 'true',
+      canManageUsers: 'false',
+      canManageRoles: 'false',
+      canManageCMDB: 'false',
+      canViewCMDB: 'true',
+      isTenantScoped: 'false',
+    },
+    {
+      name: 'Change Approver',
+      description: 'Customer role with authority to approve changes for their company',
+      canCreateTickets: 'true',
+      canUpdateOwnTickets: 'true',
+      canUpdateAllTickets: 'false',
+      canCloseTickets: 'false',
+      canViewAllTickets: 'false',
+      canApproveChanges: 'true',
+      canManageKnowledgebase: 'false',
+      canManageServiceCatalog: 'false',
+      canRunReports: 'false',
+      canManageUsers: 'false',
+      canManageRoles: 'false',
+      canManageCMDB: 'false',
+      canViewCMDB: 'true',
+      isTenantScoped: 'true',
+    },
+    {
+      name: 'End User',
+      description: 'Standard user with basic ticket creation rights',
+      canCreateTickets: 'true',
+      canUpdateOwnTickets: 'true',
+      canUpdateAllTickets: 'false',
+      canCloseTickets: 'false',
+      canViewAllTickets: 'false',
+      canApproveChanges: 'false',
+      canManageKnowledgebase: 'false',
+      canManageServiceCatalog: 'false',
+      canRunReports: 'false',
+      canManageUsers: 'false',
+      canManageRoles: 'false',
+      canManageCMDB: 'false',
+      canViewCMDB: 'false',
+      isTenantScoped: 'true',
+    },
+  ];
+
+  for (const roleData of defaultRoles) {
+    const [existingRole] = await db
+      .select()
+      .from(roles)
+      .where(eq(roles.name, roleData.name))
+      .limit(1);
+
+    if (!existingRole) {
+      await db.insert(roles).values(roleData);
+      console.log(`Created default role: ${roleData.name}`);
+    }
+  }
+}
+
+/**
  * Ensure default admin account exists
  * Username: admin@helpdesk.local
  * Password: admin
@@ -100,6 +211,9 @@ async function getUserCount(): Promise<number> {
  */
 export async function ensureDefaultAdminExists(): Promise<void> {
   const defaultAdminEmail = 'admin@helpdesk.local';
+
+  // Ensure roles exist first
+  await ensureDefaultRolesExist();
 
   // Check if admin user already exists
   const [existingAdmin] = await db
@@ -113,35 +227,15 @@ export async function ensureDefaultAdminExists(): Promise<void> {
     return;
   }
 
-  // Find or create System Administrator role
-  let [adminRole] = await db
+  // Find System Administrator role
+  const [adminRole] = await db
     .select()
     .from(roles)
     .where(eq(roles.name, 'System Administrator'))
     .limit(1);
 
   if (!adminRole) {
-    // Create System Administrator role if it doesn't exist
-    [adminRole] = await db
-      .insert(roles)
-      .values({
-        name: 'System Administrator',
-        description: 'Full system access with all permissions',
-        canCreateTickets: 'true',
-        canUpdateOwnTickets: 'true',
-        canUpdateAllTickets: 'true',
-        canCloseTickets: 'true',
-        canViewAllTickets: 'true',
-        canApproveChanges: 'true',
-        canManageKnowledgebase: 'true',
-        canRunReports: 'true',
-        canManageUsers: 'true',
-        canManageRoles: 'true',
-        canManageCMDB: 'true',
-        canViewCMDB: 'true',
-        isTenantScoped: 'false',
-      })
-      .returning();
+    throw new Error('System Administrator role not found. Database initialization failed.');
   }
 
   // Hash default password
