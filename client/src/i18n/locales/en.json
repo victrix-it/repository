@@ -226,8 +226,8 @@
   "reports": {
     "title": "Reports",
     "generate": "Generate Report",
-    "ticketsByStatus": "Tickets by Status",
-    "ticketsByPriority": "Tickets by Priority",
+    "ticketsByStatus": "Incidents by Status",
+    "ticketsByPriority": "Incidents by Priority",
     "changesByType": "Changes by Type",
     "cisByType": "CIs by Type",
     "slaCompliance": "SLA Compliance",

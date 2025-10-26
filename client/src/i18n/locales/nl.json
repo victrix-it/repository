@@ -226,8 +226,8 @@
   "reports": {
     "title": "Rapporten",
     "generate": "Rapport genereren",
-    "ticketsByStatus": "Tickets per status",
-    "ticketsByPriority": "Tickets per prioriteit",
+    "ticketsByStatus": "Incidenten per status",
+    "ticketsByPriority": "Incidenten per prioriteit",
     "changesByType": "Wijzigingen per type",
     "cisByType": "CI's per type",
     "slaCompliance": "SLA-naleving",
