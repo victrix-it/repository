@@ -118,7 +118,7 @@ export function AppSidebar() {
   }, {} as Record<string, string>) || {};
 
   const logoUrl = settingsMap['logo_url'];
-  const systemName = settingsMap['system_name'] || 'Helpdesk & CMDB';
+  const systemName = settingsMap['system_name'] || 'Servicedesk & CMDB';
   const companyName = settingsMap['company_name'] || 'Your Company';
 
   const getUserInitials = () => {

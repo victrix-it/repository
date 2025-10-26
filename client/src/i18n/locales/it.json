@@ -64,7 +64,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Benvenuto al Helpdesk",
+    "welcome": "Benvenuto al Servicedesk",
     "recentTickets": "Incidenti recenti",
     "pendingChanges": "Modifiche in sospeso",
     "criticalItems": "Elementi di configurazione critici",

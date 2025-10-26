@@ -64,7 +64,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Welkom bij de Helpdesk",
+    "welcome": "Welkom bij de Servicedesk",
     "recentTickets": "Recente incidenten",
     "pendingChanges": "Lopende wijzigingen",
     "criticalItems": "Kritieke configuratie-items",

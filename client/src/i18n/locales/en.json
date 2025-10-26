@@ -64,7 +64,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "welcome": "Welcome to the Helpdesk",
+    "welcome": "Welcome to the Servicedesk",
     "recentTickets": "Recent Incidents",
     "pendingChanges": "Pending Changes",
     "criticalItems": "Critical Configuration Items",

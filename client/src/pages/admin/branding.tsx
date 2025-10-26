@@ -40,25 +40,25 @@ export default function BrandingPage() {
 
   const form = useForm<BrandingFormData>({
     defaultValues: {
-      systemName: settingsMap['system_name'] || 'Helpdesk & CMDB',
+      systemName: settingsMap['system_name'] || 'Servicedesk & CMDB',
       companyName: settingsMap['company_name'] || 'Your Company',
       logoUrl: settingsMap['logo_url'] || '',
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
       footerText: settingsMap['footer_text'] || '',
-      landingTitle: settingsMap['landing_title'] || 'Enterprise Helpdesk Solution',
-      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.',
+      landingTitle: settingsMap['landing_title'] || 'Enterprise Servicedesk Solution',
+      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with incident tracking, change management, CMDB, and knowledge base.',
       landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
     },
     values: {
-      systemName: settingsMap['system_name'] || 'Helpdesk & CMDB',
+      systemName: settingsMap['system_name'] || 'Servicedesk & CMDB',
       companyName: settingsMap['company_name'] || 'Your Company',
       logoUrl: settingsMap['logo_url'] || '',
       primaryColor: settingsMap['primary_color'] || '#3b82f6',
       tagline: settingsMap['tagline'] || 'IT Service Management',
       footerText: settingsMap['footer_text'] || '',
-      landingTitle: settingsMap['landing_title'] || 'Enterprise Helpdesk Solution',
-      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.',
+      landingTitle: settingsMap['landing_title'] || 'Enterprise Servicedesk Solution',
+      landingSubtitle: settingsMap['landing_subtitle'] || 'Comprehensive IT service management with incident tracking, change management, CMDB, and knowledge base.',
       landingWarningTitle: settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY',
     },
   });
