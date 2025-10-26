@@ -125,6 +125,7 @@ export const customers = pgTable("customers", {
   contactPhone: varchar("contact_phone", { length: 50 }),
   isActive: varchar("is_active", { length: 10 }).default('true').notNull(),
   slaTemplateId: varchar("sla_template_id").references(() => slaTemplates.id), // Link to SLA template
+  changeApproverIds: text("change_approver_ids").array(), // Array of user IDs who can approve changes for this customer
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
