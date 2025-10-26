@@ -1528,13 +1528,13 @@ export class DatabaseStorage implements IStorage {
 
     return {
       stats: {
-        openTickets: openTickets.count,
-        inProgressTickets: inProgressTickets.count,
-        criticalTickets: criticalTickets.count,
-        pendingApprovals: (pendingChanges?.count || 0) + (pendingServiceRequests?.count || 0),
-        slaBreached: slaBreached.count,
-        totalCIs: totalCIs.count,
-        kbArticles: kbArticles.count,
+        openTickets: Number(openTickets.count) || 0,
+        inProgressTickets: Number(inProgressTickets.count) || 0,
+        criticalTickets: Number(criticalTickets.count) || 0,
+        pendingApprovals: Number(pendingChanges?.count || 0) + Number(pendingServiceRequests?.count || 0),
+        slaBreached: Number(slaBreached.count) || 0,
+        totalCIs: Number(totalCIs.count) || 0,
+        kbArticles: Number(kbArticles.count) || 0,
       },
       charts: {
         ticketsByStatus,
