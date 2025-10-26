@@ -296,6 +296,91 @@ class EmailService {
     return this.sendEmail(to, subject, html);
   }
 
+  async sendTestEmail(to: string) {
+    const subject = '[Victrix Servicedesk] Test Email';
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background-color: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+          }
+          .content {
+            background-color: #f9fafb;
+            padding: 30px 20px;
+            border: 1px solid #e5e7eb;
+          }
+          .success-badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+          }
+          .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1 style="margin: 0;">✓ Email Configuration Successful</h1>
+        </div>
+        <div class="content">
+          <p>Hello,</p>
+          <p>This is a test email from your Victrix Servicedesk installation.</p>
+          
+          <div style="text-align: center;">
+            <div class="success-badge">
+              SMTP Configuration Working
+            </div>
+          </div>
+
+          <p>If you're reading this, your email configuration is working correctly! Your system can now send:</p>
+          <ul>
+            <li>Change approval notifications</li>
+            <li>CI owner alerts</li>
+            <li>Service request updates</li>
+          </ul>
+
+          <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+            <strong>Next steps:</strong><br>
+            1. Configure customer approvers in the Customers section<br>
+            2. Assign CI owners in the CMDB<br>
+            3. Email notifications will be sent automatically
+          </p>
+        </div>
+        <div class="footer">
+          <p>This is a test email from Victrix Servicedesk Solution.</p>
+          <p>Sent at ${new Date().toLocaleString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail(to, subject, html);
+  }
+
   isConfigured(): boolean {
     return this.transporter !== null && this.config !== null;
   }

@@ -1696,6 +1696,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/settings/bulk', isAuthenticated, async (req, res) => {
+    try {
+      const { settings } = req.body;
+      if (!Array.isArray(settings)) {
+        return res.status(400).json({ message: "Settings must be an array" });
+      }
+
+      for (const setting of settings) {
+        const validatedData = insertSystemSettingSchema.parse(setting);
+        await storage.upsertSetting(validatedData);
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error saving bulk settings:", error);
+      res.status(400).json({ message: error.message || "Failed to save settings" });
+    }
+  });
+
+  app.post('/api/email/test', isAuthenticated, async (req: any, res) => {
+    try {
+      const { emailService } = await import('./email-service');
+      
+      if (!emailService.isConfigured()) {
+        return res.status(400).json({ message: "Email is not configured. Please configure SMTP settings first." });
+      }
+
+      const user = req.user;
+      const email = user?.claims?.email;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Your account doesn't have an email address" });
+      }
+
+      await emailService.sendTestEmail(email);
+      res.json({ success: true, message: `Test email sent to ${email}` });
+    } catch (error: any) {
+      console.error('[email] Failed to send test email:', error);
+      res.status(500).json({ message: error.message || "Failed to send test email" });
+    }
+  });
+
   // Branding logo upload
   app.post('/api/branding/logo', isAuthenticated, logoUpload.single('logo'), async (req: any, res) => {
     try {

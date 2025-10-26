@@ -52,23 +52,26 @@ app.use((req, res, next) => {
 
   // Initialize email service
   try {
+    const smtpEnabled = await storage.getSetting('smtp_enabled');
     const smtpHost = await storage.getSetting('smtp_host');
     const smtpPort = await storage.getSetting('smtp_port');
     const smtpUser = await storage.getSetting('smtp_user');
-    const smtpPass = await storage.getSetting('smtp_pass');
-    const smtpFrom = await storage.getSetting('smtp_from');
+    const smtpPassword = await storage.getSetting('smtp_password');
+    const smtpFromEmail = await storage.getSetting('smtp_from_email');
+    const smtpFromName = await storage.getSetting('smtp_from_name');
     const smtpSecure = await storage.getSetting('smtp_secure');
 
-    if (smtpHost?.value && smtpPort?.value && smtpUser?.value && smtpPass?.value && smtpFrom?.value) {
+    if (smtpEnabled?.value === 'true' && smtpHost?.value && smtpPort?.value && smtpUser?.value && smtpPassword?.value && smtpFromEmail?.value) {
+      const fromName = smtpFromName?.value || 'Victrix Servicedesk';
       await emailService.initialize({
         host: smtpHost.value,
         port: parseInt(smtpPort.value, 10),
         secure: smtpSecure?.value === 'true',
         auth: {
           user: smtpUser.value,
-          pass: smtpPass.value,
+          pass: smtpPassword.value,
         },
-        from: smtpFrom.value,
+        from: `${fromName} <${smtpFromEmail.value}>`,
       });
     } else {
       console.log('[email] SMTP not configured, email notifications disabled');
