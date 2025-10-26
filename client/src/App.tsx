@@ -40,6 +40,7 @@ import TeamsPage from "@/pages/admin/teams";
 import CustomersPage from "@/pages/admin/customers";
 import UserCsvImportPage from "@/pages/admin/user-csv-import";
 import UsersPage from "@/pages/admin/users";
+import RolesPage from "@/pages/admin/roles";
 import ResolutionCategoriesPage from "@/pages/admin/resolution-categories";
 import SlaTemplatesPage from "@/pages/admin/sla-templates/index";
 import LicensePage from "@/pages/admin/license";
@@ -92,6 +93,7 @@ function Router() {
           <Route path="/admin/customers" component={CustomersPage} />
           <Route path="/admin/user-csv-import" component={UserCsvImportPage} />
           <Route path="/admin/users" component={UsersPage} />
+          <Route path="/admin/roles" component={RolesPage} />
           <Route path="/admin/resolution-categories" component={ResolutionCategoriesPage} />
           <Route path="/admin/sla-templates" component={SlaTemplatesPage} />
           <Route path="/admin/license" component={LicensePage} />

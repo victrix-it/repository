@@ -49,7 +49,8 @@ export function hasPermission(user: UserWithRole, permission: keyof Role): boole
 
 export function requirePermission(...permissions: (keyof Role)[]): RequestHandler {
   return async (req, res, next) => {
-    const userId = (req.user as any)?.claims?.sub;
+    // Handle both Replit OIDC users and local/LDAP/SAML users
+    const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
     
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -80,7 +81,8 @@ export function requirePermission(...permissions: (keyof Role)[]): RequestHandle
 
 export function optionalPermissionContext(): RequestHandler {
   return async (req, res, next) => {
-    const userId = (req.user as any)?.claims?.sub;
+    // Handle both Replit OIDC users and local/LDAP/SAML users
+    const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
     
     if (userId) {
       const user = await getUserWithRole(userId);

@@ -28,7 +28,28 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                View and manage all system users, roles, and authentication methods
+                View and manage all system users and authentication methods
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/roles">
+          <Card className="hover-elevate active-elevate-2 cursor-pointer" data-testid="card-roles">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-md bg-primary/10">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Roles & Permissions</CardTitle>
+                  <CardDescription>Role-based access control</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Create custom roles and define granular permissions for users
               </p>
             </CardContent>
           </Card>

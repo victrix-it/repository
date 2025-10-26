@@ -278,6 +278,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/roles/:id', isAuthenticated, requirePermission('canManageRoles'), async (req, res) => {
+    try {
+      await storage.deleteRole(req.params.id);
+      res.json({ message: 'Role deleted successfully' });
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      res.status(500).json({ message: "Failed to delete role" });
+    }
+  });
+
   // ISO 27001 Audit Log routes (admin-only)
   app.get('/api/audit-logs', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
     try {
