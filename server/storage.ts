@@ -260,7 +260,7 @@ export interface IStorage {
   deleteContact(id: string): Promise<void>;
   
   // Dashboard stats
-  getDashboardStats(): Promise<any>;
+  getDashboardStats(userId?: string): Promise<any>;
 
   // License operations
   createLicense(license: InsertLicense): Promise<License>;
@@ -1432,36 +1432,77 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Dashboard stats
-  async getDashboardStats(): Promise<any> {
+  async getDashboardStats(userId?: string): Promise<any> {
+    // Get user context for tenant scoping
+    let customerId: string | null = null;
+    let isTenantScoped = false;
+    
+    if (userId) {
+      const [user] = await db
+        .select({ 
+          customerId: users.customerId,
+          roleId: users.roleId 
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      
+      if (user?.customerId && user?.roleId) {
+        const [role] = await db
+          .select({ isTenantScoped: roles.isTenantScoped })
+          .from(roles)
+          .where(eq(roles.id, user.roleId))
+          .limit(1);
+        
+        if (role?.isTenantScoped === 'true') {
+          customerId = user.customerId;
+          isTenantScoped = true;
+        }
+      }
+    }
+
+    // Build where conditions based on tenant scoping
+    const ticketWhere = isTenantScoped && customerId 
+      ? sql`${tickets.customerId} = ${customerId}`
+      : sql`1=1`;
+    
+    const changeWhere = isTenantScoped && customerId
+      ? sql`${changeRequests.customerId} = ${customerId}`
+      : sql`1=1`;
+    
+    const serviceRequestWhere = isTenantScoped && customerId
+      ? sql`${serviceRequests.customerId} = ${customerId}`
+      : sql`1=1`;
+
     const [openTickets] = await db
       .select({ count: sql<number>`count(*)` })
       .from(tickets)
-      .where(eq(tickets.status, 'open'));
+      .where(sql`${tickets.status} = 'open' AND ${ticketWhere}`);
 
     const [inProgressTickets] = await db
       .select({ count: sql<number>`count(*)` })
       .from(tickets)
-      .where(eq(tickets.status, 'in_progress'));
+      .where(sql`${tickets.status} = 'in_progress' AND ${ticketWhere}`);
 
     const [criticalTickets] = await db
       .select({ count: sql<number>`count(*)` })
       .from(tickets)
-      .where(eq(tickets.priority, 'p1'));
+      .where(sql`${tickets.priority} = 'p1' AND ${ticketWhere}`);
 
     const [pendingChanges] = await db
       .select({ count: sql<number>`count(*)` })
       .from(changeRequests)
-      .where(eq(changeRequests.status, 'pending_approval'));
+      .where(sql`${changeRequests.status} = 'pending_approval' AND ${changeWhere}`);
     
     const [pendingServiceRequests] = await db
       .select({ count: sql<number>`count(*)` })
       .from(serviceRequests)
-      .where(eq(serviceRequests.status, 'pending_approval'));
+      .where(sql`${serviceRequests.status} = 'pending_approval' AND ${serviceRequestWhere}`);
 
     const [slaBreached] = await db
       .select({ count: sql<number>`count(*)` })
       .from(tickets)
-      .where(eq(tickets.slaStatus, 'breached'));
+      .where(sql`${tickets.slaStatus} = 'breached' AND ${ticketWhere}`);
 
     const [totalCIs] = await db
       .select({ count: sql<number>`count(*)` })
@@ -1477,6 +1518,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)`,
       })
       .from(tickets)
+      .where(ticketWhere)
       .groupBy(tickets.status);
 
     const ticketsByPriority = await db
@@ -1485,6 +1527,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`count(*)`,
       })
       .from(tickets)
+      .where(ticketWhere)
       .groupBy(tickets.priority);
 
     const recentTickets = await db
@@ -1497,6 +1540,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: tickets.createdAt,
       })
       .from(tickets)
+      .where(ticketWhere)
       .orderBy(desc(tickets.createdAt))
       .limit(5);
 
@@ -1510,6 +1554,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: changeRequests.createdAt,
       })
       .from(changeRequests)
+      .where(changeWhere)
       .orderBy(desc(changeRequests.createdAt))
       .limit(5);
 
@@ -1523,6 +1568,7 @@ export class DatabaseStorage implements IStorage {
         serviceCatalogItemId: serviceRequests.serviceCatalogItemId,
       })
       .from(serviceRequests)
+      .where(serviceRequestWhere)
       .orderBy(desc(serviceRequests.createdAt))
       .limit(5);
 

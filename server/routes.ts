@@ -341,7 +341,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard routes
   app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {
     try {
-      const stats = await storage.getDashboardStats();
+      // Pass user ID to enable tenant-scoped filtering for customer users
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const stats = await storage.getDashboardStats(userId);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
