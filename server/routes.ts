@@ -351,6 +351,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/dashboard/big-screen', isAuthenticated, async (req, res) => {
+    try {
+      const stats = await storage.getBigScreenStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching big screen stats:", error);
+      res.status(500).json({ message: "Failed to fetch big screen stats" });
+    }
+  });
+
   // Reporting routes
   app.get('/api/reports/tickets-per-ci', isAuthenticated, requirePermission('canRunReports'), async (req: any, res) => {
     try {

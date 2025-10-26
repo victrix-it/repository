@@ -52,6 +52,7 @@ import ServiceCatalog from "@/pages/service-catalog/catalog";
 import ServiceRequestForm from "@/pages/service-catalog/request-form";
 import ServiceRequests from "@/pages/service-catalog/requests";
 import ServiceCatalogAdmin from "@/pages/service-catalog/admin";
+import BigScreenDashboard from "@/pages/big-screen-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -101,6 +102,7 @@ function Router() {
           <Route path="/admin/license-generator" component={LicenseGeneratorPage} />
           <Route path="/admin/ci-types" component={CiTypesPage} />
           <Route path="/admin/modules" component={ModulesPage} />
+          <Route path="/big-screen" component={BigScreenDashboard} />
         </>
       )}
       <Route component={NotFound} />

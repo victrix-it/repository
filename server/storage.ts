@@ -261,6 +261,7 @@ export interface IStorage {
   
   // Dashboard stats
   getDashboardStats(userId?: string): Promise<any>;
+  getBigScreenStats(): Promise<any>;
 
   // License operations
   createLicense(license: InsertLicense): Promise<License>;
@@ -1591,6 +1592,41 @@ export class DatabaseStorage implements IStorage {
         changes: recentChanges,
         serviceRequests: recentServiceRequests,
       },
+    };
+  }
+
+  async getBigScreenStats(): Promise<any> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Calls logged today (tickets created today)
+    const [callsLoggedToday] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(tickets)
+      .where(sql`${tickets.createdAt} >= ${today} AND ${tickets.createdAt} < ${tomorrow}`);
+
+    // Incidents resolved today
+    const [incidentsResolvedToday] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(tickets)
+      .where(sql`${tickets.resolvedAt} >= ${today} AND ${tickets.resolvedAt} < ${tomorrow}`);
+
+    // Changes scheduled for today
+    const [changesScheduledToday] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(changeRequests)
+      .where(sql`${changeRequests.scheduledDate} >= ${today} AND ${changeRequests.scheduledDate} < ${tomorrow}`);
+
+    return {
+      callsLoggedToday: Number(callsLoggedToday.count) || 0,
+      incidentsResolvedToday: Number(incidentsResolvedToday.count) || 0,
+      changesScheduledToday: Number(changesScheduledToday.count) || 0,
+      currentTime: new Date().toLocaleString('en-GB', { 
+        dateStyle: 'full', 
+        timeStyle: 'medium' 
+      }),
     };
   }
 
