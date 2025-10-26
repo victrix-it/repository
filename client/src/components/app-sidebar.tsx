@@ -214,16 +214,6 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
-                {hasPermission('canManageServiceCatalog') && isModuleEnabled('service_catalog') && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location === '/service-catalog/admin'} data-testid="nav-service-catalog-admin">
-                      <Link href="/service-catalog/admin">
-                        <ShoppingCart className="h-4 w-4" />
-                        <span>{t('nav.serviceCatalogAdmin', 'Catalog Admin')}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.startsWith('/admin')} data-testid="nav-admin">
                     <Link href="/admin">
