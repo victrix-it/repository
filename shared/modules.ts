@@ -40,7 +40,7 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     name: 'Change Management',
     description: 'Plan and track IT changes with approval workflows',
     settingKey: 'module_changes_enabled',
-    defaultEnabled: false,
+    defaultEnabled: true,
     category: 'itil',
   },
   cmdb: {
