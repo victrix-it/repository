@@ -67,7 +67,10 @@ Preferred communication style: Simple, everyday language.
 - **License System**: Time-limited access, user limits, admin UI.
 - **Password Policy**: Strong enforcement (min 8 chars, mixed case, number, special), forced change on first login.
 - **Multi-Customer Support**: Data separation and user filtering. Each customer can have designated change approvers (stored as array of user IDs in changeApproverIds field).
-- **Network Discovery**: Features for asset discovery.
+- **Network Discovery**: Dual-mode network asset discovery system:
+  - **Self-Hosted Mode** (deployment_mode='self_hosted'): Discovery runs server-side using SSH credentials stored in the system. Supports automated scanning of network ranges with real-time progress tracking and credential management.
+  - **SaaS Mode** (deployment_mode='saas'): Generates PowerShell and Bash scripts that customers download and run on their local networks. Scripts scan specified subnets, gather hardware information via SSH, and output CSV files compatible with the CMDB Import Tool. This approach keeps sensitive network credentials on-premise while still enabling discovery.
+  - **Deployment Mode Configuration**: Configurable via Admin → Branding & Customization → Deployment Mode setting. UI automatically adapts to show appropriate discovery workflow.
 - **Module Management**: Global admin feature toggle system allowing selective enabling/disabling of modules (Incidents, Problems, Changes, CMDB, Knowledge Base, Service Catalog, Email Inbox, Reports, Network Discovery). Organized into Core, ITIL, and Advanced categories with default enabled/disabled states. Navigation dynamically filters based on enabled modules.
 
 ## External Dependencies
