@@ -63,8 +63,8 @@ export default function Landing() {
   };
 
   // Get customizable content or use defaults
-  const pageTitle = settingsMap['landing_title'] || 'Enterprise Helpdesk Solution';
-  const pageSubtitle = settingsMap['landing_subtitle'] || 'Comprehensive IT service management with ticket tracking, change management, CMDB, and knowledge base.';
+  const pageTitle = settingsMap['landing_title'] || 'Victrix Servicedesk Solution';
+  const pageSubtitle = settingsMap['landing_subtitle'] || 'Comprehensive IT service management with incident tracking, change management, CMDB, and knowledge base.';
   const warningTitle = settingsMap['landing_warning_title'] || 'AUTHORIZED ACCESS ONLY';
   const logoUrl = settingsMap['logo_url'];
 
