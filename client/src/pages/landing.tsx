@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Ticket, GitBranch, Server, BookOpen, Mail, BarChart3, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +15,9 @@ export default function Landing() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [hasAgreed, setHasAgreed] = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
   const { toast } = useToast();
 
   // Fetch settings for customizable content
@@ -94,14 +99,104 @@ export default function Landing() {
             <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0" />
             <AlertDescription className="text-xs md:text-sm text-yellow-900 dark:text-yellow-200">
               <strong className="font-semibold">{warningTitle}</strong>
-              <div className="mt-2 space-y-1">
-                <p>• This system is for authorized users only</p>
-                <p>• All activity is monitored and recorded</p>
-                <p>• Unauthorized access attempts will be logged and may be prosecuted</p>
-                <p>• By logging in, you acknowledge that you have read and understand this warning</p>
-              </div>
+              <p className="mt-2">
+                You must read and agree to the authorization terms before logging in.{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowWarningDialog(true)}
+                  className="underline font-semibold hover:text-yellow-700 dark:hover:text-yellow-100"
+                  data-testid="link-view-terms"
+                >
+                  Click here to view terms
+                </button>
+              </p>
             </AlertDescription>
           </Alert>
+
+          {/* Authorization Terms Dialog */}
+          <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+            <DialogContent className="max-w-2xl" data-testid="dialog-authorization-terms">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                  {warningTitle}
+                </DialogTitle>
+                <DialogDescription>
+                  Please read and acknowledge the following terms before accessing the system
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="border rounded-md p-4 bg-muted/50 space-y-3 max-h-[400px] overflow-y-auto">
+                  <h3 className="font-semibold text-base">System Access Authorization Notice</h3>
+                  
+                  <div className="space-y-2 text-sm">
+                    <p className="font-medium">By accessing this system, you acknowledge and agree to the following:</p>
+                    
+                    <div className="space-y-2">
+                      <p>• <strong>Authorized Use Only:</strong> This system is for authorized users only. Unauthorized access or use is strictly prohibited and may result in disciplinary action and/or criminal prosecution.</p>
+                      
+                      <p>• <strong>Monitoring and Recording:</strong> All activities performed on this system are monitored and recorded. System logs may include but are not limited to: login attempts, file access, data modifications, and network activity.</p>
+                      
+                      <p>• <strong>No Expectation of Privacy:</strong> Users have no expectation of privacy when using this system. All data, communications, and activities may be accessed, reviewed, and disclosed to authorized personnel.</p>
+                      
+                      <p>• <strong>Compliance Required:</strong> Users must comply with all applicable laws, regulations, and organizational policies while using this system.</p>
+                      
+                      <p>• <strong>Security Obligations:</strong> Users are responsible for maintaining the confidentiality of their authentication credentials and must report any suspected security incidents immediately.</p>
+                      
+                      <p>• <strong>Legal Consequences:</strong> Unauthorized access attempts, misuse of system resources, or violation of security policies will be logged and may be subject to legal action including civil and criminal penalties.</p>
+                      
+                      <p>• <strong>Data Protection:</strong> Users must handle all data in accordance with applicable data protection regulations and organizational information security policies.</p>
+                    </div>
+                    
+                    <p className="font-medium pt-2">By checking the box below and logging in, you confirm that you have read, understood, and agree to comply with these terms.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={termsChecked}
+                    onCheckedChange={(checked) => setTermsChecked(checked as boolean)}
+                    data-testid="checkbox-terms"
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    I have read and agree to the authorization terms above
+                  </label>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowWarningDialog(false);
+                    setTermsChecked(false);
+                  }}
+                  data-testid="button-cancel-terms"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (termsChecked) {
+                      setHasAgreed(true);
+                      setShowWarningDialog(false);
+                    }
+                  }}
+                  disabled={!termsChecked}
+                  data-testid="button-accept-terms"
+                >
+                  Accept and Continue
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Login Form */}
           <Card className="max-w-md mx-auto">
@@ -139,11 +234,16 @@ export default function Landing() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || !hasAgreed}
                   data-testid="button-login"
                 >
-                  {isLoading ? "Logging in..." : "I Acknowledge - Login to Continue"}
+                  {isLoading ? "Logging in..." : hasAgreed ? "Login" : "Accept Terms to Login"}
                 </Button>
+                {!hasAgreed && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    You must accept the authorization terms before logging in
+                  </p>
+                )}
               </form>
             </CardContent>
           </Card>
