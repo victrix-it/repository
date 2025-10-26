@@ -2046,6 +2046,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Discovery script generation routes (for SaaS mode)
+  app.post('/api/discovery/generate-script', isAuthenticated, async (req, res) => {
+    try {
+      const { scriptType, subnet, sshUsername, sshPassword, sshPort } = req.body;
+      const { generatePowerShellScript, generateBashScript } = await import('./discoveryScriptGenerator');
+      
+      const options = {
+        subnet: subnet || '192.168.1.0/24',
+        sshUsername,
+        sshPassword,
+        sshPort: sshPort || 22,
+      };
+      
+      let script: string;
+      let filename: string;
+      let contentType: string;
+      
+      if (scriptType === 'powershell') {
+        script = generatePowerShellScript(options);
+        filename = 'NetworkDiscovery.ps1';
+        contentType = 'text/plain';
+      } else if (scriptType === 'bash') {
+        script = generateBashScript(options);
+        filename = 'network_discovery.sh';
+        contentType = 'text/x-shellscript';
+      } else {
+        return res.status(400).json({ message: "Invalid script type" });
+      }
+      
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(script);
+    } catch (error) {
+      console.error("Error generating discovery script:", error);
+      res.status(500).json({ message: "Failed to generate script" });
+    }
+  });
+
   // Register attachment routes
   registerAttachmentRoutes(app);
 
