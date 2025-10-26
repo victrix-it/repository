@@ -64,10 +64,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Return user with role permissions
-      res.json({
-        ...userWithRole,
-        permissions: userWithRole.roleDetails ? {
+      // Determine permissions
+      let permissions = null;
+      
+      // Legacy admin role has all permissions
+      if (userWithRole.role === 'admin') {
+        permissions = {
+          canCreateTickets: true,
+          canUpdateOwnTickets: true,
+          canUpdateAllTickets: true,
+          canCloseTickets: true,
+          canViewAllTickets: true,
+          canApproveChanges: true,
+          canManageKnowledgebase: true,
+          canManageServiceCatalog: true,
+          canRunReports: true,
+          canManageUsers: true,
+          canManageRoles: true,
+          canManageCMDB: true,
+          canViewCMDB: true,
+          isTenantScoped: false,
+        };
+      } else if (userWithRole.roleDetails) {
+        // Role-based permissions
+        permissions = {
           canCreateTickets: userWithRole.roleDetails.canCreateTickets === 'true',
           canUpdateOwnTickets: userWithRole.roleDetails.canUpdateOwnTickets === 'true',
           canUpdateAllTickets: userWithRole.roleDetails.canUpdateAllTickets === 'true',
@@ -82,7 +102,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           canManageCMDB: userWithRole.roleDetails.canManageCMDB === 'true',
           canViewCMDB: userWithRole.roleDetails.canViewCMDB === 'true',
           isTenantScoped: userWithRole.roleDetails.isTenantScoped === 'true',
-        } : null,
+        };
+      }
+      
+      // Return user with role permissions
+      res.json({
+        ...userWithRole,
+        permissions,
       });
     } catch (error) {
       console.error("Error fetching user:", error);
