@@ -24,12 +24,13 @@ export function setupLocalAuth() {
       usernameField: 'email',
       passwordField: 'password',
     },
-    async (email, password, done) => {
+    async (emailOrUsername, password, done) => {
       try {
-        const user = await storage.getUserByEmail(email);
+        // Try to find user by email/username (the email field can contain either)
+        const user = await storage.getUserByEmail(emailOrUsername);
         
         if (!user) {
-          return done(null, false, { message: 'Invalid email or password' });
+          return done(null, false, { message: 'Invalid username or password' });
         }
 
         if (user.authProvider !== 'local') {
@@ -43,7 +44,7 @@ export function setupLocalAuth() {
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
         
         if (!isValidPassword) {
-          return done(null, false, { message: 'Invalid email or password' });
+          return done(null, false, { message: 'Invalid username or password' });
         }
 
         return done(null, user);
