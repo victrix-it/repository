@@ -936,6 +936,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const validatedData = insertTicketSchema.parse(req.body);
       const ticket = await storage.createTicket(validatedData, userId);
+      
+      // Send email notification to CI owner if ticket is linked to a CI
+      (async () => {
+        try {
+          const { emailService } = await import('./email-service');
+          if (!emailService.isConfigured() || !ticket.linkedCiId) {
+            return;
+          }
+
+          // Get CI details including owner
+          const ci = await storage.getConfigurationItem(ticket.linkedCiId);
+          if (!ci || !ci.ownerId) {
+            return;
+          }
+
+          // Get owner email
+          const owner = await storage.getUser(ci.ownerId);
+          if (!owner?.email) {
+            console.log('[email] CI owner has no email address');
+            return;
+          }
+
+          // Send notification
+          await emailService.sendCIOwnerNotification(
+            owner.email,
+            'incident',
+            ticket.ticketNumber,
+            ticket.title,
+            ci.name,
+            ticket.id
+          );
+        } catch (emailError) {
+          console.error('[email] Failed to send CI owner notification:', emailError);
+        }
+      })();
+      
       res.json(ticket);
     } catch (error: any) {
       console.error("Error creating ticket:", error);
@@ -998,6 +1034,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const validatedData = insertChangeRequestSchema.parse(req.body);
       const change = await storage.createChangeRequest(validatedData, userId);
+      
+      // Send email notification to approvers asynchronously
+      (async () => {
+        try {
+          const { emailService } = await import('./email-service');
+          if (!emailService.isConfigured()) {
+            return;
+          }
+
+          // Get customer details including approvers
+          const customer = await storage.getCustomer(change.customerId);
+          if (!customer || !customer.changeApproverIds || customer.changeApproverIds.length === 0) {
+            console.log('[email] No approvers configured for customer:', customer?.name);
+            return;
+          }
+
+          // Get approver email addresses
+          const approverEmails: string[] = [];
+          for (const approverId of customer.changeApproverIds) {
+            const approver = await storage.getUser(approverId);
+            if (approver?.email) {
+              approverEmails.push(approver.email);
+            }
+          }
+
+          if (approverEmails.length === 0) {
+            console.log('[email] No approver email addresses found');
+            return;
+          }
+
+          // Get requester name
+          const requester = await storage.getUser(userId);
+          const requesterName = requester ? `${requester.firstName} ${requester.lastName}` : 'Unknown';
+
+          // Send notification
+          await emailService.sendChangeApprovalNotification(
+            approverEmails,
+            change.changeNumber,
+            change.title,
+            requesterName,
+            change.id,
+            customer.name
+          );
+        } catch (emailError) {
+          console.error('[email] Failed to send change approval notification:', emailError);
+        }
+      })();
+
+      // Send email notification to CI owner if change is linked to a CI
+      (async () => {
+        try {
+          const { emailService } = await import('./email-service');
+          if (!emailService.isConfigured() || !change.linkedCiId) {
+            return;
+          }
+
+          // Get CI details including owner
+          const ci = await storage.getConfigurationItem(change.linkedCiId);
+          if (!ci || !ci.ownerId) {
+            return;
+          }
+
+          // Get owner email
+          const owner = await storage.getUser(ci.ownerId);
+          if (!owner?.email) {
+            console.log('[email] CI owner has no email address');
+            return;
+          }
+
+          // Send notification
+          await emailService.sendCIOwnerNotification(
+            owner.email,
+            'change',
+            change.changeNumber,
+            change.title,
+            ci.name,
+            change.id
+          );
+        } catch (emailError) {
+          console.error('[email] Failed to send CI owner notification:', emailError);
+        }
+      })();
+      
       res.json(change);
     } catch (error: any) {
       console.error("Error creating change:", error);

@@ -386,6 +386,7 @@ export const changeRequests = pgTable("change_requests", {
   requestedById: varchar("requested_by_id").references(() => users.id).notNull(),
   approvedById: varchar("approved_by_id").references(() => users.id),
   linkedCiId: varchar("linked_ci_id").references(() => configurationItems.id),
+  customerId: varchar("customer_id").references(() => customers.id), // For multi-customer support
   scheduledDate: timestamp("scheduled_date"),
   implementedAt: timestamp("implemented_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
