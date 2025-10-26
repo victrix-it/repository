@@ -52,15 +52,21 @@ Preferred communication style: Simple, everyday language.
 - **Branding & Customization**: Admin interface at `/admin/branding` allows customization of system name, company name, logo, primary color, tagline, footer text, and landing page content (title, subtitle, warning message).
 - **Dashboard**: Comprehensive analytics and overview page displaying key metrics (open incidents, in progress, pending approvals, SLA breaches), interactive charts (incidents by status/priority using recharts), recent activity feeds (latest incidents, changes, service requests), and quick access cards to CMDB and Knowledge Base. Default landing page after authentication. Fully translated across all 6 languages.
 - **Helpdesk/Incident Management**: Incident tracking with workflow, attachments, comments. UI displays "Incidents" terminology aligned with ITIL standards.
-- **Change Management**: ITIL-style change requests with approval workflows.
-- **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking.
+- **Change Management**: ITIL-style change requests with approval workflows and automated email notifications to customer approvers.
+- **CMDB**: Configuration Item management, auto-generated CI numbering, relationship tracking. CI owners receive automatic email notifications when incidents or changes are raised against their CIs.
 - **Knowledge Base**: Article management.
 - **Service Catalog**: ITIL Request Fulfillment process with browsable catalog, custom form fields (JSONB), approval workflows, auto-generated request numbers (SR00001+), category-based organization (access, software, hardware, network, general), and full lifecycle management (submitted → pending_approval → approved/rejected → in_progress → completed/cancelled).
+- **Email Notifications**: Comprehensive email notification system using nodemailer with SMTP configuration. Supports:
+  - **Change Approval Workflow**: Automated emails sent to customer approvers when changes are created, including direct approval/rejection links.
+  - **CI Owner Notifications**: Automatic alerts to CI owners when incidents or changes are raised against their configuration items.
+  - **Custom Domain Support**: Configured to send from servicedesk.victrix-it.com with HTML templates featuring company branding.
+  - **SMTP Configuration**: Admin-configurable via system_settings (smtp_host, smtp_port, smtp_user, smtp_password, smtp_from_email, smtp_from_name).
+  - **Email Service**: Singleton service initialized on server startup, async operation (non-blocking), comprehensive error logging.
 - **Reporting**: 13 report types with recharts visualizations.
 - **SLA Management**: Template system.
 - **License System**: Time-limited access, user limits, admin UI.
 - **Password Policy**: Strong enforcement (min 8 chars, mixed case, number, special), forced change on first login.
-- **Multi-Customer Support**: Data separation and user filtering.
+- **Multi-Customer Support**: Data separation and user filtering. Each customer can have designated change approvers (stored as array of user IDs in changeApproverIds field).
 - **Network Discovery**: Features for asset discovery.
 - **Module Management**: Global admin feature toggle system allowing selective enabling/disabling of modules (Incidents, Problems, Changes, CMDB, Knowledge Base, Service Catalog, Email Inbox, Reports, Network Discovery). Organized into Core, ITIL, and Advanced categories with default enabled/disabled states. Navigation dynamically filters based on enabled modules.
 
@@ -90,6 +96,9 @@ Preferred communication style: Simple, everyday language.
 - **i18next**
 - **react-i18next**
 - **i18next-browser-languagedetector**
+
+### Email & Communication
+- **nodemailer** - Email sending via SMTP
 
 ### Network Discovery Tools
 - **ssh2**
