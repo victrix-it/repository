@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ensureDefaultAdminExists } from "./license-manager";
+import { emailService } from "./email-service";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -46,6 +48,33 @@ app.use((req, res, next) => {
     await ensureDefaultAdminExists();
   } catch (error) {
     console.error('Failed to ensure default admin exists:', error);
+  }
+
+  // Initialize email service
+  try {
+    const smtpHost = await storage.getSetting('smtp_host');
+    const smtpPort = await storage.getSetting('smtp_port');
+    const smtpUser = await storage.getSetting('smtp_user');
+    const smtpPass = await storage.getSetting('smtp_pass');
+    const smtpFrom = await storage.getSetting('smtp_from');
+    const smtpSecure = await storage.getSetting('smtp_secure');
+
+    if (smtpHost?.value && smtpPort?.value && smtpUser?.value && smtpPass?.value && smtpFrom?.value) {
+      await emailService.initialize({
+        host: smtpHost.value,
+        port: parseInt(smtpPort.value, 10),
+        secure: smtpSecure?.value === 'true',
+        auth: {
+          user: smtpUser.value,
+          pass: smtpPass.value,
+        },
+        from: smtpFrom.value,
+      });
+    } else {
+      console.log('[email] SMTP not configured, email notifications disabled');
+    }
+  } catch (error) {
+    console.error('[email] Failed to initialize email service:', error);
   }
 
   const server = await registerRoutes(app);
