@@ -339,10 +339,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard routes
-  app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {
+  app.get('/api/dashboard/stats', isAuthenticated, async (req: any, res) => {
     try {
       // Pass user ID to enable tenant-scoped filtering for customer users
-      const userId = req.user?.claims?.sub || req.user?.id;
+      const userId = req.user?.claims?.sub;
       const stats = await storage.getDashboardStats(userId);
       res.json(stats);
     } catch (error) {
@@ -1039,7 +1039,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (async () => {
         try {
           const { emailService } = await import('./email-service');
-          if (!emailService.isConfigured()) {
+          if (!emailService.isConfigured() || !change.customerId) {
             return;
           }
 
