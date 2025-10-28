@@ -137,7 +137,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Link href="/tickets/new">
+          <Link href="/incidents/new">
             <Button data-testid="button-new-ticket" size="sm" className="md:h-9">
               <Plus className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">{t("dashboard.newTicket")}</span>

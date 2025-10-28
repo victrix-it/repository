@@ -350,7 +350,7 @@ export default function CIDetailPage() {
             {relatedTickets && relatedTickets.length > 0 ? (
               <div className="space-y-2">
                 {relatedTickets.map((ticket) => (
-                  <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+                  <Link key={ticket.id} href={`/incidents/${ticket.id}`}>
                     <div className="p-3 border rounded hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">

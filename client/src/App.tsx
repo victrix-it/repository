@@ -14,9 +14,9 @@ import '@/i18n';
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
-import TicketsPage from "@/pages/tickets/index";
-import NewTicketPage from "@/pages/tickets/new";
-import TicketDetailPage from "@/pages/tickets/detail";
+import IncidentsPage from "@/pages/tickets/index";
+import NewIncidentPage from "@/pages/tickets/new";
+import IncidentDetailPage from "@/pages/tickets/detail";
 import ChangesPage from "@/pages/changes/index";
 import NewChangePage from "@/pages/changes/new";
 import ChangeDetailPage from "@/pages/changes/detail";
@@ -65,9 +65,9 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Dashboard} />
-          <Route path="/tickets" component={TicketsPage} />
-          <Route path="/tickets/new" component={NewTicketPage} />
-          <Route path="/tickets/:id" component={TicketDetailPage} />
+          <Route path="/incidents" component={IncidentsPage} />
+          <Route path="/incidents/new" component={NewIncidentPage} />
+          <Route path="/incidents/:id" component={IncidentDetailPage} />
           <Route path="/changes" component={ChangesPage} />
           <Route path="/changes/new" component={NewChangePage} />
           <Route path="/changes/:id" component={ChangeDetailPage} />

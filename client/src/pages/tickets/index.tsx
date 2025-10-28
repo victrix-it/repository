@@ -71,7 +71,7 @@ export default function TicketsPage() {
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-4 md:mb-6 gap-3 flex-wrap">
         <h1 className="text-2xl md:text-3xl font-semibold" data-testid="page-title">Incidents</h1>
-        <Link href="/tickets/new">
+        <Link href="/incidents/new">
           <Button data-testid="button-create-ticket" size="sm" className="md:h-9">
             <Plus className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">New Incident</span>

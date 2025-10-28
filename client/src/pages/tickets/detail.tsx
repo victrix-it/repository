@@ -77,7 +77,7 @@ export default function TicketDetailPage() {
 
   return (
     <div className="p-8">
-      <Link href="/tickets">
+      <Link href="/incidents">
         <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Incidents
