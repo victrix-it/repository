@@ -42,11 +42,13 @@ export default function CMDBPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [viewMode, setViewMode] = useState<ViewMode>("tiles");
 
-  const { data: cis, isLoading } = useQuery<ConfigurationItem[]>({
+  const { data: cisResponse, isLoading } = useQuery<{ cis: ConfigurationItem[]; total: number }>({
     queryKey: ["/api/configuration-items"],
   });
 
-  const filteredCIs = cis?.filter(ci => {
+  const cis = cisResponse?.cis || [];
+
+  const filteredCIs = cis.filter(ci => {
     const matchesSearch = ci.name.toLowerCase().includes(search.toLowerCase()) ||
       ci.type.toLowerCase().includes(search.toLowerCase());
     const matchesType = typeFilter === "all" || ci.type === typeFilter;
