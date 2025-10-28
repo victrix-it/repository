@@ -910,8 +910,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ticket routes
   app.get('/api/tickets', isAuthenticated, optionalPermissionContext(), async (req: any, res) => {
     try {
-      const tickets = await storage.getAllTickets();
-      res.json(tickets);
+      const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset) : undefined;
+      
+      const tickets = await storage.getAllTickets({ limit, offset });
+      const total = await storage.getTicketsCount();
+      
+      res.json({ tickets, total, limit: limit || 50, offset: offset || 0 });
     } catch (error) {
       console.error("Error fetching tickets:", error);
       res.status(500).json({ message: "Failed to fetch tickets" });
@@ -1006,10 +1011,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Change Request routes
-  app.get('/api/changes', isAuthenticated, async (req, res) => {
+  app.get('/api/changes', isAuthenticated, async (req: any, res) => {
     try {
-      const changes = await storage.getAllChangeRequests();
-      res.json(changes);
+      const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset) : undefined;
+      
+      const changes = await storage.getAllChangeRequests({ limit, offset });
+      const total = await storage.getChangeRequestsCount();
+      
+      res.json({ changes, total, limit: limit || 50, offset: offset || 0 });
     } catch (error) {
       console.error("Error fetching changes:", error);
       res.status(500).json({ message: "Failed to fetch changes" });
@@ -1136,10 +1146,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Configuration Item routes
-  app.get('/api/configuration-items', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
+  app.get('/api/configuration-items', isAuthenticated, requirePermission('canViewCMDB'), async (req: any, res) => {
     try {
-      const cis = await storage.getAllConfigurationItems();
-      res.json(cis);
+      const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset) : undefined;
+      
+      const cis = await storage.getAllConfigurationItems({ limit, offset });
+      const total = await storage.getConfigurationItemsCount();
+      
+      res.json({ cis, total, limit: limit || 100, offset: offset || 0 });
     } catch (error) {
       console.error("Error fetching CIs:", error);
       res.status(500).json({ message: "Failed to fetch configuration items" });
@@ -1229,6 +1244,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CSV Export routes
+  app.get('/api/configuration-items/csv/export', isAuthenticated, requirePermission('canViewCMDB'), async (req, res) => {
+    try {
+      const cis = await storage.getAllConfigurationItems();
+      
+      // Create CSV header
+      const headers = ['CI Number', 'Name', 'Type', 'Status', 'IP Address', 'Serial Number', 'Manufacturer', 'Model', 'Owner', 'Description'];
+      const rows = [headers.join(',')];
+      
+      // Add data rows
+      for (const ci of cis) {
+        const row = [
+          ci.ciNumber || '',
+          `"${(ci.name || '').replace(/"/g, '""')}"`,
+          ci.typeId || '',
+          ci.status || '',
+          ci.ipAddress || '',
+          ci.serialNumber || '',
+          ci.manufacturer || '',
+          ci.model || '',
+          ci.ownerId || '',
+          `"${(ci.description || '').replace(/"/g, '""')}"`,
+        ];
+        rows.push(row.join(','));
+      }
+      
+      const csv = rows.join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="configuration-items-export.csv"');
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting CIs to CSV:", error);
+      res.status(500).json({ message: "Failed to export configuration items" });
+    }
+  });
+
+  app.get('/api/tickets/csv/export', isAuthenticated, async (req, res) => {
+    try {
+      const tickets = await storage.getAllTickets();
+      
+      // Create CSV header
+      const headers = ['Ticket Number', 'Title', 'Status', 'Priority', 'Category', 'Created By', 'Assigned To', 'Created At', 'Resolved At'];
+      const rows = [headers.join(',')];
+      
+      // Add data rows
+      for (const ticket of tickets) {
+        const row = [
+          ticket.ticketNumber || '',
+          `"${(ticket.title || '').replace(/"/g, '""')}"`,
+          ticket.status || '',
+          ticket.priority || '',
+          ticket.category || '',
+          ticket.createdBy?.email || ticket.createdBy?.username || '',
+          ticket.assignedTo?.email || ticket.assignedTo?.username || '',
+          ticket.createdAt ? new Date(ticket.createdAt).toISOString() : '',
+          ticket.resolvedAt ? new Date(ticket.resolvedAt).toISOString() : '',
+        ];
+        rows.push(row.join(','));
+      }
+      
+      const csv = rows.join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="tickets-export.csv"');
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting tickets to CSV:", error);
+      res.status(500).json({ message: "Failed to export tickets" });
+    }
+  });
+
   // Knowledge Base routes
   app.get('/api/knowledge', isAuthenticated, async (req, res) => {
     try {
@@ -1267,10 +1354,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Problem routes
-  app.get('/api/problems', isAuthenticated, async (req, res) => {
+  app.get('/api/problems', isAuthenticated, async (req: any, res) => {
     try {
-      const problems = await storage.getAllProblems();
-      res.json(problems);
+      const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset) : undefined;
+      
+      const problems = await storage.getAllProblems({ limit, offset });
+      const total = await storage.getProblemsCount();
+      
+      res.json({ problems, total, limit: limit || 50, offset: offset || 0 });
     } catch (error) {
       console.error("Error fetching problems:", error);
       res.status(500).json({ message: "Failed to fetch problems" });
