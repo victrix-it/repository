@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient, apiRequest } from '@/lib/queryClient';
-import { Key, AlertCircle, CheckCircle2, Calendar, Users, Building2 } from 'lucide-react';
+import { Key, AlertCircle, CheckCircle2, Calendar, Users, Building2, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import { Link } from 'wouter';
 
 export default function LicensePage() {
   const { toast } = useToast();
@@ -66,6 +67,13 @@ export default function LicensePage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <Link href="/admin">
+        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-to-admin">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin
+        </Button>
+      </Link>
+      
       <div className="mb-6">
         <h1 className="text-3xl font-semibold">License Management</h1>
         <p className="text-muted-foreground">Manage system licenses and activation</p>

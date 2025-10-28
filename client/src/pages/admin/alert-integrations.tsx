@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Trash2, Copy, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Copy, Eye, EyeOff, AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 interface AlertIntegration {
   id: string;
@@ -105,6 +106,13 @@ export default function AlertIntegrationsPage() {
 
   return (
     <div className="p-8">
+      <Link href="/admin">
+        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-to-admin">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin
+        </Button>
+      </Link>
+      
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold mb-2" data-testid="page-title">Alert Integrations</h1>

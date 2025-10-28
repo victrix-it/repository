@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Loader2, Settings, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Settings, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { MODULES, getModulesByCategory, type ModuleKey } from "@shared/modules";
 import type { SystemSetting } from "@shared/schema";
+import { Link } from "wouter";
 
 export default function ModulesPage() {
   const { toast } = useToast();
@@ -95,6 +96,13 @@ export default function ModulesPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <Link href="/admin">
+        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-to-admin">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin
+        </Button>
+      </Link>
+      
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2" data-testid="text-modules-title">
           <Settings className="h-8 w-8" />

@@ -16,9 +16,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Key, Server, Plus, Trash2, Play, RefreshCw, CheckCircle, XCircle, Clock, Download, FileCode, Cloud, AlertCircle, Upload } from "lucide-react";
+import { Key, Server, Plus, Trash2, Play, RefreshCw, CheckCircle, XCircle, Clock, Download, FileCode, Cloud, AlertCircle, Upload, ArrowLeft } from "lucide-react";
 import type { DiscoveryCredential, DiscoveryJob, SystemSetting } from "@shared/schema";
 import { z } from "zod";
+import { Link } from "wouter";
 
 // SaaS Mode Script Generator Component
 function SaaSModeScriptGenerator() {
@@ -814,6 +815,13 @@ export default function NetworkDiscovery() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      <Link href="/admin">
+        <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-to-admin">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Admin
+        </Button>
+      </Link>
+      
       <div>
         <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Network Discovery</h1>
         <p className="text-muted-foreground">
