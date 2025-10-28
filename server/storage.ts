@@ -103,14 +103,16 @@ export interface IStorage {
   // Ticket operations
   createTicket(ticket: InsertTicket, createdById: string): Promise<Ticket>;
   getTicket(id: string): Promise<any>;
-  getAllTickets(): Promise<any[]>;
+  getAllTickets(params?: { limit?: number; offset?: number }): Promise<any[]>;
+  getTicketsCount(): Promise<number>;
   getTicketsByCI(ciId: string): Promise<any[]>;
   updateTicketStatus(id: string, status: string): Promise<void>;
   
   // Change Request operations
   createChangeRequest(change: InsertChangeRequest, requestedById: string): Promise<ChangeRequest>;
   getChangeRequest(id: string): Promise<any>;
-  getAllChangeRequests(): Promise<any[]>;
+  getAllChangeRequests(params?: { limit?: number; offset?: number }): Promise<any[]>;
+  getChangeRequestsCount(): Promise<number>;
   getChangeRequestsByCI(ciId: string): Promise<any[]>;
   updateChangeStatus(id: string, status: string): Promise<void>;
   
@@ -126,7 +128,8 @@ export interface IStorage {
   // Configuration Item operations
   createConfigurationItem(ci: InsertConfigurationItem): Promise<ConfigurationItem>;
   getConfigurationItem(id: string): Promise<any>;
-  getAllConfigurationItems(): Promise<ConfigurationItem[]>;
+  getAllConfigurationItems(params?: { limit?: number; offset?: number }): Promise<ConfigurationItem[]>;
+  getConfigurationItemsCount(): Promise<number>;
   
   // Knowledge Base operations
   createKnowledgeBase(kb: InsertKnowledgeBase, createdById: string): Promise<KnowledgeBase>;
@@ -137,7 +140,8 @@ export interface IStorage {
   // Problem operations
   createProblem(problem: InsertProblem, createdById: string): Promise<Problem>;
   getProblem(id: string): Promise<any>;
-  getAllProblems(): Promise<any[]>;
+  getAllProblems(params?: { limit?: number; offset?: number }): Promise<any[]>;
+  getProblemsCount(): Promise<number>;
   getProblemsByCI(ciId: string): Promise<any[]>;
   updateProblem(id: string, problem: Partial<InsertProblem>): Promise<Problem>;
   updateProblemStatus(id: string, status: string): Promise<void>;
@@ -476,8 +480,16 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getAllTickets(): Promise<any[]> {
-    const allTickets = await db.select().from(tickets).orderBy(desc(tickets.createdAt));
+  async getAllTickets(params?: { limit?: number; offset?: number }): Promise<any[]> {
+    const limit = params?.limit || 50;
+    const offset = params?.offset || 0;
+    
+    const allTickets = await db
+      .select()
+      .from(tickets)
+      .orderBy(desc(tickets.createdAt))
+      .limit(limit)
+      .offset(offset);
     
     return await Promise.all(
       allTickets.map(async (ticket) => {
@@ -496,6 +508,11 @@ export class DatabaseStorage implements IStorage {
         return { ...ticket, createdBy, assignedTo, customer, assignedToTeam };
       })
     );
+  }
+
+  async getTicketsCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(tickets);
+    return Number(result.count);
   }
 
   async getTicketsByCI(ciId: string): Promise<any[]> {
@@ -560,8 +577,16 @@ export class DatabaseStorage implements IStorage {
     return { ...change, requestedBy, approvedBy };
   }
 
-  async getAllChangeRequests(): Promise<any[]> {
-    const allChanges = await db.select().from(changeRequests).orderBy(desc(changeRequests.createdAt));
+  async getAllChangeRequests(params?: { limit?: number; offset?: number }): Promise<any[]> {
+    const limit = params?.limit || 50;
+    const offset = params?.offset || 0;
+    
+    const allChanges = await db
+      .select()
+      .from(changeRequests)
+      .orderBy(desc(changeRequests.createdAt))
+      .limit(limit)
+      .offset(offset);
     
     return await Promise.all(
       allChanges.map(async (change) => {
@@ -574,6 +599,11 @@ export class DatabaseStorage implements IStorage {
         return { ...change, requestedBy, approvedBy };
       })
     );
+  }
+
+  async getChangeRequestsCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(changeRequests);
+    return Number(result.count);
   }
 
   async getChangeRequestsByCI(ciId: string): Promise<any[]> {
@@ -650,8 +680,21 @@ export class DatabaseStorage implements IStorage {
     return { ...ci, owner, customer, ownerTeam };
   }
 
-  async getAllConfigurationItems(): Promise<ConfigurationItem[]> {
-    return await db.select().from(configurationItems).orderBy(configurationItems.name);
+  async getAllConfigurationItems(params?: { limit?: number; offset?: number }): Promise<ConfigurationItem[]> {
+    const limit = params?.limit || 100;
+    const offset = params?.offset || 0;
+    
+    return await db
+      .select()
+      .from(configurationItems)
+      .orderBy(configurationItems.name)
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getConfigurationItemsCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(configurationItems);
+    return Number(result.count);
   }
 
   // Knowledge Base operations
@@ -729,8 +772,16 @@ export class DatabaseStorage implements IStorage {
     return { ...problem, createdBy, assignedTo, assignedToTeam, linkedCI, customer };
   }
 
-  async getAllProblems(): Promise<any[]> {
-    const allProblems = await db.select().from(problems).orderBy(desc(problems.createdAt));
+  async getAllProblems(params?: { limit?: number; offset?: number }): Promise<any[]> {
+    const limit = params?.limit || 50;
+    const offset = params?.offset || 0;
+    
+    const allProblems = await db
+      .select()
+      .from(problems)
+      .orderBy(desc(problems.createdAt))
+      .limit(limit)
+      .offset(offset);
     
     return await Promise.all(
       allProblems.map(async (problem) => {
@@ -749,6 +800,11 @@ export class DatabaseStorage implements IStorage {
         return { ...problem, createdBy, assignedTo, assignedToTeam, customer };
       })
     );
+  }
+
+  async getProblemsCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(problems);
+    return Number(result.count);
   }
 
   async getProblemsByCI(ciId: string): Promise<any[]> {
