@@ -279,7 +279,7 @@ export default function Dashboard() {
           <CardContent className="space-y-3">
             {activity?.tickets && activity.tickets.length > 0 ? (
               activity.tickets.map((ticket) => (
-                <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+                <Link key={ticket.id} href={`/incidents/${ticket.id}`}>
                   <div className="flex items-start justify-between p-3 rounded-md hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.ticketNumber}`}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">

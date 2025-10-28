@@ -23,8 +23,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertServiceCatalogItemSchema } from "@shared/schema";
 import { z } from "zod";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Pencil, Trash2, CheckCircle, XCircle, ShieldAlert } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle, XCircle, ShieldAlert, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
 
 const formSchema = insertServiceCatalogItemSchema.extend({
   category: z.enum(["access_management", "hardware", "software", "network", "general"]),
@@ -195,8 +196,15 @@ export default function ServiceCatalogAdmin() {
   return (
     <div className="h-full overflow-auto">
       <div className="container mx-auto p-6 max-w-7xl">
+        <Link href="/admin">
+          <Button variant="ghost" size="sm" className="mb-6" data-testid="button-back-to-admin">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Admin
+          </Button>
+        </Link>
+        
         <div className="flex flex-col gap-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:flex-items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-semibold" data-testid="text-page-title">
                 {t("serviceCatalog.adminTitle", "Service Catalog Management")}
