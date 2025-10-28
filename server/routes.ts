@@ -840,7 +840,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ISO 27001 Control A.5.17 - Authentication Information
   app.post('/api/auth/change-password', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // Handle both OIDC (claims.sub) and local auth (id) user structures
+      const userId = req.user.claims?.sub || req.user.id;
       const { currentPassword, newPassword } = req.body;
 
       if (!newPassword) {
@@ -896,8 +897,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Audit log - password change failed (system error)
       await createAuditLog({
         eventType: 'password_change',
-        userId: req.user?.claims?.sub,
-        username: req.user?.claims?.email || 'unknown',
+        userId: req.user?.claims?.sub || req.user?.id,
+        username: req.user?.claims?.email || req.user?.email || 'unknown',
         success: false,
         reason: `Password change failed: ${error}`,
         req,
