@@ -149,7 +149,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/users/:id', isAuthenticated, requirePermission('canManageUsers'), async (req: any, res) => {
     try {
       const targetUserId = req.params.id;
-      const updateData = req.body;
+      const updateData = { ...req.body };
+      
+      // Hash password if provided (for password changes)
+      if (updateData.password) {
+        const bcrypt = await import('bcryptjs');
+        updateData.passwordHash = await bcrypt.hash(updateData.password, 10);
+        delete updateData.password; // Remove plain password from data
+      }
       
       // Get user before update for audit logging
       const originalUser = await storage.getUser(targetUserId);
