@@ -129,7 +129,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/users', isAuthenticated, requirePermission('canManageUsers'), async (req, res) => {
     try {
-      const user = await storage.createUser(req.body);
+      const userData = { ...req.body };
+      
+      // Hash password if provided (for local auth users)
+      if (userData.password) {
+        const bcrypt = await import('bcryptjs');
+        userData.passwordHash = await bcrypt.hash(userData.password, 10);
+        delete userData.password; // Remove plain password from data
+      }
+      
+      const user = await storage.createUser(userData);
       res.json(user);
     } catch (error) {
       console.error("Error creating user:", error);
