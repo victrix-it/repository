@@ -29,9 +29,11 @@ export default function TicketsPage() {
   const [slaFilter, setSlaFilter] = useState<string>("");
   const [teamFilter, setTeamFilter] = useState<string>("");
 
-  const { data: tickets, isLoading } = useQuery<TicketWithRelations[]>({
+  const { data: ticketsResponse, isLoading } = useQuery<{ tickets: TicketWithRelations[]; total: number }>({
     queryKey: ["/api/tickets"],
   });
+
+  const tickets = ticketsResponse?.tickets || [];
 
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
@@ -42,10 +44,10 @@ export default function TicketsPage() {
   });
 
   // Get unique categories and tags for filtering
-  const categories = Array.from(new Set(tickets?.map(t => t.category).filter(Boolean) || []));
-  const allTags = Array.from(new Set(tickets?.flatMap(t => t.tags || []) || []));
+  const categories = Array.from(new Set(tickets.map(t => t.category).filter(Boolean)));
+  const allTags = Array.from(new Set(tickets.flatMap(t => t.tags || [])));
 
-  const filteredTickets = tickets?.filter(ticket => {
+  const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.title.toLowerCase().includes(search.toLowerCase()) ||
       ticket.ticketNumber.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = !categoryFilter || ticket.category === categoryFilter;
