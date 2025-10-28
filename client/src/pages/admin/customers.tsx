@@ -43,6 +43,7 @@ export default function CustomersPage() {
       contactPhone: undefined,
       isActive: "true",
       slaTemplateId: undefined,
+      changeApproverIds: [],
     },
   });
 
@@ -336,6 +337,7 @@ export default function CustomersPage() {
                               contactPhone: customer.contactPhone || undefined,
                               isActive: customer.isActive,
                               slaTemplateId: customer.slaTemplateId || undefined,
+                              changeApproverIds: customer.changeApproverIds || [],
                             });
                           }}
                           data-testid={`button-edit-${customer.id}`}
