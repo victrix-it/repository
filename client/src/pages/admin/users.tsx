@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { ArrowLeft, UserPlus, Upload, Pencil, MoreVertical, UserX, UserCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, UserPlus, Upload, Pencil, MoreVertical, UserX, UserCheck, Trash2, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -77,6 +77,11 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordFormData, setPasswordFormData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -202,6 +207,27 @@ export default function UsersPage() {
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: async ({ id, password }: { id: string; password: string }) => {
+      return await apiRequest('PATCH', `/api/users/${id}`, { password });
+    },
+    onSuccess: () => {
+      setPasswordDialogOpen(false);
+      setPasswordFormData({ password: "", confirmPassword: "" });
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -278,6 +304,41 @@ export default function UsersPage() {
       customerId: user.customerId || "",
     });
     setEditOpen(true);
+  };
+
+  const handlePasswordChangeClick = (user: User) => {
+    setSelectedUser(user);
+    setPasswordFormData({ password: "", confirmPassword: "" });
+    setPasswordDialogOpen(true);
+  };
+
+  const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedUser) return;
+    
+    if (!passwordFormData.password) {
+      toast({
+        title: "Error",
+        description: "Password is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (passwordFormData.password !== passwordFormData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    changePasswordMutation.mutate({ 
+      id: selectedUser.id, 
+      password: passwordFormData.password 
+    });
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -506,6 +567,12 @@ export default function UsersPage() {
                           <Pencil className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
+                        {user.authProvider === 'local' && (
+                          <DropdownMenuItem onClick={() => handlePasswordChangeClick(user)} data-testid={`action-change-password-${user.id}`}>
+                            <Key className="h-4 w-4 mr-2" />
+                            Change Password
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem 
                           onClick={() => toggleUserStatusMutation.mutate({ 
                             id: user.id, 
@@ -661,6 +728,51 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent>
+          <form onSubmit={handlePasswordChangeSubmit}>
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+              <DialogDescription>
+                Set a new password for {selectedUser?.firstName} {selectedUser?.lastName}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={passwordFormData.password}
+                  onChange={(e) => setPasswordFormData({ ...passwordFormData, password: e.target.value })}
+                  required
+                  data-testid="input-new-password"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-new-password"
+                  type="password"
+                  value={passwordFormData.confirmPassword}
+                  onChange={(e) => setPasswordFormData({ ...passwordFormData, confirmPassword: e.target.value })}
+                  required
+                  data-testid="input-confirm-new-password"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPasswordDialogOpen(false)} data-testid="button-cancel-password">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={changePasswordMutation.isPending} data-testid="button-submit-password">
+                {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
