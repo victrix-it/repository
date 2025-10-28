@@ -332,7 +332,13 @@ export const configurationItems = pgTable("configuration_items", {
   lastDiscovered: timestamp("last_discovered"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_ci_type").on(table.typeId),
+  index("idx_ci_status").on(table.status),
+  index("idx_ci_customer").on(table.customerId),
+  index("idx_ci_owner").on(table.ownerId),
+  index("idx_ci_created").on(table.createdAt),
+]);
 
 // Support Tickets
 export const tickets = pgTable("tickets", {
@@ -363,7 +369,14 @@ export const tickets = pgTable("tickets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   resolvedAt: timestamp("resolved_at"),
-});
+}, (table) => [
+  index("idx_ticket_status").on(table.status),
+  index("idx_ticket_priority").on(table.priority),
+  index("idx_ticket_assigned").on(table.assignedToId),
+  index("idx_ticket_customer").on(table.customerId),
+  index("idx_ticket_created").on(table.createdAt),
+  index("idx_ticket_sla_status").on(table.slaStatus),
+]);
 
 // Change Requests
 export const changeRequests = pgTable("change_requests", {
@@ -391,7 +404,13 @@ export const changeRequests = pgTable("change_requests", {
   implementedAt: timestamp("implemented_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_change_status").on(table.status),
+  index("idx_change_priority").on(table.priority),
+  index("idx_change_customer").on(table.customerId),
+  index("idx_change_created").on(table.createdAt),
+  index("idx_change_scheduled").on(table.scheduledDate),
+]);
 
 // Knowledge Base Articles
 export const knowledgeBase = pgTable("knowledge_base", {
@@ -428,7 +447,12 @@ export const problems = pgTable("problems", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   resolvedAt: timestamp("resolved_at"),
-});
+}, (table) => [
+  index("idx_problem_status").on(table.status),
+  index("idx_problem_priority").on(table.priority),
+  index("idx_problem_customer").on(table.customerId),
+  index("idx_problem_created").on(table.createdAt),
+]);
 
 // Comments (for both tickets and change requests)
 export const comments = pgTable("comments", {
@@ -438,7 +462,11 @@ export const comments = pgTable("comments", {
   ticketId: varchar("ticket_id").references(() => tickets.id),
   changeRequestId: varchar("change_request_id").references(() => changeRequests.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_comment_ticket").on(table.ticketId),
+  index("idx_comment_change").on(table.changeRequestId),
+  index("idx_comment_created").on(table.createdAt),
+]);
 
 // Email Messages (for email ticket creation)
 export const emailMessages = pgTable("email_messages", {
@@ -464,7 +492,10 @@ export const attachments = pgTable("attachments", {
   changeRequestId: varchar("change_request_id").references(() => changeRequests.id),
   knowledgeBaseId: varchar("knowledge_base_id").references(() => knowledgeBase.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_attachment_ticket").on(table.ticketId),
+  index("idx_attachment_change").on(table.changeRequestId),
+]);
 
 // Contacts (vendor/support contacts)
 export const contacts = pgTable("contacts", {
@@ -510,7 +541,12 @@ export const auditLogs = pgTable("audit_logs", {
   reason: text("reason"),
   metadata: jsonb("metadata"), // Additional context (e.g., changed fields, target user)
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_audit_user").on(table.userId),
+  index("idx_audit_event_type").on(table.eventType),
+  index("idx_audit_created").on(table.createdAt),
+  index("idx_audit_ip").on(table.ipAddress),
+]);
 
 // ISO 27001 Compliance - Failed Login Tracking (for account lockout)
 export const failedLoginAttempts = pgTable("failed_login_attempts", {
@@ -586,7 +622,11 @@ export const serviceRequests = pgTable("service_requests", {
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("idx_service_request_status").on(table.status),
+  index("idx_service_request_customer").on(table.customerId),
+  index("idx_service_request_created").on(table.createdAt),
+]);
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
