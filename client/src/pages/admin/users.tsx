@@ -81,6 +81,8 @@ export default function UsersPage() {
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     roleId: "",
     customerId: "",
     authProvider: "local",
@@ -116,6 +118,8 @@ export default function UsersPage() {
         firstName: "",
         lastName: "",
         email: "",
+        password: "",
+        confirmPassword: "",
         roleId: "",
         customerId: "",
         authProvider: "local",
@@ -210,10 +214,34 @@ export default function UsersPage() {
       return;
     }
     
+    // Validate password for local auth users
+    if (formData.authProvider === 'local') {
+      if (!formData.password) {
+        toast({
+          title: "Error",
+          description: "Password is required for local authentication users",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     const submitData = {
       ...formData,
       customerId: formData.customerId || undefined,
     };
+    
+    // Remove confirmPassword before sending to backend
+    delete (submitData as any).confirmPassword;
     
     createUserMutation.mutate(submitData);
   };
@@ -359,6 +387,28 @@ export default function UsersPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       data-testid="input-email"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Password {formData.authProvider === 'local' && <span className="text-destructive">*</span>}</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required={formData.authProvider === 'local'}
+                      data-testid="input-password"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="confirmPassword">Confirm Password {formData.authProvider === 'local' && <span className="text-destructive">*</span>}</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      required={formData.authProvider === 'local'}
+                      data-testid="input-confirmPassword"
                     />
                   </div>
                   <div className="grid gap-2">
