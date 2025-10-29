@@ -10,6 +10,7 @@ import {
   AlertCircle,
   BarChart3,
   ShoppingCart,
+  Network,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -98,6 +99,14 @@ const getMainItems = (t: any) => [
     icon: Mail,
     permission: null as any,
     module: 'email_inbox' as ModuleKey,
+  },
+  {
+    title: t('nav.networkDiscovery'),
+    titleKey: "network-discovery",
+    url: "/admin/network-discovery",
+    icon: Network,
+    permission: 'canManageUsers' as const,
+    module: 'network_discovery' as ModuleKey,
   },
 ];
 
