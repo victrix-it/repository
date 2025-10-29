@@ -41,15 +41,17 @@ export default function ProblemsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [customerFilter, setCustomerFilter] = useState<string>("");
 
-  const { data: problems, isLoading } = useQuery<ProblemWithRelations[]>({
+  const { data: problemsResponse, isLoading } = useQuery<{ problems: ProblemWithRelations[]; total: number }>({
     queryKey: ["/api/problems"],
   });
+
+  const problems = problemsResponse?.problems || [];
 
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
   });
 
-  const filteredProblems = problems?.filter(problem => {
+  const filteredProblems = problems.filter(problem => {
     const matchesSearch = problem.title.toLowerCase().includes(search.toLowerCase()) ||
       problem.problemNumber.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = !statusFilter || problem.status === statusFilter;
