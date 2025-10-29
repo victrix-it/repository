@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { ensureDefaultAdminExists } from "./license-manager";
+import { ensureDefaultAdminExists, ensureDefaultCiTypesExist } from "./license-manager";
 import { emailService } from "./email-service";
 import { storage } from "./storage";
 
@@ -48,6 +48,13 @@ app.use((req, res, next) => {
     await ensureDefaultAdminExists();
   } catch (error) {
     console.error('Failed to ensure default admin exists:', error);
+  }
+
+  // Ensure default CI types exist
+  try {
+    await ensureDefaultCiTypesExist();
+  } catch (error) {
+    console.error('Failed to ensure default CI types exist:', error);
   }
 
   // Initialize email service

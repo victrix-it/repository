@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { licenses, users, roles } from "@shared/schema";
+import { licenses, users, roles, ciTypes } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -255,4 +255,36 @@ export async function ensureDefaultAdminExists(): Promise<void> {
   });
 
   console.log('Default admin user created: admin@helpdesk.local / admin (must change password on first login)');
+}
+
+/**
+ * Ensure default CI types exist
+ * Creates standard ITIL configuration item types if they don't exist
+ */
+export async function ensureDefaultCiTypesExist(): Promise<void> {
+  const defaultCiTypes = [
+    { name: 'Server', description: 'Physical or virtual servers', icon: 'Server', isDefault: 'true' },
+    { name: 'Desktop', description: 'Desktop computers', icon: 'Monitor', isDefault: 'true' },
+    { name: 'Laptop', description: 'Laptop computers', icon: 'Laptop', isDefault: 'true' },
+    { name: 'Network Device', description: 'Routers, switches, firewalls', icon: 'Network', isDefault: 'true' },
+    { name: 'Storage', description: 'Storage systems and arrays', icon: 'HardDrive', isDefault: 'true' },
+    { name: 'Mobile Device', description: 'Smartphones and tablets', icon: 'Smartphone', isDefault: 'true' },
+    { name: 'Printer', description: 'Printers and multifunction devices', icon: 'Printer', isDefault: 'true' },
+    { name: 'Software', description: 'Software applications and licenses', icon: 'Package', isDefault: 'true' },
+    { name: 'Virtual Machine', description: 'Virtual machines', icon: 'Box', isDefault: 'true' },
+    { name: 'Database', description: 'Database servers and instances', icon: 'Database', isDefault: 'true' },
+  ];
+
+  for (const ciTypeData of defaultCiTypes) {
+    const [existingType] = await db
+      .select()
+      .from(ciTypes)
+      .where(eq(ciTypes.name, ciTypeData.name))
+      .limit(1);
+
+    if (!existingType) {
+      await db.insert(ciTypes).values(ciTypeData);
+      console.log(`Created default CI type: ${ciTypeData.name}`);
+    }
+  }
 }
