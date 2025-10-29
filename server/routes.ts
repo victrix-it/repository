@@ -743,7 +743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/service-catalog', isAuthenticated, requirePermission('canManageServiceCatalog'), async (req: any, res) => {
     try {
-      const createdById = req.user.claims.sub;
+      const createdById = req.user.claims?.sub || req.user.id;
       const item = await storage.createServiceCatalogItem(req.body, createdById);
       res.json(item);
     } catch (error) {
@@ -798,7 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/service-requests', isAuthenticated, async (req: any, res) => {
     try {
-      const requestedById = req.user.claims.sub;
+      const requestedById = req.user.claims?.sub || req.user.id;
       const request = await storage.createServiceRequest(req.body, requestedById);
       res.json(request);
     } catch (error) {
@@ -819,7 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/service-requests/:id/approve', isAuthenticated, requirePermission('canApproveChanges'), async (req: any, res) => {
     try {
-      const approvedById = req.user.claims.sub;
+      const approvedById = req.user.claims?.sub || req.user.id;
       const { notes } = req.body;
       const request = await storage.approveServiceRequest(req.params.id, approvedById, notes || '');
       res.json(request);
@@ -831,7 +831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/service-requests/:id/reject', isAuthenticated, requirePermission('canApproveChanges'), async (req: any, res) => {
     try {
-      const approvedById = req.user.claims.sub;
+      const approvedById = req.user.claims?.sub || req.user.id;
       const { notes } = req.body;
       const request = await storage.rejectServiceRequest(req.params.id, approvedById, notes || '');
       res.json(request);
@@ -955,7 +955,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/tickets', isAuthenticated, requirePermission('canCreateTickets'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.claims?.sub || req.user.id;
       const validatedData = insertTicketSchema.parse(req.body);
       const ticket = await storage.createTicket(validatedData, userId);
       
@@ -1014,7 +1014,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/tickets/:id/comments', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.claims?.sub || req.user.id;
       const validatedData = insertCommentSchema.parse({
         content: req.body.content,
         ticketId: req.params.id,
@@ -1058,7 +1058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/changes', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.claims?.sub || req.user.id;
       const validatedData = insertChangeRequestSchema.parse(req.body);
       const change = await storage.createChangeRequest(validatedData, userId);
       
@@ -1360,7 +1360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/knowledge', isAuthenticated, requirePermission('canManageKnowledgebase'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.claims?.sub || req.user.id;
       const validatedData = insertKnowledgeBaseSchema.parse(req.body);
       const article = await storage.createKnowledgeBase(validatedData, userId);
       res.json(article);
@@ -1412,7 +1412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/problems', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.claims?.sub || req.user.id;
       const validatedData = insertProblemSchema.parse(req.body);
       const problem = await storage.createProblem(validatedData, userId);
       res.json(problem);
