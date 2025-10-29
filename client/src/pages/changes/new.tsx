@@ -371,7 +371,7 @@ export default function NewChangePage() {
                         <SelectContent>
                           {cis?.map((ci) => (
                             <SelectItem key={ci.id} value={ci.id}>
-                              {ci.name} ({ci.type})
+                              {ci.name}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -19,11 +19,13 @@ interface ChangeWithRelations extends ChangeRequest {
 export default function ChangesPage() {
   const [search, setSearch] = useState("");
 
-  const { data: changes, isLoading } = useQuery<ChangeWithRelations[]>({
+  const { data, isLoading } = useQuery<{ changes: ChangeWithRelations[], total: number }>({
     queryKey: ["/api/changes"],
   });
 
-  const filteredChanges = changes?.filter(change =>
+  const changes = data?.changes || [];
+
+  const filteredChanges = changes.filter(change =>
     change.title.toLowerCase().includes(search.toLowerCase()) ||
     change.changeNumber.toLowerCase().includes(search.toLowerCase())
   );
