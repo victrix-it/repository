@@ -39,9 +39,11 @@ export default function NewTicketPage() {
     queryKey: ["/api/users"],
   });
 
-  const { data: cis } = useQuery<ConfigurationItem[]>({
+  const { data: cisResponse } = useQuery<{ cis: any[]; total: number }>({
     queryKey: ["/api/configuration-items"],
   });
+
+  const cis = cisResponse?.cis || [];
 
   const form = useForm<TicketFormData>({
     resolver: zodResolver(ticketFormSchema),
@@ -287,9 +289,9 @@ export default function NewTicketPage() {
 
               <div className="flex gap-3">
                 <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit">
-                  {createMutation.isPending ? "Creating..." : "Create Ticket"}
+                  {createMutation.isPending ? "Creating..." : "Create Incident"}
                 </Button>
-                <Link href="/tickets">
+                <Link href="/incidents">
                   <Button type="button" variant="outline" data-testid="button-cancel">
                     Cancel
                   </Button>

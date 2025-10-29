@@ -680,16 +680,26 @@ export class DatabaseStorage implements IStorage {
     return { ...ci, owner, customer, ownerTeam };
   }
 
-  async getAllConfigurationItems(params?: { limit?: number; offset?: number }): Promise<ConfigurationItem[]> {
+  async getAllConfigurationItems(params?: { limit?: number; offset?: number }): Promise<any[]> {
     const limit = params?.limit || 100;
     const offset = params?.offset || 0;
     
-    return await db
-      .select()
+    const items = await db
+      .select({
+        ci: configurationItems,
+        type: ciTypes,
+      })
       .from(configurationItems)
+      .leftJoin(ciTypes, eq(configurationItems.typeId, ciTypes.id))
       .orderBy(configurationItems.name)
       .limit(limit)
       .offset(offset);
+    
+    return items.map(({ ci, type }) => ({
+      ...ci,
+      type: type?.name,
+      typeIcon: type?.icon,
+    }));
   }
 
   async getConfigurationItemsCount(): Promise<number> {
