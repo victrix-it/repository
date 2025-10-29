@@ -461,10 +461,12 @@ export const comments = pgTable("comments", {
   createdById: varchar("created_by_id").references(() => users.id).notNull(),
   ticketId: varchar("ticket_id").references(() => tickets.id),
   changeRequestId: varchar("change_request_id").references(() => changeRequests.id),
+  problemId: varchar("problem_id").references(() => problems.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   index("idx_comment_ticket").on(table.ticketId),
   index("idx_comment_change").on(table.changeRequestId),
+  index("idx_comment_problem").on(table.problemId),
   index("idx_comment_created").on(table.createdAt),
 ]);
 

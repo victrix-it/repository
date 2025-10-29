@@ -1444,6 +1444,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add comment to problem
+  app.post('/api/problems/:id/comments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims?.sub || req.user.id;
+      const validatedData = insertCommentSchema.parse({
+        content: req.body.content,
+        problemId: req.params.id,
+      });
+      const comment = await storage.createComment(validatedData, userId);
+      res.json(comment);
+    } catch (error: any) {
+      console.error("Error creating comment:", error);
+      res.status(400).json({ message: error.message || "Failed to create comment" });
+    }
+  });
+
   // Link ticket to problem
   app.post('/api/problems/:problemId/link-ticket/:ticketId', isAuthenticated, async (req, res) => {
     try {

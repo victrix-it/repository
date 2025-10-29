@@ -779,7 +779,21 @@ export class DatabaseStorage implements IStorage {
       ? await db.select().from(customers).where(eq(customers.id, problem.customerId))
       : [null];
 
-    return { ...problem, createdBy, assignedTo, assignedToTeam, linkedCI, customer };
+    // Get comments for this problem
+    const problemComments = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.problemId, id))
+      .orderBy(comments.createdAt);
+
+    const commentsWithUsers = await Promise.all(
+      problemComments.map(async (comment) => {
+        const [user] = await db.select().from(users).where(eq(users.id, comment.createdById));
+        return { ...comment, createdBy: user };
+      })
+    );
+
+    return { ...problem, createdBy, assignedTo, assignedToTeam, linkedCI, customer, comments: commentsWithUsers };
   }
 
   async getAllProblems(params?: { limit?: number; offset?: number }): Promise<any[]> {
