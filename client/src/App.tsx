@@ -28,6 +28,7 @@ import NewKBPage from "@/pages/knowledge/new";
 import KBDetailPage from "@/pages/knowledge/detail";
 import ProblemsPage from "@/pages/problems/index";
 import NewProblemPage from "@/pages/problems/new";
+import ProblemDetailPage from "@/pages/problems/detail";
 import EmailsPage from "@/pages/emails/index";
 import AdminPage from "@/pages/admin/index";
 import BrandingPage from "@/pages/admin/branding";
@@ -79,6 +80,7 @@ function Router() {
           <Route path="/knowledge/:id" component={KBDetailPage} />
           <Route path="/problems" component={ProblemsPage} />
           <Route path="/problems/new" component={NewProblemPage} />
+          <Route path="/problems/:id" component={ProblemDetailPage} />
           <Route path="/emails" component={EmailsPage} />
           <Route path="/reports" component={ReportsPage} />
           <Route path="/service-catalog" component={ServiceCatalog} />

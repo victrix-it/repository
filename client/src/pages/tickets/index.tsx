@@ -177,7 +177,7 @@ export default function TicketsPage() {
       <div className="space-y-2 md:space-y-3">
         {filteredTickets && filteredTickets.length > 0 ? (
           filteredTickets.map((ticket) => (
-            <Link key={ticket.id} href={`/tickets/${ticket.id}`}>
+            <Link key={ticket.id} href={`/incidents/${ticket.id}`}>
               <Card className="p-3 md:p-4 hover-elevate active-elevate-2 cursor-pointer" data-testid={`ticket-${ticket.id}`}>
                 <div className="flex items-start gap-3 md:gap-4">
                   <div className="flex-1 min-w-0">
