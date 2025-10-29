@@ -39,9 +39,11 @@ export default function NewChangePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: cis } = useQuery<ConfigurationItem[]>({
+  const { data: cisData } = useQuery<{ cis: ConfigurationItem[], total: number }>({
     queryKey: ["/api/configuration-items"],
   });
+
+  const cis = cisData?.cis || [];
 
   const form = useForm<ChangeFormData>({
     resolver: zodResolver(changeFormSchema),
