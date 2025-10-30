@@ -95,16 +95,6 @@ export default function ProblemDetailPage() {
                     <StatusBadge status={problem.status} type="problem" />
                     <PriorityBadge priority={problem.priority} />
                   </div>
-                  {problem.tags && problem.tags.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Tag className="h-3 w-3 text-muted-foreground" />
-                      {problem.tags.map((tag, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs" data-testid={`problem-tag-${tag}`}>
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </CardHeader>
@@ -247,7 +237,6 @@ export default function ProblemDetailPage() {
                           </p>
                         )}
                         <p className="text-sm font-medium truncate">{problem.linkedCI.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{problem.linkedCI.type}</p>
                       </div>
                     </div>
                   </Link>

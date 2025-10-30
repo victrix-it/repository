@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 type ChangeStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'scheduled' | 'implemented' | 'cancelled';
 type CIStatus = 'active' | 'inactive' | 'maintenance' | 'decommissioned';
+type ProblemStatus = 'open' | 'investigating' | 'known_error' | 'resolved' | 'closed';
 
 interface StatusBadgeProps {
-  status: TicketStatus | ChangeStatus | CIStatus | string;
-  type?: 'ticket' | 'change' | 'ci';
+  status: TicketStatus | ChangeStatus | CIStatus | ProblemStatus | string;
+  type?: 'ticket' | 'change' | 'ci' | 'problem';
 }
 
 const ticketStatusConfig: Record<TicketStatus, { label: string; className: string }> = {
@@ -34,6 +35,14 @@ const ciStatusConfig: Record<CIStatus, { label: string; className: string }> = {
   decommissioned: { label: 'Decommissioned', className: 'bg-chart-4/10 text-chart-4 border-chart-4/20' },
 };
 
+const problemStatusConfig: Record<ProblemStatus, { label: string; className: string }> = {
+  open: { label: 'Open', className: 'bg-chart-5/10 text-chart-5 border-chart-5/20' },
+  investigating: { label: 'Investigating', className: 'bg-chart-3/10 text-chart-3 border-chart-3/20' },
+  known_error: { label: 'Known Error', className: 'bg-chart-4/10 text-chart-4 border-chart-4/20' },
+  resolved: { label: 'Resolved', className: 'bg-chart-2/10 text-chart-2 border-chart-2/20' },
+  closed: { label: 'Closed', className: 'bg-muted text-muted-foreground border-muted' },
+};
+
 export function StatusBadge({ status, type = 'ticket' }: StatusBadgeProps) {
   let config;
   
@@ -41,6 +50,8 @@ export function StatusBadge({ status, type = 'ticket' }: StatusBadgeProps) {
     config = ticketStatusConfig[status as TicketStatus] || { label: status, className: '' };
   } else if (type === 'change') {
     config = changeStatusConfig[status as ChangeStatus] || { label: status, className: '' };
+  } else if (type === 'problem') {
+    config = problemStatusConfig[status as ProblemStatus] || { label: status, className: '' };
   } else {
     config = ciStatusConfig[status as CIStatus] || { label: status, className: '' };
   }
