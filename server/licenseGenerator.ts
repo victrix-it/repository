@@ -1,16 +1,16 @@
 import crypto from 'crypto';
 
-// This is a demo RSA public key - YOU MUST REPLACE THIS with your own key pair
-// Generate keys with: openssl genrsa -out private.pem 2048 && openssl rsa -in private.pem -pubout -out public.pem
+// This is the RSA public key for license verification
+// The corresponding private key should be kept secure and used only by authorized staff
+// To generate a new key pair: openssl genrsa -out private.pem 2048 && openssl rsa -in private.pem -pubout -out public.pem
 export const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx5vFPxwqL8Y5JxBHY3K7
-qN4J7qZxL5kQxJwJXxJUz8vHF6C2N3sZP9YzL6vF9XxQxL5kJxBHY3K7qN4J7qZx
-L5kQxJwJXxJUz8vHF6C2N3sZP9YzL6vF9XxQxL5kJxBHY3K7qN4J7qZxL5kQxJwJ
-XxJUz8vHF6C2N3sZP9YzL6vF9XxQxL5kJxBHY3K7qN4J7qZxL5kQxJwJXxJUz8vH
-F6C2N3sZP9YzL6vF9XxQxL5kJxBHY3K7qN4J7qZxL5kQxJwJXxJUz8vHF6C2N3sZ
-P9YzL6vF9XxQxL5kJxBHY3K7qN4J7qZxL5kQxJwJXxJUz8vHF6C2N3sZP9YzL6vF
-9XxQxL5kJxBHY3K7qN4J7qZxL5kQxJwJXxJUz8vHF6C2N3sZP9YzL6vF9XxQxwID
-AQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmJLJf84pIic36aWLvRwO
+qi/QQssPOxy9oU1N+zD30JUsg8Svvyf097W068U7PoCVcCsUducOX3uKxZstHO0n
+5jPi24pm8o0d6K9i/eo7dGVWxYMLBH22zmAGb9GWs3pNefe7WSiHdI0wkOqftr5S
+2/RtAYapeuoQZ5UwHsPQJU/7DfmLkUmvWXLt0hr5khKkQ3XqfYQ+wqKDCOxdckk2
+OBRfK0qnrKKVzf5yo1utE2s8oMMDi5HybD3aYV9U/VlDQ926ntNmmff6vMawm7bX
+EF6flWr8vgvK5S43kuS1bWCJUzG2Lp1WbEtgVkQrxuhMl0kl9/bVP1cBCt52ujyz
+QQIDAQAB
 -----END PUBLIC KEY-----`;
 
 export interface LicenseData {
