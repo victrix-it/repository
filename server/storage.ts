@@ -24,6 +24,7 @@ import {
   roles,
   licenses,
   slaTemplates,
+  auditLogs,
   type User,
   type UpsertUser,
   type Ticket,
@@ -391,14 +392,14 @@ export class DatabaseStorage implements IStorage {
     const limit = filters?.limit || 100;
     const offset = filters?.offset || 0;
     
-    let query = db.select().from(sql`audit_logs`).limit(limit).offset(offset).orderBy(sql`created_at DESC`);
+    let query = db.select().from(auditLogs).limit(limit).offset(offset).orderBy(desc(auditLogs.createdAt));
     
     if (filters?.userId) {
-      query = query.where(sql`user_id = ${filters.userId}`);
+      query = query.where(eq(auditLogs.userId, filters.userId));
     }
     
     if (filters?.eventType) {
-      query = query.where(sql`event_type = ${filters.eventType}`);
+      query = query.where(eq(auditLogs.eventType, filters.eventType));
     }
     
     const logs = await query;
@@ -406,18 +407,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAuditLogsCount(filters?: { userId?: string; eventType?: string }): Promise<number> {
-    let query = db.select({ count: sql<number>`count(*)` }).from(sql`audit_logs`);
+    let query = db.select({ count: sql<number>`count(*)` }).from(auditLogs);
     
     if (filters?.userId) {
-      query = query.where(sql`user_id = ${filters.userId}`);
+      query = query.where(eq(auditLogs.userId, filters.userId));
     }
     
     if (filters?.eventType) {
-      query = query.where(sql`event_type = ${filters.eventType}`);
+      query = query.where(eq(auditLogs.eventType, filters.eventType));
     }
     
     const result = await query;
-    return result[0]?.count || 0;
+    return Number(result[0]?.count) || 0;
   }
 
   // Ticket operations
@@ -1838,15 +1839,15 @@ export class DatabaseStorage implements IStorage {
   async getTopChangeImplementors(): Promise<any[]> {
     const results = await db
       .select({
-        userId: changeRequests.implementedById,
+        userId: changeRequests.requestedById,
         firstName: users.firstName,
         lastName: users.lastName,
         count: sql<number>`count(*)`,
       })
       .from(changeRequests)
-      .leftJoin(users, eq(changeRequests.implementedById, users.id))
-      .where(sql`${changeRequests.status} = 'completed' AND ${changeRequests.implementedById} IS NOT NULL`)
-      .groupBy(changeRequests.implementedById, users.firstName, users.lastName)
+      .leftJoin(users, eq(changeRequests.requestedById, users.id))
+      .where(sql`${changeRequests.status} = 'completed' AND ${changeRequests.requestedById} IS NOT NULL`)
+      .groupBy(changeRequests.requestedById, users.firstName, users.lastName)
       .orderBy(sql`count(*) DESC`)
       .limit(10);
     
