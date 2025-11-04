@@ -131,6 +131,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = { ...req.body };
       
+      // Validate email is provided for local auth users
+      if (userData.authProvider === 'local' && !userData.email) {
+        return res.status(400).json({ message: "Email is required for local authentication users" });
+      }
+      
       // Hash password if provided (for local auth users)
       if (userData.password) {
         const bcrypt = await import('bcryptjs');

@@ -441,12 +441,13 @@ export default function UsersPage() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email (Optional)</Label>
+                    <Label htmlFor="email">Email {formData.authProvider === 'local' && <span className="text-destructive">*</span>}</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required={formData.authProvider === 'local'}
                       data-testid="input-email"
                     />
                   </div>
